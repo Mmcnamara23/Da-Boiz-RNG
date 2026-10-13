@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>DA BOIZ RNG</title>
+
+<style>
+
+:root{--bg:#0b0b15;--panel:#171729;--purple:#a855f7;--gold:#ffd447;--text:#f7f4ff;--muted:#aaa6c5}
+
+*{box-sizing:border-box}
+
+body{margin:0;background:radial-gradient(ellipse at top,#252047,var(--bg) 65%);color:var(--text);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+
+button{border:0;border-radius:12px;padding:12px 18px;font-weight:900;font-size:14px;cursor:pointer;transition:.2s}
+
+button:hover{transform:translateY(-2px);filter:brightness(1.15)}
+
+button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.primary{background:linear-gradient(135deg,#9333ea,#ec4899);color:white}
+
+.gold{background:linear-gradient(135deg,#ffe36b,#f59e0b);color:#251700}
+
+.secondary{background:#292943;color:white;border:1px solid #48486c}
+
+.danger{background:#6b2638;color:white}
+
+header{padding:22px 16px;border-bottom:1px solid #35304f;background:#100e20dd;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+
+.header-inner{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+
+.logo{font-size:25px;font-weight:1000;letter-spacing:2px}
+
+.logo span{color:#d8a4ff}
+
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+
+.stat{padding:10px 14px;background:#211e38;border:1px solid #42375e;border-radius:12px;font-size:13px}
+
+.stat b{color:#ffdf70}
+
+main{max-width:1100px;padding:24px 16px 60px;margin:auto}
+
+.hero{text-align:center;padding:30px 0 22px}
+
+.hero h1{font-size:clamp(34px,7vw,64px);margin:0 0 10px}
+
+.hero h1 span{color:#d69aff}
+
+.hero p{color:var(--muted);line-height:1.6}
+
+.tabs{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:24px 0}
+
+.tab.active{background:#8b35d4;color:white;border-color:#d69aff}
+
+.panel{background:#171629e8;border:1px solid #37324f;border-radius:20px;padding:22px;margin-bottom:22px;box-shadow:0 12px 35px #0003}
+
+.panel h2{margin-top:0}
+
+.pack-area{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+
+.pack-card{text-align:center;padding:24px 16px;border-radius:18px;background:linear-gradient(155deg,#292044,#171628);border:1px solid #51416e}
+
+.pack-art{width:150px;height:185px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;border-radius:15px;border:2px solid #d8a4ff;background:linear-gradient(145deg,#6b21a8,#1d123e 65%,#ec4899);box-shadow:0 0 30px #a855f755;animation:float 3s ease-in-out infinite}
+
+.pack-art.mega{background:linear-gradient(145deg,#fff0a3,#b36a00 40%,#5b176f);border-color:#ffe680;box-shadow:0 0 35px #ffd44766}
+
+.pack-art .emoji{font-size:54px}
+
+.pack-art small{font-weight:1000;letter-spacing:2px}
+
+.pack-card p{color:var(--muted);line-height:1.5}
+
+.pack-card button{width:100%;margin-top:8px}
+
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+.odds{text-align:left;font-size:13px;line-height:1.9;margin:12px 0}
+
+.odds span{float:right;color:#ffe17b;font-weight:bold}
+
+.notice{color:#c8c2df;font-size:13px;line-height:1.6}
+
+.progress-track{background:#302b48;height:12px;border-radius:99px;overflow:hidden}
+
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#9333ea,#ffca55);transition:width .4s}
+
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:13px;margin-top:20px}
+
+.card{position:relative;min-width:0;padding:14px 10px;border-radius:15px;background:#211f33;border:2px solid #5d5b6c;text-align:center;overflow:hidden}
+
+.card .portrait{font-size:40px;margin:7px 0 10px}
+
+.card h3{font-size:14px;margin:7px 0;overflow-wrap:anywhere}
+
+.card .rarity{font-size:11px;text-transform:uppercase;font-weight:1000;letter-spacing:1px}
+
+.card .price{color:#ffdc72;font-size:12px;margin:9px 0}
+
+.card button{width:100%;padding:9px 5px;font-size:12px}
+
+.card.locked{opacity:.55;filter:grayscale(1)}
+
+.common{border-color:#9aa0b5}
+
+.uncommon{border-color:#49d69c}
+
+.rare{border-color:#49b9ff;box-shadow:inset 0 0 20px #1686ff12}
+
+.legendary{border-color:#ffbd45;box-shadow:inset 0 0 22px #ffbd451c}
+
+.mythical{border-color:#f04bff;box-shadow:inset 0 0 25px #e040ff26}
+
+.common .rarity{color:#bfc6d7}
+
+.uncommon .rarity{color:#49d69c}
+
+.rare .rarity{color:#49b9ff}
+
+.legendary .rarity{color:#ffbd45}
+
+.mythical .rarity{color:#f04bff}
+
+.hidden{display:none!important}
+
+.empty{text-align:center;color:var(--muted);padding:35px 10px}
+
+#toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);background:#30264a;border:1px solid #a855f7;color:white;padding:13px 20px;border-radius:12px;z-index:30;opacity:0;pointer-events:none;transition:.25s;text-align:center;width:max-content;max-width:90%}
+
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+#reveal{position:fixed;inset:0;z-index:15;background:radial-gradient(ellipse at center,#30204f 0%,#100b20 48%,#030208 100%);display:none;overflow:auto;padding:25px 15px;text-align:center;align-items:center;justify-content:center;flex-direction:column}
+
+#reveal.show{display:flex;animation:revealBackground .7s ease-out}
+
+@keyframes revealBackground{from{opacity:0}to{opacity:1}}
+
+#reveal h2{font-size:clamp(27px,5vw,43px);margin:10px}
+
+#revealSubtitle{color:#d2c5ee;line-height:1.6}
+
+#revealGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px;width:100%;max-width:850px;margin:15px auto 25px}
+
+.reveal-card{border:2px solid #8b5cf6;border-radius:15px;padding:18px 9px;background:#211b35;animation:revealIn .7s both}
+
+.reveal-card .portrait{font-size:48px;margin:8px}
+
+.reveal-card h3{font-size:15px;overflow-wrap:anywhere}
+
+.reveal-card.legendary{animation:legendaryReveal 1s both}
+
+.reveal-card.mythical{animation:mythicalReveal 1.2s both}
+
+@keyframes revealIn{from{opacity:0;transform:rotateY(90deg) scale(.7)}to{opacity:1;transform:rotateY(0) scale(1)}}
+
+@keyframes legendaryReveal{0%{opacity:0;transform:scale(.4) rotateY(180deg)}60%{opacity:1;transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
+
+@keyframes mythicalReveal{0%{opacity:0;transform:scale(.1) rotate(-20deg);filter:brightness(4)}60%{opacity:1;transform:scale(1.2) rotate(5deg);filter:brightness(2)}100%{opacity:1;transform:scale(1);filter:brightness(1)}}
+
+.suspense-card{width:min(280px,80vw);min-height:300px;margin:20px auto;display:flex;flex-direction:column;justify-content:center;align-items:center;border:2px solid #c084fc;border-radius:22px;background:linear-gradient(145deg,#6d28d9,#17102f 65%,#be185d);box-shadow:0 0 25px #a855f766,0 0 70px #9333ea33;animation:suspenseFloat 1.2s ease-in-out infinite alternate}
+
+.suspense-card .portrait{font-size:75px;animation:suspensePulse 1s ease-in-out infinite alternate}
+
+.suspense-card h3{padding:0 12px;font-size:23px}
+
+.suspense-card p{color:#f5d0fe;font-weight:bold}
+
+.suspense-card.legendary{border-color:#ffd447;box-shadow:0 0 35px #ffd44799,0 0 100px #ff990044}
+
+.suspense-card.mythical{border-color:#f04bff;box-shadow:0 0 40px #f04bff99,0 0 110px #a855f755}
+
+@keyframes suspenseFloat{from{transform:scale(.94) rotate(-2deg)}to{transform:scale(1.04) rotate(2deg)}}
+
+@keyframes suspensePulse{from{transform:scale(.9);filter:brightness(.8)}to{transform:scale(1.12);filter:brightness(1.5)}}
+
+footer{text-align:center;color:#79748f;font-size:12px;padding:20px}
+
+@media(max-width:500px){.logo{font-size:20px}.panel{padding:15px}.stat{padding:9px}}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="header-inner">
+
+<div class="logo">🎲 DA <span>BOIZ</span> RNG</div>
+
+<div class="stats">
+
+<div class="stat">🪙 <b id="coins">0</b> COINS</div>
+
+<div class="stat">📚 <b id="owned">0/10</b> CARDS</div>
+
+</div>
+
+</div>
+
+</header>
+
+<main>
+
+<section class="hero">
+
+<h1>DA BOIZ <span>RNG</span></h1>
+
+<p>Open packs. Collect the legends. Complete the album.<br>Are you lucky enough to pull LIL MUMPS?</p>
+
+</section>
+
+<nav class="tabs">
+
+<button class="tab active secondary" data-tab="packs">🎁 Packs</button>
+
+<button class="tab secondary" data-tab="album">📖 Collector's Album</button>
+
+<button class="tab secondary" data-tab="market">🪙 Coin Market</button>
+
+</nav>
+
+<section id="packs" class="page">
+
+<div class="panel">
+
+<h2>🎁 Choose your pack</h2>
+
+<p class="notice">Regular packs are FREE! Each gives you 5 card pulls. Duplicates automatically turn into coins. Mega Packs give one Mythical card. Progress saves in this browser.</p>
+
+<div class="pack-area">
+
+<div class="pack-card">
+
+<div class="pack-art"><div class="emoji">🎁</div><small>DA BOIZ</small><strong>PACK</strong></div>
+
+<h2>Da Boiz Pack</h2>
+
+<p>5 pulls per pack · FREE</p>
+
+<div class="odds">
+
+<div>Common <span>59.5%</span></div>
+
+<div>Uncommon <span>25%</span></div>
+
+<div>Rare <span>15%</span></div>
+
+<div>Legendary <span>0.5%</span></div>
+
+</div>
+
+<button class="primary" id="openNormal">OPEN FREE PACK</button>
+
+</div>
+
+<div class="pack-card">
+
+<div class="pack-art mega"><div class="emoji">👑</div><small>DA BOIZ</small><strong>MEGA PACK</strong></div>
+
+<h2>Da Boiz Mega Pack</h2>
+
+<p>1 Mythical card · 75,000 coins</p>
+
+<div class="odds">
+
+<div>Mythical Dexter <span>40%</span></div>
+
+<div>Mythical Oscar <span>25%</span></div>
+
+<div>Mythical Vittorio <span>15%</span></div>
+
+<div>Mythical Henry <span>15%</span></div>
+
+<div>Mythical Lil Mumps <span>5%</span></div>
+
+</div>
+
+<button class="gold" id="openMega">BUY & OPEN MEGA PACK</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="panel">
+
+<h2>📊 Your Collection Progress</h2>
+
+<p id="progressText">0 out of 10 cards collected</p>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<p id="progressMessage" class="notice">Your collecting journey starts now!</p>
+
+</div>
+
+</section>
+
+<section id="album" class="page hidden">
+
+<div class="panel">
+
+<h2>📖 Collector's Album</h2>
+
+<p class="notice">Collect all 5 original cards and all 5 Mythical variants. Selling a card removes it from your collection, but you can pull it again.</p>
+
+<p id="albumCount">Collected: 0 / 10</p>
+
+<div class="progress-track"><div class="progress-fill" id="albumFill"></div></div>
+
+<div class="album-grid" id="albumGrid"></div>
+
+</div>
+
+</section>
+
+<section id="market" class="page hidden">
+
+<div class="panel">
+
+<h2>🪙 DA BOIZ Coin Market</h2>
+
+<p>Sell cards you own to earn coins. Selling removes the card from your album. Duplicate pulls automatically convert into coins.</p>
+
+<div class="album-grid" id="marketGrid"></div>
+
+<p class="notice">Selling prices: Common 100 · Uncommon 300 · Rare 600 · Legendary 1,500 · Mythical 5,000 coins.</p>
+
+</div>
+
+</section>
+
+<div class="panel">
+
+<h2>⚙️ Game Options</h2>
+
+<p class="notice">Your progress is stored in this browser. Reset clears all cards and coins.</p>
+
+<button class="danger" id="reset">RESET MY GAME</button>
+
+</div>
+
+</main>
+
+<footer>DA BOIZ RNG · Fan-made collecting game · Good luck, Boiz.</footer>
+
+<div id="toast" role="status"></div>
+
+<div id="reveal">
+
+<h2 id="revealTitle">🎉 PACK OPENED!</h2>
+
+<p id="revealSubtitle">Let's see what you got...</p>
+
+<div id="revealGrid"></div>
+
+<button class="primary hidden" id="closeReveal">CLAIM & CONTINUE</button>
+
+</div>
+
+<script>
+
+"use strict";
+
+const cards=[
+
+{id:"dexter",name:"Dexter Chadwick",rarity:"Common",chance:59.5,price:100,emoji:"😎"},
+
+{id:"oscar",name:"Oscar Robert Harper",rarity:"Uncommon",chance:25,price:300,emoji:"🧐"},
+
+{id:"vittorio",name:"Vittorio Pettrezzelli",rarity:"Rare",chance:7.5,price:600,emoji:"🕶️"},
+
+{id:"henry",name:"Henry James Worsell",rarity:"Rare",chance:7.5,price:600,emoji:"🦁"},
+
+{id:"mumps",name:"Lil Mumps",rarity:"Legendary",chance:0.5,price:1500,emoji:"👑"}
+
+];
+
+const mythical=[
+
+{id:"myth_dexter",base:"dexter",name:"Mythical Dexter Chadwick",chance:40,price:5000,emoji:"🌌"},
+
+{id:"myth_oscar",base:"oscar",name:"Mythical Oscar Robert Harper",chance:25,price:5000,emoji:"🔮"},
+
+{id:"myth_vittorio",base:"vittorio",name:"Mythical Vittorio Pettrezzelli",chance:15,price:5000,emoji:"⚡"},
+
+{id:"myth_henry",base:"henry",name:"Mythical Henry James Worsell",chance:15,price:5000,emoji:"🐉"},
+
+{id:"myth_mumps",base:"mumps",name:"Mythical Lil Mumps",chance:5,price:5000,emoji:"👑"}
+
+];
+
+const allCards=[
+
+...cards.map(c=>({...c,type:"normal"})),
+
+...mythical.map(c=>({...c,rarity:"Mythical",type:"mythical"}))
+
+];
+
+const SAVE_KEY="daBoizRNG_save_v1";
+
+let isOpening=false;
+
+let toastTimer;
+
+function loadGame(){
+
+try{
+
+const saved=JSON.parse(localStorage.getItem(SAVE_KEY));
+
+if(saved&&typeof saved.coins==="number"&&Array.isArray(saved.owned)){
+
+return{coins:Math.max(0,saved.coins),owned:[...new Set(saved.owned.filter(id=>allCards.some(c=>c.id===id)))]};
+
+}
+
+}catch(e){console.warn("Save could not be loaded.",e);}
+
+return{coins:0,owned:[]};
+
+}
+
+let game=loadGame();
+
+function saveGame(){
+
+try{localStorage.setItem(SAVE_KEY,JSON.stringify(game));}
+
+catch(e){showToast("Could not save. Check browser storage settings.");}
+
+}
+
+function formatNumber(n){return Math.floor(n).toLocaleString("en-GB");}
+
+function rarityClass(r){return r.toLowerCase();}
+
+function showToast(message){
+
+const toast=document.getElementById("toast");
+
+toast.textContent=message;
+
+toast.classList.add("show");
+
+clearTimeout(toastTimer);
+
+toastTimer=setTimeout(()=>toast.classList.remove("show"),2600);
+
+}
+
+function escapeHTML(value){
+
+return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+}
+
+function updateUI(){
+
+document.getElementById("coins").textContent=formatNumber(game.coins);
+
+document.getElementById("owned").textContent=game.owned.length+"/10";
+
+const percent=game.owned.length/10*100;
+
+document.getElementById("progressText").textContent=game.owned.length+" out of 10 cards collected ("+Math.round(percent)+"%)";
+
+document.getElementById("progressFill").style.width=percent+"%";
+
+document.getElementById("albumCount").textContent="Collected: "+game.owned.length+" / 10";
+
+document.getElementById("albumFill").style.width=percent+"%";
+
+document.getElementById("progressMessage").textContent=
+
+game.owned.length===10?"🏆 ALBUM COMPLETE! You are officially one of DA BOIZ!":
+
+game.owned.length>=5?"🔥 Great collecting! Keep going for the Mythical cards.":
+
+"Keep opening free packs to complete your collection!";
+
+renderAlbum();
+
+renderMarket();
+
+document.getElementById("openMega").disabled=game.coins<75000;
+
+}
+
+function renderAlbum(){
+
+const grid=document.getElementById("albumGrid");
+
+grid.innerHTML="";
+
+allCards.forEach(card=>{
+
+const has=game.owned.includes(card.id);
+
+const div=document.createElement("div");
+
+div.className="card "+rarityClass(card.rarity)+(has?"":" locked");
+
+div.innerHTML=`
+
+<div class="portrait">${has?card.emoji:"❔"}</div>
+
+<div class="rarity">${card.rarity}</div>
+
+<h3>${has?escapeHTML(card.name):"???"}</h3>
+
+<div class="price">${has?"Sell value: "+formatNumber(card.price):"Drop chance: "+card.chance+"%"}</div>
+
+<div class="notice">${has?"COLLECTED ✓":"NOT FOUND"}</div>`;
+
+grid.appendChild(div);
+
+});
+
+}
+
+function renderMarket(){
+
+const grid=document.getElementById("marketGrid");
+
+grid.innerHTML="";
+
+const ownedCards=allCards.filter(c=>game.owned.includes(c.id));
+
+if(!ownedCards.length){
+
+grid.innerHTML='<div class="empty">No cards to sell yet. Open a pack first!</div>';
+
+return;
+
+}
+
+ownedCards.forEach(card=>{
+
+const div=document.createElement("div");
+
+div.className="card "+rarityClass(card.rarity);
+
+div.innerHTML=`
+
+<div class="portrait">${card.emoji}</div>
+
+<div class="rarity">${card.rarity}</div>
+
+<h3>${escapeHTML(card.name)}</h3>
+
+<div class="price">🪙 ${formatNumber(card.price)} coins</div>
+
+<button class="gold" data-sell="${card.id}">SELL CARD</button>`;
+
+grid.appendChild(div);
+
+});
+
+}
+
+function weightedPick(pool){
+
+const roll=Math.random()*100;
+
+let total=0;
+
+for(const card of pool){
+
+total+=card.chance;
+
+if(roll<total)return card;
+
+}
+
+return pool[pool.length-1];
+
+}
+
+function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+
+async function showReveal(title,subtitle,results){
+
+const overlay=document.getElementById("reveal");
+
+const heading=document.getElementById("revealTitle");
+
+const subheading=document.getElementById("revealSubtitle");
+
+const grid=document.getElementById("revealGrid");
+
+const closeButton=document.getElementById("closeReveal");
+
+const rank={Common:1,Uncommon:2,Rare:3,Legendary:4,Mythical:5};
+
+const sorted=[...results].sort((a,b)=>rank[a.rarity]-rank[b.rarity]);
+
+const best=sorted[sorted.length-1];
+
+overlay.classList.add("show");
+
+closeButton.classList.add("hidden");
+
+heading.textContent="🎁 OPENING DA BOIZ PACK...";
+
+subheading.textContent="The pack is shaking... who's inside?";
+
+grid.innerHTML=`
+
+<div class="suspense-card">
+
+<div class="portrait">🎁</div>
+
+<h3>DA BOIZ</h3>
+
+<p>LOADING YOUR LUCK...</p>
+
+<div class="portrait">✨</div>
+
+</div>`;
+
+await wait(1800);
+
+heading.textContent="👀 YOUR BEST PULL IS...";
+
+subheading.textContent="The moment of truth...";
+
+grid.innerHTML="";
+
+const suspense=document.createElement("div");
+
+suspense.className="suspense-card "+rarityClass(best.rarity);
+
+suspense.innerHTML=`
+
+<div class="rarity">${escapeHTML(best.rarity)}</div>
+
+<div class="portrait">${best.emoji}</div>
+
+<h3>${escapeHTML(best.name)}</h3>
+
+<p>${best.duplicate?"DUPLICATE PULL!":"NEW CARD UNLOCKED!"}</p>`;
+
+grid.appendChild(suspense);
+
+if(best.rarity==="Legendary"||best.rarity==="Mythical"){
+
+heading.textContent="🔥 INCREDIBLE LUCK!";
+
+subheading.textContent=best.rarity.toUpperCase()+" PULL INCOMING...";
+
+}
+
+await wait(2400);
+
+heading.textContent=title;
+
+subheading.textContent=subtitle;
+
+grid.innerHTML="";
+
+results.forEach((card,index)=>{
+
+const div=document.createElement("div");
+
+div.className="reveal-card "+rarityClass(card.rarity);
+
+div.style.animationDelay=(index*.18)+"s";
+
+div.innerHTML=`
+
+<div class="rarity">${escapeHTML(card.rarity)}</div>
+
+<div class="portrait">${card.emoji}</div>
+
+<h3>${escapeHTML(card.name)}</h3>
+
+<p style="font-size:12px;color:#c8c2df">
+
+${card.duplicate?"DUPLICATE → +"+formatNumber(card.price)+" COINS":"NEW CARD! ✨"}
+
+</p>`;
+
+grid.appendChild(div);
+
+});
+
+closeButton.classList.remove("hidden");
+
+}
+
+async function openFreePack(){
+
+if(isOpening)return;
+
+isOpening=true;
+
+document.getElementById("openNormal").disabled=true;
+
+document.getElementById("openMega").disabled=true;
+
+const results=[];
+
+let duplicateCoins=0;
+
+let newCards=0;
+
+for(let i=0;i<5;i++){
+
+const card=weightedPick(cards);
+
+const duplicate=game.owned.includes(card.id);
+
+if(duplicate){duplicateCoins+=card.price;}
+
+else{game.owned.push(card.id);newCards++;}
+
+results.push({...card,duplicate});
+
+}
+
+game.coins+=duplicateCoins;
+
+saveGame();
+
+updateUI();
+
+try{
+
+await showReveal("🎁 DA BOIZ PACK!","5 pulls · "+newCards+" new cards · "+formatNumber(duplicateCoins)+" bonus coins",results);
+
+}catch(e){
+
+console.error(e);
+
+showToast("Pack opened! Check your album.");
+
+document.getElementById("reveal").classList.remove("show");
+
+isOpening=false;
+
+}
+
+}
+
+async function openMegaPack(){
+
+if(isOpening)return;
+
+if(game.coins<75000){showToast("You need 75,000 coins to buy the Mega Pack!");return;}
+
+isOpening=true;
+
+document.getElementById("openNormal").disabled=true;
+
+document.getElementById("openMega").disabled=true;
+
+game.coins-=75000;
+
+const card=weightedPick(mythical);
+
+const duplicate=game.owned.includes(card.id);
+
+let duplicateCoins=0;
+
+if(duplicate){duplicateCoins=card.price;game.coins+=duplicateCoins;}
+
+else{game.owned.push(card.id);}
+
+saveGame();
+
+updateUI();
+
+try{
+
+await showReveal("👑 MEGA PACK OPENED!",
+
+duplicate?"Duplicate Mythical! Converted to "+formatNumber(duplicateCoins)+" coins.":"MYTHICAL PULL! A new legend joins your album!",
+
+[{...card,rarity:"Mythical",duplicate}]);
+
+}catch(e){
+
+console.error(e);
+
+showToast("Mega Pack opened! Check your album.");
+
+document.getElementById("reveal").classList.remove("show");
+
+isOpening=false;
+
+}
+
+}
+
+function closeReveal(){
+
+document.getElementById("reveal").classList.remove("show");
+
+isOpening=false;
+
+document.getElementById("openNormal").disabled=false;
+
+updateUI();
+
+}
+
+function sellCard(id){
+
+const card=allCards.find(c=>c.id===id);
+
+if(!card||!game.owned.includes(id))return;
+
+if(!confirm("Sell "+card.name+" for "+formatNumber(card.price)+" coins? It will be removed from your album."))return;
+
+game.owned=game.owned.filter(ownedId=>ownedId!==id);
+
+game.coins+=card.price;
+
+saveGame();
+
+updateUI();
+
+showToast("Sold "+card.name+" for "+formatNumber(card.price)+" coins!");
+
+}
+
+document.querySelectorAll("[data-tab]").forEach(button=>{
+
+button.addEventListener("click",()=>{
+
+document.querySelectorAll(".page").forEach(page=>page.classList.add("hidden"));
+
+document.querySelectorAll(".tab").forEach(tab=>tab.classList.remove("active"));
+
+document.getElementById(button.dataset.tab).classList.remove("hidden");
+
+button.classList.add("active");
+
+});
+
+});
+
+document.getElementById("openNormal").addEventListener("click",openFreePack);
+
+document.getElementById("openMega").addEventListener("click",openMegaPack);
+
+document.getElementById("closeReveal").addEventListener("click",closeReveal);
+
+document.getElementById("marketGrid").addEventListener("click",event=>{
+
+const button=event.target.closest("[data-sell]");
+
+if(button)sellCard(button.dataset.sell);
+
+});
+
+document.getElementById("reset").addEventListener("click",()=>{
+
+if(isOpening)return;
+
+if(!confirm("Reset ALL cards and coins? This cannot be undone."))return;
+
+game={coins:0,owned:[]};
+
+saveGame();
+
+updateUI();
+
+showToast("New game started. Good luck!");
+
+});
+
+updateUI();
+
+</script>
+
+</body>
+
+</html>
