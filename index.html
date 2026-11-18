@@ -1150,37 +1150,43 @@ document.getElementById("revealSubtitle").textContent=data.subtitle||"";
 updateRevealStorageStatus();document.getElementById("walkoutBanner").innerHTML="";
 document.getElementById("pickHint").textContent="";document.getElementById("revealActions").innerHTML="";
 grid.innerHTML="";overlay.classList.add("show");document.getElementById("closeReveal").disabled=true;
-const walkout=data.forceWalkout?(data.results[0]||null):(data.walkouts?bestWalkout(data.results):null);const rest=walkout?data.results.filter(c=>c!==walkout):data.results.slice();
-
+const entries=data.results.map((card,index)=>({card,index}));
+let walkoutEntry=null;
+if(data.forceWalkout&&entries.length)walkoutEntry=entries[0];
+else if(data.walkouts)walkoutEntry=entries.filter(entry=>revealEffect(entry.card)).sort((a,b)=>(rarityRank[b.card.rarity]-rarityRank[a.card.rarity])||((Number(b.card.rating)||0)-(Number(a.card.rating)||0)))[0]||null;
+const restEntries=walkoutEntry?entries.filter(entry=>entry.index!==walkoutEntry.index):entries.slice();
 function finish(){
 if(run!==openingRun)return;
 document.getElementById("closeReveal").disabled=false;
 document.getElementById("revealActions").innerHTML='<button id="revealDone">CONTINUE</button>';
 document.getElementById("revealDone").onclick=closeReveal;document.getElementById("closeReveal").onclick=closeReveal;
 }
+function addRevealCard(entry,displayIndex){
+const el=revealCardElement(entry.card,!!data.duplicateFlags?.[entry.index],displayIndex);
+el.style.animationDelay=(displayIndex*.12)+"s";
+grid.appendChild(el);
+}
 function showRest(){
 if(run!==openingRun)return;
 overlay.classList.remove("walkout-mode");document.getElementById("walkoutBanner").innerHTML="";document.getElementById("pickHint").textContent="";grid.innerHTML="";
-const allPlayers=walkout?[walkout,...rest]:rest;
-if(allPlayers.length){
+const allEntries=walkoutEntry?[walkoutEntry,...restEntries]:restEntries;
+if(allEntries.length){
 document.getElementById("revealSubtitle").textContent="THE WHOLE PACK REVEALED";
 let title=document.createElement("div");title.className="pack-rest-title";title.style.gridColumn="1/-1";title.textContent="📦 THE WHOLE PACK";grid.appendChild(title);
-allPlayers.forEach((c,i)=>{let originalIndex=data.results.indexOf(c);let el=revealCardElement(c,!!data.duplicateFlags?.[originalIndex],i);el.style.animationDelay=(i*.12)+"s";grid.appendChild(el)});
-}else{
-document.getElementById("revealSubtitle").textContent="Your pack contained one player!";
-let el=revealCardElement(walkout,!!data.duplicateFlags?.[data.results.indexOf(walkout)],0);grid.appendChild(el);
+allEntries.forEach((entry,i)=>addRevealCard(entry,i));
 }
 finish();
 }
-if(!walkout){
-data.results.forEach((c,i)=>{let el=revealCardElement(c,!!data.duplicateFlags?.[i],i);el.style.animationDelay=(i*.12)+"s";grid.appendChild(el)});
+if(!walkoutEntry){
+entries.forEach((entry,i)=>addRevealCard(entry,i));
 finish();return;
 }
+const walkout=walkoutEntry.card;
 overlay.classList.add("walkout-mode");document.getElementById("walkoutBanner").innerHTML='<div class="walkouttitle">YOU PACKED A...</div>';
 document.getElementById("pickHint").textContent="WAIT FOR IT...";
 let rarity=walkout.rarity;let special=document.createElement("div");special.className="walkout-flip "+rarity;
 let inner=document.createElement("div");inner.className="flip-inner";
-let back=document.createElement("div");back.className="flip-back";back.innerHTML=`${rarity==="Aura"?"💗":rarity==="Mythical"?"🌌":rarity==="Icon"?"⚡":"🎁"}<span>DA BOIZ RNG</span>`;
+let back=document.createElement("div");back.className="flip-back";back.innerHTML=`${rarity==="Aura"?"💗":rarity==="Mythical"?"🌌":rarity==="Icon"?"⚡":rarity==="Winter Wildcards"?"❄️":"🎁"}<span>DA BOIZ RNG</span>`;
 let front=document.createElement("div");front.className="flip-front";front.innerHTML=cardHTML(walkout);
 inner.appendChild(back);inner.appendChild(front);special.appendChild(inner);grid.appendChild(special);
 animationTimer=setTimeout(()=>{
@@ -1469,7 +1475,7 @@ document.head.appendChild(auraStyle);
 packDefs.splice(0,packDefs.length,
  {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:55,Uncommon:20,Rare:9,Epic:4,Legendary:.1,Icon:.005},description:"DA BOIZ: Built different. Every pull tells a story.",className:"low"},
  {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"DA BOIZ: Legends aren’t found. They’re packed.",className:"mega"},
- {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:12000,pulls:2,description:"DA BOIZ: Through every storm, legends rise.",className:"winter"}
+ {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:40000,pulls:2,description:"DA BOIZ: Through every storm, legends rise.",className:"winter"}
 );
 normalPick=function(pack){
  if(pack.id==="mega"){
