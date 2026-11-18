@@ -1429,12 +1429,31 @@ bindButtons=function(){bindSettings();const ex=document.querySelector("[data-sav
 const createMatchOriginal=createMatch;
 createMatch=function(){if(!game.team.every(Boolean)){toast("Fill all seven squad positions first.");return}return createMatchOriginal()};
 claimObjective=function(target){const o=objectives.find(x=>x.rating===target);if(!o||game.claimed[target]||teamRating()<target||!teamCards().every(Boolean))return;game.claimed[target]=true;game.coins+=o.coins;game.tokens+=o.tokens;save();render();toast("Objective claimed!")};
-document.addEventListener("click",e=>{
+let chessLibraryPromise=null;
+function loadChessLibrary(){
+ if(window.Chess)return Promise.resolve(true);
+ if(chessLibraryPromise)return chessLibraryPromise;
+ chessLibraryPromise=(async()=>{
+  const sources=["https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js","https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"];
+  for(const src of sources){
+   try{await new Promise((resolve,reject)=>{const sc=document.createElement("script");sc.src=src;sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc)});if(window.Chess)return true;}catch(err){}
+  }
+  chessLibraryPromise=null;throw new Error("Chess rules library unavailable");
+ })();
+ return chessLibraryPromise;
+}
+document.addEventListener("click",async e=>{
  const resume=e.target.closest("[data-chess-resume]");
- if(resume){if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else resumeChess();return}
- const b=e.target.closest("[data-chess-opponent]");if(!b)return;
- const name=b.dataset.chessOpponent;
- if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=()=>beginChess(name);sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else beginChess(name);
+ const opponent=e.target.closest("[data-chess-opponent]");
+ if(!resume&&!opponent)return;
+ const button=resume||opponent;
+ if(button.disabled)return;
+ button.disabled=true;
+ try{
+  await loadChessLibrary();
+  if(resume)resumeChess();else beginChess(opponent.dataset.chessOpponent);
+ }catch(err){toast("Chess couldn't load. Check your connection and try again.");}
+ finally{if(button.isConnected)button.disabled=false;}
 });
 let cg=null,ct=600,ctimer=null,oppName="",selectedSq=null;
 function beginChess(name){oppName=name;cg=new Chess();ct=600;selectedSq=null;game.chess.active={opponent:name,moves:[],remaining:600};save();document.body.classList.add("chess-active");const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
@@ -1652,8 +1671,8 @@ bindButtons=function(){
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
  document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
- document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>beginChess(b.dataset.chessOpponent));
- document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
+
+
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 };
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
