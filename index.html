@@ -1548,10 +1548,14 @@ openPack=function(id){
    game.owned[special.id]=Math.max(1,Number(game.owned[special.id])||0);
   }
   save();
-  const tokenText=tokenPulls?" • +"+tokenPulls+" token"+(tokenPulls===1?"":"s"):"";
+  const tokenCards=Array.from({length:tokenPulls},(_,i)=>({
+   id:"low-t-token-"+i,name:"1 TOKEN",emoji:"🪙",rating:"+1",rarity:"Token"
+  }));
+  const revealResults=[...results,...tokenCards];
+  const revealDuplicateFlags=[...duplicateFlags,...tokenCards.map(()=>false)];
   const coinText=sold?" • +"+money(sold)+" coins":"";
   const bonusText=bonusTokens?" • BONUS: +2 tokens!":"";
-  showReveal({title:pack.name,subtitle:results.length+" player"+(results.length===1?"":"s")+" in your pack"+tokenText+coinText+bonusText,results,duplicateFlags,walkouts:true});
+  showReveal({title:pack.name,subtitle:revealResults.length+" reward"+(revealResults.length===1?"":"s")+" in your pack"+coinText+bonusText,results:revealResults,duplicateFlags:revealDuplicateFlags,walkouts:true});
  }catch(err){
   game.coins=oldCoins;game.tokens=oldTokens;game.owned=oldOwned;isOpening=false;save();
   console.error("Pack opening failed ("+id+"):",err);
