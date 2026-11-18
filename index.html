@@ -995,8 +995,6 @@ function renderTokenShop(){
 return `<section><div class="sectionhero tokenhero"><h2>🪙 TOKEN EXCHANGE</h2><p>Trade tokens for special packs and player picks.</p><span class="badge">YOUR BALANCE: ${money(game.tokens)} TOKENS</span></div><div class="grid">
 <div class="shopitem"><div class="packicon">⚽</div><h3>2 of 5 Player Pick</h3><div class="price">15 Tokens</div><p>Five players rated 79+. Select exactly two.</p><button data-tokenbuy="pick79" ${game.tokens<15?"disabled":""}>START PICK</button></div>
 <div class="shopitem"><div class="packicon">🎁</div><h3>84+ x2 Pack</h3><div class="price">25 Tokens</div><p>Two guaranteed players rated 84 or higher.</p><button data-tokenbuy="x2" ${game.tokens<25?"disabled":""}>OPEN REWARD</button></div>
-<div class="shopitem"><div class="packicon">🃏</div><h3>1 of 5 Player Pick</h3><div class="price">50 Tokens</div><p>Reveal five players rated 84+. Choose one.</p><button data-tokenbuy="pick84" ${game.tokens<50?"disabled":""}>START PICK</button></div>
-<div class="shopitem"><div class="packicon">👑</div><h3>1 of 4 Elite Pick</h3><div class="price">400 Tokens</div><p>Four candidates rated 95+. Choose one.</p><button data-tokenbuy="pick95" ${game.tokens<400?"disabled":""}>START ELITE PICK</button></div>
 </div></section>`;
 }
 
@@ -1212,7 +1210,7 @@ render();
    a standard Icon, so that particular pick will still contain Mythicals. */
 function buyTokenItem(type){
 if(isOpening)return;
-const costs={x2:25,pick84:50,pick95:400,pick79:15};const cost=costs[type];
+const costs={x2:25,pick79:15};const cost=costs[type];
 if(game.tokens<cost){toast("Not enough tokens!");return}
 game.tokens-=cost;isOpening=true;save();
 if(type==="x2"){
@@ -1220,7 +1218,8 @@ let pool=randomRewardCards.filter(c=>c.rating>=84);
 let results=[weightedCard(pool,tokenRewardWeights),weightedCard(pool,tokenRewardWeights)];let duplicateFlags=results.map(c=>award(c));
 save();showReveal({title:"84+ x2 TOKEN PACK",subtitle:"Two guaranteed 84+ players",results,walkouts:true,duplicateFlags});return;
 }
-let config={pick84:{count:5,need:1,min:84,title:"1 OF 5 • 84+ PLAYER PICK"},pick95:{count:4,need:1,min:95,title:"1 OF 4 • 95+ PLAYER PICK"},pick79:{count:5,need:2,min:79,title:"2 OF 5 • 79+ PLAYER PICK"}}[type];
+let config={pick79:{count:5,need:2,min:79,title:"2 OF 5 • 79+ PLAYER PICK"}}[type];
+if(!config){game.tokens+=cost;isOpening=false;save();toast("Token reward unavailable.");return;}
 let pool=randomRewardCards.filter(c=>c.rating>=config.min);let candidates=[];let excluded=new Set();
 for(let i=0;i<config.count;i++){
 let c=weightedCard(pool,tokenRewardWeights,excluded);
