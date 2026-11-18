@@ -938,7 +938,7 @@ return `<section>
 <div class="packicon">${p.icon}</div><div class="packname">${p.name}</div>
 <div class="price">${p.price===0?"FREE":"🪙 "+money(p.price)}</div>
 <div class="packdesc">${p.description}</div>
-<div class="packstats"><span>🃏 ${p.pulls} player${p.pulls===1?"":"s"}</span><span>${p.id==="mega"?"🌌 Guaranteed Mythical":"✨ Pack odds"}</span></div>
+<div class="packstats"><span>🃏 ${p.pulls} player${p.pulls===1?"":"s"}</span></div>
 <div class="packfoot"><button data-openpack="${p.id}" ${game.coins<p.price?"disabled":""}>${game.coins<p.price?"NOT ENOUGH COINS":"OPEN PACK →"}</button></div>
 </div>`).join("")}</div>
 </section>`;
