@@ -1466,9 +1466,9 @@ const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
 packDefs.splice(0,packDefs.length,
- {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:98.698,Uncommon:1,Rare:.2,Epic:.08,Legendary:.02,Icon:.002},description:"Every legend starts with a single pull. Keep going.",className:"low"},
- {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"Reach for the impossible. Greatness is one pull away.",className:"mega"},
- {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"Cold nights. Big moments. Make this one legendary.",className:"winter"}
+ {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:55,Uncommon:20,Rare:9,Epic:4,Legendary:.1,Icon:.005},description:"DA BOIZ: Built different. Every pull tells a story.",className:"low"},
+ {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"DA BOIZ: Legends aren’t found. They’re packed.",className:"mega"},
+ {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"DA BOIZ: Through every storm, legends rise.",className:"winter"}
 );
 normalPick=function(pack){
  if(pack.id==="mega"){
@@ -1478,11 +1478,11 @@ normalPick=function(pack){
   return pool[Math.floor(Math.random()*pool.length)];
  }
  if(pack.id==="high"){
-  const odds={Common:98.698,Uncommon:1,Rare:.2,Epic:.08,Legendary:.02,Icon:.002};
+  const odds={Common:55,Uncommon:20,Rare:9,Epic:4,Legendary:.1,Icon:.005};
+  const total=Object.values(odds).reduce((sum,value)=>sum+value,0);
+  if(Math.random()*100>=total)return null; // Remaining 11.895% awards 1 token instead of a player.
   const rarity=weightedRarity(odds);
-  const allowed=["Common","Uncommon","Rare","Epic","Legendary","Icon"];
-  if(!allowed.includes(rarity))throw new Error("Invalid LOW T rarity: "+rarity);
-  const pool=cards.filter(c=>allowed.includes(c.rarity)&&c.rarity===rarity&&!c.promo&&!c.exclusive);
+  const pool=cards.filter(c=>c.rarity===rarity&&!c.promo&&!c.exclusive);
   if(!pool.length)throw new Error("No LOW T players configured for rarity: "+rarity);
   return pool[Math.floor(Math.random()*pool.length)];
  }
@@ -1545,20 +1545,24 @@ openPack=function(id){
  const pack=packDefs.find(p=>p.id===id);
  if(!pack)return toast("Pack unavailable.");
  if(game.coins<pack.price)return toast("Not enough coins.");
- const oldCoins=game.coins;
+ const oldCoins=game.coins,oldTokens=game.tokens;
  try{
-  if(id==="winter"){openWinter();return}
-  const results=Array.from({length:pack.pulls},()=>normalPick(pack));
-  if(results.length!==pack.pulls||results.some(c=>!c))throw new Error("Pack card pool empty");
+  const pulls=Array.from({length:pack.pulls},()=>normalPick(pack));
+  const tokenPulls=pulls.filter(c=>c===null).length;
+  const results=pulls.filter(Boolean);
+  if(results.length+tokenPulls!==pack.pulls)throw new Error("Pack reward pool invalid");
   game.coins-=pack.price;isOpening=true;
+  game.tokens=(Number(game.tokens)||0)+tokenPulls;
   const saleResults=results.map(c=>awardPackCard(c));
   const duplicateFlags=saleResults.map(x=>x.duplicate);
   const sold=saleResults.reduce((sum,x)=>sum+x.value,0);
-  const tokensWon=awardPackTokens();
+  const bonusTokens=awardPackTokens();
+  if(id==="winter"&&winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);
   save();
-  const saleText=duplicateFlags.some(Boolean)?" • Duplicates sold: "+money(sold)+" coins":"";
-  showReveal({title:pack.name,subtitle:results.length+" players in your pack"+saleText+(tokensWon?" • BONUS: +2 tokens!":""),results,duplicateFlags,walkouts:true});
- }catch(err){game.coins=oldCoins;isOpening=false;save();console.error(err);toast("Pack opening failed — coins returned.");render()}
+  const tokenText=tokenPulls?" • +"+tokenPulls+" token"+(tokenPulls===1?"":"s"):"";
+  const bonusText=bonusTokens?" • BONUS: +2 tokens!":"";
+  showReveal({title:pack.name,subtitle:results.length+" player"+(results.length===1?"":"s")+" in your pack"+tokenText+bonusText,results,duplicateFlags,walkouts:true});
+ }catch(err){game.coins=oldCoins;game.tokens=oldTokens;isOpening=false;save();console.error(err);toast("Pack opening failed — coins returned.");render()}
 };
 renderPacks=function(){
  const coins=Number(game.coins)||0;
@@ -1569,8 +1573,8 @@ renderPacks=function(){
   const name=String(p.name||"PACK"),description=String(p.description||"Open this pack to discover players.");
   const icon=String(p.icon||"🎁"),className=String(p.className||"");
   const locked=coins<price;
-  const odds=id==="mega"?"✨ Mythical pack":id==="winter"?"🎄 Promo pack":"✨ Pack odds";
-  return '<div class="pack '+className+'"><div class="packicon">'+icon+'</div><div class="packname">'+name+'</div><div class="price">'+(price===0?"FREE":"🪙 "+safeMoney(price))+'</div><div class="packdesc">'+description+'</div><div class="packstats"><span>🃏 '+pulls+' players</span><span>'+odds+'</span></div><div class="packfoot"><button data-openpack="'+id+'" '+(locked?"disabled":"")+'>'+(locked?"NOT ENOUGH COINS":"OPEN PACK →")+'</button></div></div>';
+  const odds=String(p.description||"");
+  return '<div class="pack '+className+'"><div class="packicon">'+icon+'</div><div class="packname">'+name+'</div><div class="price">'+(price===0?"FREE":"🪙 "+safeMoney(price))+'</div><div class="packdesc">'+description+'</div><div class="packstats"><span>🃏 '+pulls+' pulls</span></div><div class="packfoot"><button data-openpack="'+id+'" '+(locked?"disabled":"")+'>'+(locked?"NOT ENOUGH COINS":"OPEN PACK →")+'</button></div></div>';
  }).join("");
  return '<section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>Open packs, discover rare players and build your ultimate squad.</p><span class="badge">🪙 '+safeMoney(coins)+' COINS AVAILABLE</span></div><div class="grid">'+(cards||'<div class="panel">No packs are currently configured.</div>')+'</div></section>';
 };
