@@ -682,7 +682,25 @@ transition-duration:.01ms!important;
 .flip-inner,.walkouttitle,.revealcard,.walkout-subtitle{animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
 </style>
-</head>
+<style id="chess-arena-style">
+.chess-hero{text-align:center;background:radial-gradient(circle at top,#40306c,#111827 68%);border:1px solid #8b5cf6}
+.chess-kicker{font-size:11px;letter-spacing:3px;color:#c4b5fd;font-weight:900}
+.chess-elo-card{display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin-top:14px;padding:12px 34px;border:1px solid #a78bfa;border-radius:16px;background:#120d25}
+.chess-elo-card span,.chess-elo-card small{font-size:11px;color:#c4b5fd;letter-spacing:1px}.chess-elo-card strong{font-size:42px;color:#fff}
+.chess-rewards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.chess-reward,.chess-opponent,.chess-history{background:#151c2d;border:1px solid #34415c;border-radius:14px;padding:14px}
+.chess-reward{display:flex;flex-direction:column;gap:7px}.chess-reward span,.chess-opponent small{color:#aab5c9;font-size:12px}
+.chess-section-head{margin:22px 0 10px}.chess-section-head h3{margin:0 0 4px}.chess-section-head p{margin:0;color:#9ca3af;font-size:13px}
+.chess-opponents{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.chess-opponent{display:flex;align-items:center;gap:10px}.chess-opponent>div:nth-child(2){flex:1;min-width:0}.chess-op-avatar{font-size:26px}.chess-opponent small{display:block}
+.chess-active-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px;margin:12px 0;background:#3b1d28;border:1px solid #fb7185;border-radius:14px}.chess-active-banner span{flex:1}
+.chess-history-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #30394c;font-size:13px}.chess-history-row:last-child{border:0}
+.chess-board-wrap{margin-top:18px;padding:12px;background:#101827;border:1px solid #475569;border-radius:16px}
+#chessBoard [data-sq]{border:0;cursor:pointer;display:grid;place-items:center;color:#101010}
+#chessBoard [data-sq].selected{outline:4px solid #facc15;outline-offset:-4px}
+body.chess-active nav{pointer-events:none;opacity:.45}body.chess-active .logo{opacity:.7}
+@media(max-width:600px){.chess-opponent{padding:10px}.chess-elo-card strong{font-size:34px}}
+</style></head>
 <body>
 <header>
  <div class="headtop">
@@ -690,7 +708,7 @@ transition-duration:.01ms!important;
   <div class="stats">
    <div class="stat">🪙 <span id="coins">0</span></div>
    <div class="stat">🪙 Tokens: <span id="tokens">0</span></div>
-   <div class="stat">⭐ Team: <span id="teamRating">—</span></div>
+   <div class="stat">⭐ Team: <span id="teamRating">—</span></div>\n   <div class="stat chess-elo-stat">♟️ ELO: <span id="chessElo">100</span></div>
   </div>
  </div>
  <nav>
@@ -1330,7 +1348,7 @@ normalPick=function(pack){
  let odds={...pack.odds};if(game.potion&&game.potion.until>Date.now()){Object.keys(odds).forEach(r=>{if(r!=="Common")odds[r]*=game.potion.multiplier});let sum=Object.values(odds).reduce((a,b)=>a+b,0);Object.keys(odds).forEach(r=>odds[r]=odds[r]/sum*100)}
  const rarity=weightedRarity(odds);let pool=cards.filter(c=>c.rarity===rarity&&c.id!==ben.id);if(pack.id==="low"&&rarity==="Common")pool.push(ben);if(!pool.length)pool=cards.filter(c=>c.rarity!=="Icon"&&c.id!==ben.id);return pool[Math.floor(Math.random()*pool.length)];
 };
-game.chess=game.chess||{elo:100,wins:0,losses:0,draws:0,beaten:[],claimed:{}};
+game.chess=game.chess||{elo:100,wins:0,losses:0,draws:0,beaten:[],claimed:{}};game.chess.elo=Math.max(100,Number(game.chess.elo)||100);game.chess.wins=Number(game.chess.wins)||0;game.chess.losses=Number(game.chess.losses)||0;game.chess.draws=Number(game.chess.draws)||0;game.chess.beaten=game.chess.beaten||[];game.chess.claimed=game.chess.claimed||{};
 game.galleryClaims=game.galleryClaims||{};
 const originalCardHTML=cardHTML;
 cardHTML=function(c,actions=""){
@@ -1366,7 +1384,20 @@ renderAlbum=function(){
 };
 const oldObjectives=renderObjectives;
 renderObjectives=function(){return `<section><div class="sectionhero"><h2>🏆 OBJECTIVES & CHESS REWARDS</h2><p>Squad and chess milestones.</p></div><div class="subnav"><button data-objtab="squad">Squad</button><button data-objtab="chess">Chess rewards</button></div><div id="objContent">${oldObjectives()}</div></section>`};
-function chessRewardHTML(){const c=game.chess;return `<div class="panel"><h3>♟️ CHESS REWARDS</h3><p>ELO: <b>${c.elo}</b> • Wins ${c.wins} • Losses ${c.losses} • Draws ${c.draws}</p><div class="grid"><div class="objective"><b>250 ELO</b><p>25 tokens</p><button data-chess-reward="250" ${c.elo<250||c.claimed[250]?"disabled":""}>${c.claimed[250]?"CLAIMED":"CLAIM"}</button></div><div class="objective"><b>500 ELO</b><p>45 tokens</p><button data-chess-reward="500" ${c.elo<500||c.claimed[500]?"disabled":""}>${c.claimed[500]?"CLAIMED":"CLAIM"}</button></div><div class="objective"><b>Beat Leo Lambert</b><p>Exclusive 99-rated Leo Lambert</p><span>${c.beaten.includes("Leo Lambert")?"UNLOCKED":"LOCKED"}</span></div></div><div class="grid">${[["Benjamin Fraser",100],["Max Rolfe",125],["Dexter Chadwick",170],["Lil Mumps",220],["Vittorio Petruzzelli",260],["Henry James Worsell",310],["Oscar Robert Harper",500],["Leo Lambert",2000]].map(x=>`<div class="shopitem"><b>${x[0]}</b><p>${x[1]} ELO</p><button data-chess-opponent="${x[0]}">PLAY CHESS</button></div>`).join("")}</div><div id="chessBoard"></div></div>`};
+function chessRewardHTML(){
+ const c=game.chess;
+ const active=c.active;
+ const history=(c.history||[]).slice(-8).reverse().map(h=>`<div class="chess-history-row"><b>${h.opponent}</b><span>${h.result.toUpperCase()}</span><strong>${h.delta>=0?"+":""}${h.delta} ELO</strong></div>`).join("")||'<p class="small">Your completed games will appear here.</p>';
+ return `<section class="chess-page">
+  <div class="sectionhero chess-hero"><div class="chess-kicker">DA BOIZ RNG • RANKED CHESS</div><h2>♟️ CHESS ARENA</h2><p>Choose an opponent, play a full legal chess game and climb the ELO ladder.</p><div class="chess-elo-card"><span>CURRENT RATING</span><strong>${c.elo}</strong><small>${c.wins} W • ${c.draws} D • ${c.losses} L</small></div></div>
+  ${active?`<div class="chess-active-banner"><b>GAME IN PROGRESS</b><span>Playing ${active.opponent}</span><button data-chess-resume>RETURN TO YOUR GAME</button></div>`:""}
+  <div class="chess-rewards"><div class="chess-reward"><b>250 ELO</b><span>25 tokens</span><button data-chess-reward="250" ${c.elo<250||c.claimed[250]?"disabled":""}>${c.claimed[250]?"CLAIMED":"CLAIM"}</button></div><div class="chess-reward"><b>500 ELO</b><span>45 tokens</span><button data-chess-reward="500" ${c.elo<500||c.claimed[500]?"disabled":""}>${c.claimed[500]?"CLAIMED":"CLAIM"}</button></div><div class="chess-reward"><b>LEO LAMBERT</b><span>Win to unlock exclusive 99-rated card</span><small>${c.beaten.includes("Leo Lambert")?"UNLOCKED":"LOCKED"}</small></div></div>
+  <div class="chess-section-head"><h3>Choose your opponent</h3><p>Opponents get stronger as their ELO increases.</p></div>
+  <div class="chess-opponents">${[["Benjamin Fraser",100,"🧩"],["Max Rolfe",125,"🔥"],["Dexter Chadwick",170,"🧢"],["Lil Mumps",220,"👃"],["Vittorio Petruzzelli",260,"👑"],["Henry James Worsell",310,"⚡"],["Oscar Robert Harper",500,"🌟"],["Leo Lambert",2000,"♟️"]].map(x=>`<div class="chess-opponent"><div class="chess-op-avatar">${x[2]}</div><div><b>${x[0]}</b><small>${x[1]} ELO ${c.beaten.includes(x[0])?" • DEFEATED":""}</small></div><button data-chess-opponent="${x[0]}" ${active?"disabled":""}>${c.beaten.includes(x[0])?"REMATCH":"PLAY"}</button></div>`).join("")}</div>
+  <div class="chess-section-head"><h3>Recent games</h3></div><div class="chess-history">${history}</div>
+  <div id="chessBoard" class="chess-board-wrap"></div>
+ </section>`;
+}
 const oldBind=bindButtons;
 bindButtons=function(){oldBind();document.querySelectorAll("[data-objtab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-objtab]").forEach(x=>x.classList.toggle("active",x===b));document.getElementById("objContent").innerHTML=b.dataset.objtab==="chess"?chessRewardHTML():oldObjectives()});document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
@@ -1387,12 +1418,13 @@ document.addEventListener("click",e=>{
  const name=b.dataset.chessOpponent;
  if(!window.Chess){const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";s.onload=()=>beginChess(name);s.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(s)}else beginChess(name);
 });
-let cg=null,ct=600,ctimer=null,oppName="";
-function beginChess(name){oppName=name;cg=new Chess();ct=600;const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct<=0)finishChess("loss")},1000)}
-function drawChess(){const el=document.getElementById("chessBoard"),board=cg.board(),symbols={wp:"♙",wn:"♘",wb:"♗",wr:"♖",wq:"♕",wk:"♔",bp:"♟",bn:"♞",bb:"♝",br:"♜",bq:"♛",bk:"♚"};let s='<p>Playing '+oppName+' • <b id="chess-clock">10:00</b></p><div style="display:grid;grid-template-columns:repeat(8,1fr);max-width:480px;margin:auto">';for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=board[r][c],sq="abcdefgh"[c]+(8-r);s+=`<button data-sq="${sq}" style="aspect-ratio:1;background:${(r+c)%2?"#73543c":"#e7d8b5"};font-size:clamp(20px,4vw,38px)">${p?symbols[p.color+p.type]:""}</button>`}el.innerHTML=s+'</div><p id="chess-status">White to move • Select a piece then its destination</p><button data-chess-resign>Resign</button>';el.querySelectorAll("[data-sq]").forEach(b=>b.onclick=()=>chessSquare(b.dataset.sq));el.querySelector("[data-chess-resign]").onclick=()=>finishChess("loss")}
+let cg=null,ct=600,ctimer=null,oppName="",selectedSq=null;
+function beginChess(name){oppName=name;cg=new Chess();ct=600;selectedSq=null;game.chess.active={opponent:name,moves:[],remaining:600};save();document.body.classList.add("chess-active");const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
+function resumeChess(){const a=game.chess.active;if(!a||!window.Chess)return;oppName=a.opponent;cg=new Chess();(a.moves||[]).forEach(m=>cg.move(m));ct=Math.max(1,Number(a.remaining)||600);selectedSq=null;document.body.classList.add("chess-active");drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
+function drawChess(){const el=document.getElementById("chessBoard"),board=cg.board(),symbols={wp:"♙",wn:"♘",wb:"♗",wr:"♖",wq:"♕",wk:"♔",bp:"♟",bn:"♞",bb:"♝",br:"♜",bq:"♛",bk:"♚"};let s='<p>Playing '+oppName+' • <b id="chess-clock">10:00</b></p><div style="display:grid;grid-template-columns:repeat(8,1fr);max-width:480px;margin:auto">';for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=board[r][c],sq="abcdefgh"[c]+(8-r);s+=`<button data-sq="${sq}" class="${selectedSq===sq?"selected":""}" style="aspect-ratio:1;background:${(r+c)%2?"#73543c":"#e7d8b5"};font-size:clamp(20px,4vw,38px)">${p?symbols[p.color+p.type]:""}</button>`}el.innerHTML=s+'</div><p id="chess-status">White to move • Select a piece then its destination</p><div class="chess-active-banner"><span>Leaving this page is locked until the game ends.</span><button data-chess-resign>FORFEIT • LOSE ELO</button></div>';el.querySelectorAll("[data-sq]").forEach(b=>b.onclick=()=>chessSquare(b.dataset.sq));el.querySelector("[data-chess-resign]").onclick=()=>{if(confirm("Forfeit this game and lose ELO?"))finishChess("loss")}}
 let selectedSq=null;
-function chessSquare(sq){if(!cg||cg.game_over())return;if(!selectedSq){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;return}const m=cg.move({from:selectedSq,to:sq,promotion:"q"});selectedSq=null;if(!m){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;return}if(cg.game_over())return finishChess(cg.in_checkmate()?"win":"draw");setTimeout(()=>{const moves=cg.moves({verbose:true});if(!moves.length)return finishChess("draw");const val={p:1,n:3,b:3,r:5,q:9,k:0};let chosen=moves[Math.floor(Math.random()*moves.length)];if(oppName==="Leo Lambert"||oppName==="Oscar Robert Harper"){chosen=moves.sort((a,b)=>(val[(b.captured||"")]-val[(a.captured||"")]))[0]}cg.move(chosen);if(cg.game_over())finishChess(cg.in_checkmate()?"loss":"draw");else drawChess()},350);drawChess()}
-function finishChess(result){if(ctimer)clearInterval(ctimer);const elo={"Benjamin Fraser":100,"Max Rolfe":125,"Dexter Chadwick":170,"Lil Mumps":220,"Vittorio Petruzzelli":260,"Henry James Worsell":310,"Oscar Robert Harper":500,"Leo Lambert":2000}[oppName]||100;const delta=result==="win"?Math.max(8,Math.round((elo-game.chess.elo)/35)+16):result==="loss"?-Math.max(4,Math.round((game.chess.elo-elo)/45)+8):2;game.chess.elo=Math.max(100,game.chess.elo+delta);if(result==="win"){game.chess.wins++;if(!game.chess.beaten.includes(oppName))game.chess.beaten.push(oppName);if(oppName==="Leo Lambert")game.owned[leoCard.id]=Math.max(1,game.owned[leoCard.id]||0)}else if(result==="loss")game.chess.losses++;else game.chess.draws++;game.chess.history=game.chess.history||[];game.chess.history.push({opponent:oppName,result,delta,date:Date.now()});cg=null;save();toast("Chess "+result+" • ELO "+(delta>=0?"+":"")+delta);render()}
+function chessSquare(sq){if(!cg||cg.game_over())return;if(!selectedSq){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;return}const m=cg.move({from:selectedSq,to:sq,promotion:"q"});selectedSq=null;if(!m){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}game.chess.active.moves.push(m.san);if(cg.game_over())return finishChess(cg.in_checkmate()?"win":"draw");setTimeout(()=>{const moves=cg.moves({verbose:true});if(!moves.length)return finishChess("draw");const val={p:1,n:3,b:3,r:5,q:9,k:0};let chosen=moves[Math.floor(Math.random()*moves.length)];if(oppName==="Leo Lambert"||oppName==="Oscar Robert Harper"){chosen=moves.sort((a,b)=>(val[(b.captured||"")]-val[(a.captured||"")]))[0]}const ai=cg.move(chosen);game.chess.active.moves.push(ai.san);save();if(cg.game_over())finishChess(cg.in_checkmate()?"loss":"draw");else drawChess()},350);drawChess()}
+function finishChess(result){if(ctimer)clearInterval(ctimer);document.body.classList.remove("chess-active");const elo={"Benjamin Fraser":100,"Max Rolfe":125,"Dexter Chadwick":170,"Lil Mumps":220,"Vittorio Petruzzelli":260,"Henry James Worsell":310,"Oscar Robert Harper":500,"Leo Lambert":2000}[oppName]||100;const delta=result==="win"?Math.max(8,Math.round((elo-game.chess.elo)/35)+16):result==="loss"?-Math.max(4,Math.round((game.chess.elo-elo)/45)+8):2;game.chess.elo=Math.max(100,game.chess.elo+delta);if(result==="win"){game.chess.wins++;if(!game.chess.beaten.includes(oppName))game.chess.beaten.push(oppName);if(oppName==="Leo Lambert")game.owned[leoCard.id]=Math.max(1,game.owned[leoCard.id]||0)}else if(result==="loss")game.chess.losses++;else game.chess.draws++;game.chess.history=game.chess.history||[];game.chess.history.push({opponent:oppName,result,delta,date:Date.now()});game.chess.active=null;cg=null;selectedSq=null;save();toast("Chess "+result+" • ELO "+(delta>=0?"+":"")+delta);render()}
 })();
 
 
@@ -1464,8 +1496,18 @@ document.querySelectorAll('nav button[data-tab="sbcs"]').forEach(b=>b.textConten
 const originalSetTab=setTab;
 setTab=function(tab){if(isOpening)return;activeTab=tab;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
 render=function(){
- if(activeTab==="sbcs"){document.getElementById("coins").textContent=money(game.coins);document.getElementById("tokens").textContent=money(game.tokens);document.getElementById("teamRating").textContent=teamRating()||"—";document.getElementById("app").innerHTML='<section><div class="sectionhero"><h2>♟️ CHESS</h2><p>Coming soon.</p></div></section>';updateMatchHUD();return}
+ document.getElementById("coins").textContent=money(game.coins);
+ document.getElementById("tokens").textContent=money(game.tokens);
+ document.getElementById("teamRating").textContent=teamRating()||"—";
+ const eloEl=document.getElementById("chessElo");if(eloEl)eloEl.textContent=game.chess.elo;
+ if(activeTab==="sbcs"){
+   document.getElementById("app").innerHTML=chessRewardHTML();
+   bindButtons();
+   updateMatchHUD();
+   return;
+ }
  previousRender();
+ const eloEl2=document.getElementById("chessElo");if(eloEl2)eloEl2.textContent=game.chess.elo;
 };
 bindButtons=function(){previousBindButtons();document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim))};
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
