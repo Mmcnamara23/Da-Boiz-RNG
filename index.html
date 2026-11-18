@@ -715,7 +715,7 @@ body.chess-active nav{pointer-events:none;opacity:.45}body.chess-active .logo{op
  <nav>
   <button class="active" data-tab="shops">🛍️ Shops</button>
   <button data-tab="teamhub">⚽ Team</button>
-  <button data-tab="sbcs">🧩 SBC's</button>
+  <button data-tab="sbcs">♟️ Chess</button>
   <button data-tab="settings">⚙️ Settings</button>
  </nav>
  <div class="match-hud" id="matchHud">
@@ -1417,7 +1417,7 @@ function chessRewardHTML(){
 const oldBind=bindButtons;
 bindButtons=function(){oldBind();document.querySelectorAll("[data-objtab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-objtab]").forEach(x=>x.classList.toggle("active",x===b));document.getElementById("objContent").innerHTML=b.dataset.objtab==="chess"?chessRewardHTML():oldObjectives()});document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
- document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(+b.dataset.chessReward));// Chess opponent clicks are handled once by the delegated loader below.};
+ document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(+b.dataset.chessReward));document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>startChess(b.dataset.chessOpponent));};
 const endPromo=new Date("2027-01-01T00:00:00Z").getTime();
 function openWinter(){if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");if(game.coins<12000)return toast("Not enough coins.");game.coins-=12000;const a=winter[Math.floor(Math.random()*winter.length)],b=winter.filter(x=>x.id!==a.id)[Math.floor(Math.random()*(winter.length-1))],dups=[award(a),award(b)];if(winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);isOpening=true;save();showReveal({title:"❄️ WINTER WILDCARDS",subtitle:"Two promo players",results:[a,b],duplicateFlags:dups,walkouts:true})}
 const oldPacks=renderPacks;
@@ -1429,27 +1429,13 @@ bindButtons=function(){bindSettings();const ex=document.querySelector("[data-sav
 const createMatchOriginal=createMatch;
 createMatch=function(){if(!game.team.every(Boolean)){toast("Fill all seven squad positions first.");return}return createMatchOriginal()};
 claimObjective=function(target){const o=objectives.find(x=>x.rating===target);if(!o||game.claimed[target]||teamRating()<target||!teamCards().every(Boolean))return;game.claimed[target]=true;game.coins+=o.coins;game.tokens+=o.tokens;save();render();toast("Objective claimed!")};
-let chessLibraryPromise=null;
-function loadChessLibrary(){
- if(window.Chess)return Promise.resolve(true);
- if(chessLibraryPromise)return chessLibraryPromise;
- chessLibraryPromise=(async()=>{
-  const sources=["https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js","https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"];
-  for(const src of sources){
-   try{await new Promise((resolve,reject)=>{const sc=document.createElement("script");sc.src=src;sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc)});if(window.Chess)return true;}catch(err){}
-  }
-  chessLibraryPromise=null;throw new Error("Chess rules library unavailable");
- })();
- return chessLibraryPromise;
-}
-
-function startChessFromButton(button){
- if(!button||button.disabled)return;
- const name=button.dataset.chessOpponent;
- const resume=button.hasAttribute("data-chess-resume");
- button.disabled=true;
- loadChessLibrary().then(()=>{if(resume)resumeChess();else if(name)beginChess(name);}).catch(err=>{console.error("Chess startup failed:",err);toast("Chess could not start. Please refresh and try again.");}).finally(()=>{if(button.isConnected)button.disabled=false;});
-}
+document.addEventListener("click",e=>{
+ const resume=e.target.closest("[data-chess-resume]");
+ if(resume){if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else resumeChess();return}
+ const b=e.target.closest("[data-chess-opponent]");if(!b)return;
+ const name=b.dataset.chessOpponent;
+ if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=()=>beginChess(name);sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else beginChess(name);
+});
 let cg=null,ct=600,ctimer=null,oppName="",selectedSq=null;
 function beginChess(name){oppName=name;cg=new Chess();ct=600;selectedSq=null;game.chess.active={opponent:name,moves:[],remaining:600};save();document.body.classList.add("chess-active");const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
 function resumeChess(){const a=game.chess.active;if(!a||!window.Chess)return;oppName=a.opponent;cg=new Chess();(a.moves||[]).forEach(m=>cg.move(m));ct=Math.max(1,Number(a.remaining)||600);selectedSq=null;document.body.classList.add("chess-active");drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
@@ -1650,7 +1636,7 @@ render=function(){
   }
   app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopContent;
  }else if(activeTab==="sbcs"){
-  app.innerHTML='<section><div class="sectionhero"><h2>🧩 SBC\'s</h2><p>Coming soon.</p></div></section>';
+  app.innerHTML=chessRewardHTML();
  }else{
   previousRender();
  }
@@ -1665,11 +1651,9 @@ bindButtons=function(){
  document.querySelectorAll("[data-openpack]").forEach(b=>b.onclick=()=>openPack(b.dataset.openpack));
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
-
-
-
-
-
+ document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
+ document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>beginChess(b.dataset.chessOpponent));
+ document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 };
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
