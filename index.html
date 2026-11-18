@@ -1550,7 +1550,7 @@ if(p.tokenChance&&Math.random()<p.tokenChance){tokens=p.tokenAmount;game.tokens+
 let duplicateFlags=results.map(c=>award(c));save();
 showReveal({title:p.name,subtitle:`${results.length} player${results.length===1?"":"s"} in your pack${tokens?` • BONUS +${tokens} TOKENS`:""}`,results,duplicateFlags,walkouts:true});
 }
-function revealEffect(c){return ["Rare","Epic","Legendary","Icon","Mythical"].includes(c.rarity)&&game.settings.walkouts[c.rarity]}
+function revealEffect(c){return ["Rare","Epic","Legendary","Icon","Mythical","Aura"].includes(c.rarity)&&game.settings.walkouts[c.rarity]}
 function bestWalkout(results){return results.filter(revealEffect).sort((a,b)=>(rarityRank[b.rarity]-rarityRank[a.rarity])||(b.rating-a.rating))[0]||null}
 function walkoutMarkup(c){
 let icon=c.rarity==="Mythical"?"🌌":c.rarity==="Icon"?"⚡":c.rarity==="Legendary"?"👑":c.rarity==="Epic"?"💜":"💎";
@@ -1596,7 +1596,7 @@ overlay.classList.add("walkout-mode");document.getElementById("walkoutBanner").i
 document.getElementById("pickHint").textContent="WAIT FOR IT...";
 let rarity=walkout.rarity;let special=document.createElement("div");special.className="walkout-flip "+rarity;
 let inner=document.createElement("div");inner.className="flip-inner";
-let back=document.createElement("div");back.className="flip-back";back.innerHTML=`${rarity==="Mythical"?"🌌":rarity==="Icon"?"⚡":"🎁"}<span>DA BOIZ RNG</span>`;
+let back=document.createElement("div");back.className="flip-back";back.innerHTML=`${rarity==="Aura"?"💗":rarity==="Mythical"?"🌌":rarity==="Icon"?"⚡":"🎁"}<span>DA BOIZ RNG</span>`;
 let front=document.createElement("div");front.className="flip-front";front.innerHTML=cardHTML(walkout);
 inner.appendChild(back);inner.appendChild(front);special.appendChild(inner);grid.appendChild(special);
 animationTimer=setTimeout(()=>{
@@ -1863,7 +1863,7 @@ function claimChessReward(n){
 const previousRender=render, previousOpenPack=openPack, previousBindButtons=bindButtons;
 mythical.forEach(c=>{if(c.rating>=96){c.rarity="Aura";c.aura=true}});
 allCards.forEach(c=>{if(mythical.some(m=>m.id===c.id)&&c.rating>=96){c.rarity="Aura";c.aura=true}});
-const auraCards=mythical.filter(c=>c.rating>=96);
+const auraCards=mythical.filter(c=>c.rating>=96);rarityRank.Aura=7;
 const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
@@ -1881,6 +1881,7 @@ award=function(c){game.owned[c.id]=(game.owned[c.id]||0)+1;return false};
 revealCardElement=function(c){const wrap=document.createElement("div");wrap.className="revealcard card-revealed";const card=document.createElement("div");card.innerHTML=cardHTML(c);wrap.appendChild(card.firstElementChild);return wrap};
 updateRevealStorageStatus=function(){};
 openWinter=function(){
+ pendingDuplicateSales=[];
  if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");
  const p=packDefs.find(x=>x.id==="winter");if(!p||game.coins<p.price)return toast("Not enough coins.");
  game.coins-=p.price;const results=[0,1].map(()=>winter[Math.floor(Math.random()*winter.length)]);
