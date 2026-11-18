@@ -1466,21 +1466,29 @@ const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
 packDefs.splice(0,packDefs.length,
- {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:97,Uncommon:2.5,Rare:.4,Epic:.08,Legendary:.019,Icon:.001},description:"5 players • Common 97% • Uncommon 2.5% • Rare 0.4% • Epic 0.08% • Legendary 0.019% • Icon 0.001%",className:"low"},
+ {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:99,Uncommon:.8,Rare:.15,Epic:.04,Legendary:.009,Icon:.001},description:"5 players • Common 99% • Uncommon 0.8% • Rare 0.15% • Epic 0.04% • Legendary 0.009% • Icon 0.001% • No Mythical or Aura cards",className:"low"},
  {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"Mythical 99.95% • Aura 0.05%",className:"mega"},
  {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"2 Winter Wildcards • Henry & Oscar each 0.07%",className:"winter"}
 );
 normalPick=function(pack){
- const rarity=weightedRarity(pack.odds||{});
  if(pack.id==="mega"){
+  const rarity=weightedRarity(pack.odds||{});
   const pool=rarity==="Aura"?auraCards:mythical.filter(c=>c.rarity==="Mythical");
   if(!pool.length)throw new Error("No players configured for rarity: "+rarity);
   return pool[Math.floor(Math.random()*pool.length)];
  }
- const lowPackRarities=["Common","Uncommon","Rare","Epic","Legendary","Icon"];
- if(pack.id==="high"&&!lowPackRarities.includes(rarity))throw new Error("Invalid LOW T rarity: "+rarity);
- const pool=cards.filter(c=>c.rarity===rarity&&!c.promo&&!c.exclusive&&
-  (pack.id!=="high"||lowPackRarities.includes(c.rarity)));
+ if(pack.id==="high"){
+  const odds={Common:99,Uncommon:.8,Rare:.15,Epic:.04,Legendary:.009,Icon:.001};
+  const rarity=weightedRarity(odds);
+  const allowed=["Common","Uncommon","Rare","Epic","Legendary","Icon"];
+  if(!allowed.includes(rarity))throw new Error("Invalid LOW T rarity: "+rarity);
+  const pool=cards.filter(c=>allowed.includes(c.rarity)&&c.rarity===rarity&&!c.promo&&!c.exclusive);
+  if(!pool.length)throw new Error("No LOW T players configured for rarity: "+rarity);
+  return pool[Math.floor(Math.random()*pool.length)];
+ }
+ if(pack.id==="winter")return pickWinterCard();
+ const rarity=weightedRarity(pack.odds||{});
+ const pool=cards.filter(c=>c.rarity===rarity&&!c.promo&&!c.exclusive);
  if(!pool.length)throw new Error("No players configured for rarity: "+rarity);
  return pool[Math.floor(Math.random()*pool.length)];
 };
@@ -1499,13 +1507,15 @@ function duplicateSellValue(c){
 award=function(c){
  game.owned=game.owned&&typeof game.owned==="object"?game.owned:{};
  const copies=Math.max(0,Number(game.owned[c.id])||0);
- if(copies>0){
-  game.coins=(Number(game.coins)||0)+duplicateSellValue(c);
-  return true;
- }
- game.owned[c.id]=1;
- return false;
+ if(copies>0){game.coins=(Number(game.coins)||0)+duplicateSellValue(c);return true}
+ game.owned[c.id]=1;return false;
 };
+function awardPackCard(c){
+ game.owned=game.owned&&typeof game.owned==="object"?game.owned:{};
+ const copies=parseInt(game.owned[c.id],10)||0;
+ if(copies>0){const value=duplicateSellValue(c);game.coins=(Number(game.coins)||0)+value;return {duplicate:true,value}}
+ game.owned[c.id]=1;return {duplicate:false,value:0};
+}
 revealCardElement=function(c,isDuplicate=false,index=0){
  const wrap=document.createElement("div");wrap.className="revealcard card-revealed";
  const card=document.createElement("div");card.innerHTML=cardHTML(c);wrap.appendChild(card.firstElementChild);
@@ -1541,11 +1551,13 @@ openPack=function(id){
   const results=Array.from({length:pack.pulls},()=>normalPick(pack));
   if(results.length!==pack.pulls||results.some(c=>!c))throw new Error("Pack card pool empty");
   game.coins-=pack.price;isOpening=true;
-  const duplicateFlags=results.map(c=>award(c));
-  const sold=results.reduce((sum,c,i)=>sum+(duplicateFlags[i]?duplicateSellValue(c):0),0);
+  const saleResults=results.map(c=>awardPackCard(c));
+  const duplicateFlags=saleResults.map(x=>x.duplicate);
+  const sold=saleResults.reduce((sum,x)=>sum+x.value,0);
   const tokensWon=awardPackTokens();
   save();
-  showReveal({title:pack.name,subtitle:results.length+" players in your pack"+(sold?" • Duplicates auto-sold for "+money(sold)+" coins":"")+(tokensWon?" • BONUS: +2 tokens!":""),results,duplicateFlags,walkouts:true});
+  const saleText=duplicateFlags.some(Boolean)?" • Duplicates sold: "+money(sold)+" coins":"";
+  showReveal({title:pack.name,subtitle:results.length+" players in your pack"+saleText+(tokensWon?" • BONUS: +2 tokens!":""),results,duplicateFlags,walkouts:true});
  }catch(err){game.coins=oldCoins;isOpening=false;save();console.error(err);toast("Pack opening failed — coins returned.");render()}
 };
 renderPacks=function(){
