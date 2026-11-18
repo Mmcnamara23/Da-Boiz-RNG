@@ -1767,8 +1767,8 @@ const leoCard={id:"leo_lambert",name:"Leo Lambert",emoji:"♟️",rarity:"Icon",
 const excludeIds=new Set(["nose_breather_lil_mumps",ben.id,...winter.map(c=>c.id),mythJacky.id,snowLiam.id,leoCard.id]);
 randomRewardCards.splice(0,randomRewardCards.length,...allCards.filter(c=>!excludeIds.has(c.id)));
 packDefs.splice(0,packDefs.length,
-{id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:80,Uncommon:13,Rare:5.5,Epic:1.4,Legendary:.1},description:"Free pack • 5 players",className:"low"},
-{id:"high",name:"HIGH T PACK",icon:"💜",price:7500,pulls:5,odds:{Common:40,Uncommon:30,Rare:18,Epic:10,Legendary:1.8,Icon:.2},description:"5 players • Top-tier odds",className:"high"},
+{id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:80,Uncommon:13,Rare:5.5,Epic:1.4,Legendary:.1},tokenChance:.10,tokenAmount:2,description:"Free pack • 5 players",className:"low"},
+{id:"high",name:"HIGH T PACK",icon:"💜",price:7500,pulls:5,odds:{Common:40,Uncommon:30,Rare:18,Epic:10,Legendary:1.8,Icon:.2},tokenChance:.08,tokenAmount:4,description:"5 players • Top-tier odds",className:"high"},
 {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:100},description:"Guaranteed Mythical player",className:"mega"});
 normalPick=function(pack){
  if(pack.id==="mega"){let pool=mythical,ws=pool.map(c=>c.id==="myth_jacky_chan"?.1:8.3),n=Math.random()*ws.reduce((a,b)=>a+b,0);for(let i=0;i<pool.length;i++){n-=ws[i];if(n<0)return pool[i]}return pool[0]}
