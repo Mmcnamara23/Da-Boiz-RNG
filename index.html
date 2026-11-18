@@ -1761,7 +1761,7 @@ const winter=[
 ].map(x=>({id:x[0],name:x[1],emoji:"🎄",rating:x[2],rarity:x[3],price:5000,promo:true}));
 winter.forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
 const mythJacky={id:"gallery_mythical_jacky",name:"Mythical Jacky Chan",emoji:"🥋",rarity:"Mythical",rating:99,price:5000};
-const snowLiam={id:"liam_snowtherland",name:"Liam Snowtherland",emoji:"🎅",rarity:"Winter Wildcards",rating:99,price:5000};
+const snowLiam={id:"liam_snowtherland",name:"Liam Snowtherland",emoji:"🎅",rarity:"Winter Wildcards",rating:99,price:5000,promo:true,exclusive:true};
 const leoCard={id:"leo_lambert",name:"Leo Lambert",emoji:"♟️",rarity:"Icon",rating:99,price:10000};
 [mythJacky,snowLiam,leoCard].forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
 const excludeIds=new Set(["nose_breather_lil_mumps",ben.id,...winter.map(c=>c.id),mythJacky.id,snowLiam.id,leoCard.id]);
@@ -1777,6 +1777,13 @@ normalPick=function(pack){
 };
 game.chess=game.chess||{elo:100,wins:0,losses:0,draws:0,beaten:[],claimed:{}};
 game.galleryClaims=game.galleryClaims||{};
+const originalCardHTML=cardHTML;
+cardHTML=function(c,actions=""){
+ let out=originalCardHTML(c,actions);
+ if(c.promo)out=out.replace('<div class="card ','<div class="card winter-card ').replace('<div class="rating">','<div class="promo-label">PROMO</div><div class="rating">');
+ return out;
+};
+const winterStyle=document.createElement("style");winterStyle.textContent=".winter-card{border:3px solid #237a45!important;background:linear-gradient(145deg,#092315,#14552f)!important;box-shadow:0 0 16px #1c8a4a55}.promo-label{background:#176b3a;color:#fff;font-weight:900;letter-spacing:2px;padding:4px 8px;border-radius:6px;margin-bottom:6px;text-align:center;font-size:11px}";document.head.appendChild(winterStyle);
 const oldTeam=renderTeam;
 renderTeam=function(){
  const slots=game.team.map((id,i)=>{const c=id?getCard(id):null,lock=game.match?.status==="running";return `<div class="position"><span class="position-role">${positionNames[i]}</span><div class="small">POSITION ${i+1}</div>${c?`<div style="font-size:26px">${c.emoji}</div><b>${c.name}</b><div class="rating">${c.rating}</div><span class="badge">${c.rarity}</span>`:"<b>Empty slot</b>"}<button data-slot="${i}" ${lock?"disabled":""}>${c?"CHANGE PLAYER":"SELECT PLAYER"}</button>${c?`<button class="secondary" data-clear="${i}" ${lock?"disabled":""}>REMOVE</button>`:""}</div>`}).join("");
@@ -1791,16 +1798,16 @@ openPicker=function(slot){
  document.getElementById("playerPicker").classList.add("show");
 };
 renderAlbum=function(){
- const excluded=new Set(["gallery_mythical_jacky"]);
- const pool=allCards.filter(c=>!excluded.has(c.id));
- const discovered=pool.filter(c=>(game.owned[c.id]||0)>0);
- const pct=Math.round(discovered.length/pool.length*100);
+ const visible=allCards.filter(c=>!c.exclusive||(game.owned[c.id]||0)>0);
+ const progressPool=visible.filter(c=>!c.exclusive);
+ const discovered=progressPool.filter(c=>(game.owned[c.id]||0)>0);
+ const pct=Math.round(discovered.length/Math.max(1,progressPool.length)*100);
  const rarityRewards={Common:"2,000 coins",Uncommon:"6,000 coins",Rare:"8,000 coins",Epic:"10,000 coins",Legendary:"10 tokens",Icon:"10 tokens + 5,000 coins",Mythical:"Exclusive 99 Mythical Jacky Chan"};
  const rarityRows=["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical"].map(r=>{
-   const group=pool.filter(c=>c.rarity===r),got=group.filter(c=>(game.owned[c.id]||0)>0).length;
+   const group=progressPool.filter(c=>c.rarity===r&&!c.promo),got=group.filter(c=>(game.owned[c.id]||0)>0).length;
    return `<div class="objective"><b>${r}</b><p>${got}/${group.length} discovered</p><div class="bar"><span style="width:${group.length?got/group.length*100:0}%"></span></div><small>${rarityRewards[r]}</small><button data-gallery-claim="${r}" ${!group.length||got!==group.length||game.galleryClaims[r]?"disabled":""}>${game.galleryClaims[r]?"CLAIMED":"CLAIM REWARD"}</button></div>`;
  }).join("");
- return `<section><div class="sectionhero"><h2>🖼️ THE GALLERY</h2><p>Discover every player. Duplicate copies count once toward completion.</p><span class="badge">${pct}% COMPLETE • ${discovered.length}/${pool.length}</span></div><div class="panel"><h3>Rarity completion rewards</h3><div class="grid">${rarityRows}</div></div><div class="grid">${allCards.map(c=>game.owned[c.id]?cardHTML(c,`<div class="small">Copies: ${game.owned[c.id]}</div>`):`<div class="card ${c.rarity}" style="opacity:.42"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">${c.rarity}</div></div>`).join("")}</div><div class="panel"><h3>❄️ Winter Wildcards</h3><p>${winter.filter(c=>(game.owned[c.id]||0)>0).length}/13 collected. Collect all 13 to unlock Liam Snowtherland (99).</p><div class="bar"><span style="width:${winter.filter(c=>(game.owned[c.id]||0)>0).length/13*100}%"></span></div></div></section>`;
+ return `<section><div class="sectionhero"><h2>🖼️ THE GALLERY</h2><p>Discover every player. Duplicate copies count once toward completion.</p><span class="badge">${pct}% COMPLETE • ${discovered.length}/${progressPool.length}</span></div><div class="panel"><h3>Rarity completion rewards</h3><div class="grid">${rarityRows}</div></div><div class="grid">${visible.map(c=>game.owned[c.id]?cardHTML(c,`<div class="small">Copies: ${game.owned[c.id]}</div>`):`<div class="card ${c.rarity}" style="opacity:.42"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">${c.rarity}</div></div>`).join("")}</div><div class="panel"><h3>❄️ Winter Wildcards</h3><p>${winter.filter(c=>(game.owned[c.id]||0)>0).length}/13 collected. Collect all 13 to unlock Liam Snowtherland (99).</p><div class="bar"><span style="width:${winter.filter(c=>(game.owned[c.id]||0)>0).length/13*100}%"></span></div></div></section>`;
 };
 const oldObjectives=renderObjectives;
 renderObjectives=function(){return `<section><div class="sectionhero"><h2>🏆 OBJECTIVES & CHESS REWARDS</h2><p>Squad and chess milestones.</p></div><div class="subnav"><button data-objtab="squad">Squad</button><button data-objtab="chess">Chess rewards</button></div><div id="objContent">${oldObjectives()}</div></section>`};
