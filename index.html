@@ -1532,16 +1532,30 @@ render=function(){
  if(rating)rating.textContent=teamRating()||"—";
  if(activeTab==="shops"){
   if(!["packs","luck","tokenshop"].includes(activeShopTab))activeShopTab="packs";
-  const views={packs:renderPacks,luck:renderLuck,tokenshop:renderTokenShop};
   let shopContent="";
   try{
-   const view=views[activeShopTab];
-   if(typeof view!=="function")throw new Error("Missing shop view: "+activeShopTab);
-   shopContent=view();
-   if(typeof shopContent!=="string"||!shopContent.trim())throw new Error("Shop view returned empty content: "+activeShopTab);
+   if(activeShopTab==="packs"){
+    const defs=Array.isArray(packDefs)?packDefs:[];
+    const balance=Number(game.coins)||0;
+    const fmt=n=>{try{return typeof money==="function"?money(Number(n)||0):String(Number(n)||0)}catch(e){return String(Number(n)||0)}};
+    const packCards=defs.map((p,i)=>{
+     const id=String(p&&p.id||("pack-"+i)),price=Number(p&&p.price)||0,pulls=Math.max(1,Number(p&&p.pulls)||1);
+     const name=String(p&&p.name||"PACK"),desc=String(p&&p.description||"Open to discover players.");
+     const icon=String(p&&p.icon||"🎁"),cls=String(p&&p.className||"");
+     const locked=balance<price;
+     return '<div class="pack '+cls+'"><div class="packicon">'+icon+'</div><div class="packname">'+name+'</div><div class="price">'+(price===0?"FREE":"🪙 "+fmt(price))+'</div><div class="packdesc">'+desc+'</div><div class="packstats"><span>🃏 '+pulls+' players</span><span>'+(id==="mega"?"✨ Mythical pack":id==="winter"?"🎄 Promo pack":"✨ Pack odds")+'</span></div><div class="packfoot"><button data-openpack="'+id+'" '+(locked?"disabled":"")+'>'+(locked?"NOT ENOUGH COINS":"OPEN PACK →")+'</button></div></div>';
+    }).join("");
+    shopContent='<section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>Open packs, discover rare players and build your ultimate squad.</p><span class="badge">🪙 '+fmt(balance)+' COINS AVAILABLE</span></div><div class="grid">'+(packCards||'<div class="panel">No packs are currently configured.</div>')+'</div></section>';
+   }else{
+    const views={luck:renderLuck,tokenshop:renderTokenShop};
+    const view=views[activeShopTab];
+    if(typeof view!=="function")throw new Error("Missing shop view: "+activeShopTab);
+    shopContent=view();
+    if(typeof shopContent!=="string"||!shopContent.trim())throw new Error("Shop view returned empty content: "+activeShopTab);
+   }
   }catch(err){
-   console.error("Da Boiz shop render error:",err);
-   shopContent='<section class="panel"><h2>Shop loading error</h2><p>The shop screen hit an error. Refresh the page and try again.</p></section>';
+   console.error("Da Boiz shop render error ("+activeShopTab+"):",err);
+   shopContent='<section class="panel"><h2>Shop loading error</h2><p>This shop screen hit an error. Other shop screens remain available.</p></section>';
   }
   app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopContent;
  }else if(activeTab==="sbcs"){
