@@ -1466,7 +1466,7 @@ const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
 packDefs.splice(0,packDefs.length,
- {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:74,Uncommon:20,Rare:5,Epic:.9,Legendary:.099,Icon:.001},description:"5 players • Common 74% • Uncommon 20% • Rare 5% • Epic 0.9% • Legendary 0.099% • Icon 0.001%",className:"low"},
+ {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:97,Uncommon:2.5,Rare:.4,Epic:.08,Legendary:.019,Icon:.001},description:"5 players • Common 97% • Uncommon 2.5% • Rare 0.4% • Epic 0.08% • Legendary 0.019% • Icon 0.001%",className:"low"},
  {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"Mythical 99.95% • Aura 0.05%",className:"mega"},
  {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"2 Winter Wildcards • Henry & Oscar each 0.07%",className:"winter"}
 );
@@ -1497,15 +1497,27 @@ function duplicateSellValue(c){
  return 10000;
 }
 award=function(c){
- const isDuplicate=(Number(game.owned[c.id])||0)>0;
- if(isDuplicate){
+ game.owned=game.owned&&typeof game.owned==="object"?game.owned:{};
+ const copies=Math.max(0,Number(game.owned[c.id])||0);
+ if(copies>0){
   game.coins=(Number(game.coins)||0)+duplicateSellValue(c);
   return true;
  }
  game.owned[c.id]=1;
  return false;
 };
-revealCardElement=function(c){const wrap=document.createElement("div");wrap.className="revealcard card-revealed";const card=document.createElement("div");card.innerHTML=cardHTML(c);wrap.appendChild(card.firstElementChild);return wrap};
+revealCardElement=function(c,isDuplicate=false,index=0){
+ const wrap=document.createElement("div");wrap.className="revealcard card-revealed";
+ const card=document.createElement("div");card.innerHTML=cardHTML(c);wrap.appendChild(card.firstElementChild);
+ if(isDuplicate){
+  const value=duplicateSellValue(c);
+  const sold=document.createElement("div");sold.className="duplicate-sold";
+  sold.textContent=value>0?"DUPLICATE • SOLD FOR "+money(value)+" COINS":"DUPLICATE • SOLD FOR 0 COINS";
+  sold.style.cssText="margin-top:7px;padding:6px 8px;border-radius:8px;background:#173c2b;color:#8dffb2;font-size:11px;font-weight:900;text-align:center";
+  wrap.appendChild(sold);
+ }
+ return wrap;
+};
 updateRevealStorageStatus=function(){};
 openWinter=function(){
  
