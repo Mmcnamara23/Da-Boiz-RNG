@@ -1494,8 +1494,18 @@ openPack=function(id){
  }catch(err){game.coins=oldCoins;isOpening=false;save();console.error(err);toast("Pack opening failed — coins returned.");render()}
 };
 renderPacks=function(){
- const left=Math.max(0,endPromo-Date.now()),timer=Math.floor(left/86400000)+"d "+Math.floor(left%86400000/3600000)+"h "+Math.floor(left%3600000/60000)+"m";
- return `<section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>Open packs, discover rare players and build your ultimate squad.</p><span class="badge">🪙 ${money(game.coins)} COINS AVAILABLE</span></div><div class="grid">${packDefs.map(p=>`<div class="pack ${p.className}"><div class="packicon">${p.icon}</div><div class="packname">${p.name}</div><div class="price">${p.price===0?"FREE":"🪙 "+money(p.price)}</div><div class="packdesc">${p.description}${p.id==="winter"&&Date.now()<endPromo?" • Expires in "+timer:""}</div><div class="packstats"><span>🃏 ${p.pulls} players</span><span>${p.id==="mega"?"✨ 0.5% Aura chance":p.id==="winter"?"🎄 Promo pack":"✨ Pack odds"}</span></div><div class="packfoot"><button data-openpack="${p.id}" ${game.coins<p.price?"disabled":""}>${game.coins<p.price?"NOT ENOUGH COINS":"OPEN PACK →"}</button></div></div>`).join("")}</div></section>`;
+ const coins=Number(game.coins)||0;
+ const packs=Array.isArray(packDefs)?packDefs:[];
+ const safeMoney=value=>typeof money==="function"?money(Number(value)||0):String(Number(value)||0);
+ const cards=packs.map((p,index)=>{
+  const id=String(p.id||("pack-"+index)),price=Number(p.price)||0,pulls=Math.max(1,Number(p.pulls)||1);
+  const name=String(p.name||"PACK"),description=String(p.description||"Open this pack to discover players.");
+  const icon=String(p.icon||"🎁"),className=String(p.className||"");
+  const locked=coins<price;
+  const odds=id==="mega"?"✨ Mythical pack":id==="winter"?"🎄 Promo pack":"✨ Pack odds";
+  return '<div class="pack '+className+'"><div class="packicon">'+icon+'</div><div class="packname">'+name+'</div><div class="price">'+(price===0?"FREE":"🪙 "+safeMoney(price))+'</div><div class="packdesc">'+description+'</div><div class="packstats"><span>🃏 '+pulls+' players</span><span>'+odds+'</span></div><div class="packfoot"><button data-openpack="'+id+'" '+(locked?"disabled":"")+'>'+(locked?"NOT ENOUGH COINS":"OPEN PACK →")+'</button></div></div>';
+ }).join("");
+ return '<section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>Open packs, discover rare players and build your ultimate squad.</p><span class="badge">🪙 '+safeMoney(coins)+' COINS AVAILABLE</span></div><div class="grid">'+(cards||'<div class="panel">No packs are currently configured.</div>')+'</div></section>';
 };
 renderAlbum=function(){
  const rarities=["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Aura","Winter Wildcards"];
