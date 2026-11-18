@@ -1466,9 +1466,9 @@ const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
 packDefs.splice(0,packDefs.length,
- {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:99,Uncommon:.8,Rare:.15,Epic:.04,Legendary:.009,Icon:.001},description:"5 players • Common 99% • Uncommon 0.8% • Rare 0.15% • Epic 0.04% • Legendary 0.009% • Icon 0.001% • No Mythical or Aura cards",className:"low"},
- {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"Mythical 99.95% • Aura 0.05%",className:"mega"},
- {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"2 Winter Wildcards • Henry & Oscar each 0.07%",className:"winter"}
+ {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:98.698,Uncommon:1,Rare:.2,Epic:.08,Legendary:.02,Icon:.002},description:"Every legend starts with a single pull. Keep going.",className:"low"},
+ {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"Reach for the impossible. Greatness is one pull away.",className:"mega"},
+ {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"Cold nights. Big moments. Make this one legendary.",className:"winter"}
 );
 normalPick=function(pack){
  if(pack.id==="mega"){
@@ -1478,7 +1478,7 @@ normalPick=function(pack){
   return pool[Math.floor(Math.random()*pool.length)];
  }
  if(pack.id==="high"){
-  const odds={Common:99,Uncommon:.8,Rare:.15,Epic:.04,Legendary:.009,Icon:.001};
+  const odds={Common:98.698,Uncommon:1,Rare:.2,Epic:.08,Legendary:.02,Icon:.002};
   const rarity=weightedRarity(odds);
   const allowed=["Common","Uncommon","Rare","Epic","Legendary","Icon"];
   if(!allowed.includes(rarity))throw new Error("Invalid LOW T rarity: "+rarity);
