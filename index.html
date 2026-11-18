@@ -1417,7 +1417,7 @@ function chessRewardHTML(){
 const oldBind=bindButtons;
 bindButtons=function(){oldBind();document.querySelectorAll("[data-objtab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-objtab]").forEach(x=>x.classList.toggle("active",x===b));document.getElementById("objContent").innerHTML=b.dataset.objtab==="chess"?chessRewardHTML():oldObjectives()});document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
- document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(+b.dataset.chessReward));document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>startChess(b.dataset.chessOpponent));};
+ document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(+b.dataset.chessReward));// Chess opponent clicks are handled once by the delegated loader below.};
 const endPromo=new Date("2027-01-01T00:00:00Z").getTime();
 function openWinter(){if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");if(game.coins<12000)return toast("Not enough coins.");game.coins-=12000;const a=winter[Math.floor(Math.random()*winter.length)],b=winter.filter(x=>x.id!==a.id)[Math.floor(Math.random()*(winter.length-1))],dups=[award(a),award(b)];if(winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);isOpening=true;save();showReveal({title:"❄️ WINTER WILDCARDS",subtitle:"Two promo players",results:[a,b],duplicateFlags:dups,walkouts:true})}
 const oldPacks=renderPacks;
