@@ -1384,7 +1384,7 @@ renderAlbum=function(){
  return `<section><div class="sectionhero"><h2>🖼️ THE GALLERY</h2><p>Discover every player. Duplicate copies count once toward completion.</p><span class="badge">${pct}% COMPLETE • ${discovered.length}/${progressPool.length}</span></div><div class="panel"><h3>Rarity completion rewards</h3><div class="grid">${rarityRows}</div></div><div class="grid">${visible.map(c=>game.owned[c.id]?cardHTML(c,`<div class="small">Copies: ${game.owned[c.id]}</div>`):`<div class="card ${c.rarity}" style="opacity:.42"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">${c.rarity}</div></div>`).join("")}</div><div class="panel"><h3>❄️ Winter Wildcards</h3><p>${winter.filter(c=>(game.owned[c.id]||0)>0).length}/13 collected. Collect all 13 to unlock Liam Snowtherland (99).</p><div class="bar"><span style="width:${winter.filter(c=>(game.owned[c.id]||0)>0).length/13*100}%"></span></div></div></section>`;
 };
 const oldObjectives=renderObjectives;
-renderObjectives=function(){return `<section><div class="sectionhero"><h2>🏆 OBJECTIVES & CHESS REWARDS</h2><p>Squad and chess milestones.</p></div><div class="subnav"><button data-objtab="squad">Squad</button><button data-objtab="chess">Chess rewards</button></div><div id="objContent">${oldObjectives()}</div></section>`};
+renderObjectives=oldObjectives;
 function chessRewardHTML(){
  const c=game.chess;
  const active=c.active;
@@ -1415,9 +1415,11 @@ const createMatchOriginal=createMatch;
 createMatch=function(){if(!game.team.every(Boolean)){toast("Fill all seven squad positions first.");return}return createMatchOriginal()};
 claimObjective=function(target){const o=objectives.find(x=>x.rating===target);if(!o||game.claimed[target]||teamRating()<target||!teamCards().every(Boolean))return;game.claimed[target]=true;game.coins+=o.coins;game.tokens+=o.tokens;save();render();toast("Objective claimed!")};
 document.addEventListener("click",e=>{
+ const resume=e.target.closest("[data-chess-resume]");
+ if(resume){if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else resumeChess();return}
  const b=e.target.closest("[data-chess-opponent]");if(!b)return;
  const name=b.dataset.chessOpponent;
- if(!window.Chess){const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";s.onload=()=>beginChess(name);s.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(s)}else beginChess(name);
+ if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=()=>beginChess(name);sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else beginChess(name);
 });
 let cg=null,ct=600,ctimer=null,oppName="",selectedSq=null;
 function beginChess(name){oppName=name;cg=new Chess();ct=600;selectedSq=null;game.chess.active={opponent:name,moves:[],remaining:600};save();document.body.classList.add("chess-active");const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
