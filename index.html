@@ -1336,7 +1336,7 @@ teamRating=function(){const t=teamCards();return t.every(Boolean)&&t.length===7?
 const ben={id:"benjamin_fraser",name:"Benjamin Fraser",emoji:"🧩",rarity:"Common",rating:20,price:100};
 if(!cards.some(c=>c.id===ben.id))cards.push(ben);if(!allCards.some(c=>c.id===ben.id))allCards.push(ben);
 const winter=[
-["brody_snowell","Brody Snowell",82,"Uncommon"],["dexter_clauswick","Dexter Clauswick",84,"Winter Wildcards"],["matthew_baublesley","Matthew Bauble-sley",81,"Winter Wildcards"],["numaii_elfie","Numaii Elfie-Madden",86,"Winter Wildcards"],["freddie_frostfield","Freddie Frostfield",89,"Winter Wildcards"],["max_rolfenbells","Max Rolfenbells",82,"Winter Wildcards"],["ashton_elflott","Ashton Elflott",84,"Winter Wildcards"],["oscar_holiday","Oscar Robert Ho-Ho-Harper",93,"Winter Wildcards"],["jayden_jingle","Jayden Jingle-barteh",84,"Winter Wildcards"],["henry_worsleigh","Henry James Worsleigh",91,"Winter Wildcards"],["vittorio_present","Vittorio Present-zzelli",84,"Winter Wildcards"],["zain_mistleah","Zain Mistleah",81,"Winter Wildcards"],["lil_mistle_mumps","Lil Mistle-Mumps",84,"Winter Wildcards"]
+["brody_snowell","Brody Snowell",82,"Winter Wildcards"],["dexter_clauswick","Dexter Clauswick",84,"Winter Wildcards"],["matthew_baublesley","Matthew Bauble-sley",81,"Winter Wildcards"],["numaii_elfie","Numaii Elfie-Madden",86,"Winter Wildcards"],["freddie_frostfield","Freddie Frostfield",89,"Winter Wildcards"],["max_rolfenbells","Max Rolfenbells",82,"Winter Wildcards"],["ashton_elflott","Ashton Elflott",84,"Winter Wildcards"],["oscar_holiday","Oscar Robert Ho-Ho-Harper",93,"Winter Wildcards"],["jayden_jingle","Jayden Jingle-barteh",84,"Winter Wildcards"],["henry_worsleigh","Henry James Worsleigh",91,"Winter Wildcards"],["vittorio_present","Vittorio Present-zzelli",84,"Winter Wildcards"],["zain_mistleah","Zain Mistleah",81,"Winter Wildcards"],["lil_mistle_mumps","Lil Mistle-Mumps",84,"Winter Wildcards"]
 ].map(x=>({id:x[0],name:x[1],emoji:"🎄",rating:x[2],rarity:x[3],price:5000,promo:true}));
 winter.forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
 winter.find(c=>c.id==="henry_worsleigh").rating=96;
@@ -1349,9 +1349,10 @@ function pickWinterCard(){
  return weights[weights.length-1].card;
 }
 const mythJacky={id:"gallery_mythical_jacky",name:"Mythical Jacky Chan",emoji:"🥋",rarity:"Mythical",rating:99,price:5000};
+const hackClubOG={id:"gallery_aura_liam_og",name:"HACK CLUB OG Liam Sutherland",emoji:"🖤",rarity:"HACK CLUB OG",rating:100,price:0,exclusive:true};
 const snowLiam={id:"liam_snowtherland",name:"Liam Snowtherland",emoji:"🎅",rarity:"Winter Wildcards",rating:99,price:5000,promo:true,exclusive:true};
 const leoCard={id:"leo_lambert",name:"Leo Lambert",emoji:"♟️",rarity:"Icon",rating:99,price:10000};
-[mythJacky,snowLiam,leoCard].forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
+[mythJacky,snowLiam,leoCard,hackClubOG].forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
 const excludeIds=new Set(["nose_breather_lil_mumps",ben.id,...winter.map(c=>c.id),mythJacky.id,snowLiam.id,leoCard.id]);
 randomRewardCards.splice(0,randomRewardCards.length,...allCards.filter(c=>!excludeIds.has(c.id)));
 packDefs.splice(0,packDefs.length,
@@ -1468,6 +1469,7 @@ const previousRender=render, previousOpenPack=openPack, previousBindButtons=bind
 mythical.forEach(c=>{if(c.rating>=96){c.rarity="Aura";c.aura=true}});
 allCards.forEach(c=>{if(mythical.some(m=>m.id===c.id)&&c.rating>=96){c.rarity="Aura";c.aura=true}});
 const auraCards=mythical.filter(c=>c.rating>=96);rarityRank.Aura=7;
+const hackClubStyle=document.createElement("style");hackClubStyle.textContent=".card.HACK\\ CLUB\\ OG,.HACK\\ CLUB\\ OG.card{background:linear-gradient(145deg,#050505,#202020 55%,#000)!important;border:2px solid #777!important;box-shadow:0 0 18px #000!important;color:#fff!important}.card.HACK\\ CLUB\\ OG .rating,.card.HACK\\ CLUB\\ OG .rarity{color:#fff!important}";document.head.appendChild(hackClubStyle);
 const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
@@ -1587,7 +1589,7 @@ renderAlbum=function(){
  const groups=rarities.map(r=>{
   const set=allCards.filter(c=>c.rarity===r);if(!set.length)return "";
   const found=set.filter(c=>(game.owned[c.id]||0)>0).length,pct=Math.round(found/set.length*100);
-  let reward="No set reward";if(r==="Common")reward="2,000 coins";if(r==="Uncommon")reward="6,000 coins";if(r==="Rare")reward="8,000 coins";if(r==="Epic")reward="10,000 coins";if(r==="Legendary")reward="10 tokens";if(r==="Icon")reward="10 tokens + 5,000 coins";if(r==="Mythical")reward="Exclusive Mythical Jacky Chan (99)";if(r==="Aura")reward="20 tokens + 10,000 coins";if(r==="Winter Wildcards")reward="Collect all 13 to unlock Liam Snowtherland (99)";
+  let reward="No set reward";if(r==="Common")reward="2,000 coins";if(r==="Uncommon")reward="6,000 coins";if(r==="Rare")reward="8,000 coins";if(r==="Epic")reward="10,000 coins";if(r==="Legendary")reward="10 tokens";if(r==="Icon")reward="10 tokens + 5,000 coins";if(r==="Mythical")reward="20 tokens + 10,000 coins";if(r==="Aura")reward="HACK CLUB OG Liam Sutherland (100)";if(r==="Winter Wildcards")reward="Collect all 13 to unlock Liam Snowtherland (99)";
   const canClaim=["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Aura"].includes(r)&&found===set.length&&!game.galleryClaims[r];
   const cardsHtml=set.map(c=>{const count=game.owned[c.id]||0;return count?cardHTML(c,`<div class="small">Collected • Copies: ${count}</div>`):`<div class="card ${c.rarity}" style="opacity:.48;filter:grayscale(.85)"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">${c.rarity}</div></div>`}).join("");
   return `<div class="panel gallery-set"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>${r} Set</h2><b>${found}/${set.length} • ${pct}%</b></div><p>Set reward: <b>${reward}</b></p><div class="bar"><span style="width:${pct}%"></span></div>${canClaim?`<button data-gallery-claim="${r}">CLAIM SET REWARD</button>`:""}<div class="grid" style="margin-top:14px">${cardsHtml}</div></div>`;
@@ -1668,8 +1670,8 @@ claimGallery=function(r){
  if(r==="Epic")game.coins+=10000;
  if(r==="Legendary")game.tokens+=10;
  if(r==="Icon"){game.tokens+=10;game.coins+=5000}
- if(r==="Aura"){game.tokens+=20;game.coins+=10000}
- if(r==="Mythical")game.owned["gallery_mythical_jacky"]=(game.owned["gallery_mythical_jacky"]||0)+1;
+ if(r==="Mythical"){game.tokens+=20;game.coins+=10000}
+ if(r==="Aura")game.owned["gallery_aura_liam_og"]=(game.owned["gallery_aura_liam_og"]||0)+1;
  save();render();toast(r+" Gallery reward claimed!");
 };
 render();
