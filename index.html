@@ -1788,7 +1788,7 @@ const oldTeam=renderTeam;
 renderTeam=function(){
  const slots=game.team.map((id,i)=>{const c=id?getCard(id):null,lock=game.match?.status==="running";return `<div class="position"><span class="position-role">${positionNames[i]}</span><div class="small">POSITION ${i+1}</div>${c?`<div style="font-size:26px">${c.emoji}</div><b>${c.name}</b><div class="rating">${c.rating}</div><span class="badge">${c.rarity}</span>`:"<b>Empty slot</b>"}<button data-slot="${i}" ${lock?"disabled":""}>${c?"CHANGE PLAYER":"SELECT PLAYER"}</button>${c?`<button class="secondary" data-clear="${i}" ${lock?"disabled":""}>REMOVE</button>`:""}</div>`}).join("");
  const rows=[[0],[1,2,3],[4,5],[6]];
- const match=game.match;let panel=match? `<div class="match-panel"><h3>⚽ ${match.status==="running"?"LIVE MATCH":"FULL TIME"}</h3><p>DA BOIZ XI ${getMatchScore().home} - ${getMatchScore().away} ${opponentName()}</p>${match.status==="finished"?'<button data-claimmatch>CLAIM MATCH RESULT</button>':""}</div>`:`<div class="match-panel"><h3>QUICK MATCH</h3><p>90 seconds • 3 tokens • Win 10 / Draw 4 / Loss 0</p><button data-startmatch ${!game.team.every(Boolean)||game.tokens<3?"disabled":""}>START MATCH</button></div>`;
+ const match=game.match;let panel=match? `<div class="match-panel"><h3>⚽ ${match.status==="running"?"LIVE MATCH":"FULL TIME"}</h3><p>DA BOIZ XI ${getMatchScore().home} - ${getMatchScore().away} ${opponentName()}</p>${match.status==="running"?`<p>Elapsed: ${getMatchElapsed()} / 90 seconds</p>`:""}<div class="match-events">${match.events.filter(e=>match.status==="finished"||e.time<=getMatchElapsed()).map(matchEventHTML).join("")||'<div class="match-event">Kick-off! No goals yet.</div>'}</div>${match.status==="finished"?'<button data-claimmatch>CLAIM MATCH RESULT</button>':""}</div>`:`<div class="match-panel"><h3>QUICK MATCH</h3><p>90 seconds • 3 tokens • Win 10 / Draw 4 / Loss 0</p><button data-startmatch ${!game.team.every(Boolean)||game.tokens<3?"disabled":""}>START MATCH</button></div>`;
  return `<section><div class="sectionhero"><h2>⚽ MY SQUAD</h2><p>Seven-player 3-2-1 formation • one GK, three CB, two CM, one ST.</p><span class="badge">TEAM RATING: ${teamRating()||"NOT COMPLETE"}</span></div><div class="pitch">${rows.map(row=>`<div class="pitchrow">${row.map(i=>{const c=game.team[i]?getCard(game.team[i]):null;return `<div class="position">${positionNames[i]}<br>${c?`${c.emoji}<br><b>${c.name}</b><br>${c.rating}`:"➕ Empty"}</div>`}).join("")}</div>`).join("")}</div>${panel}<div class="grid">${slots}</div></section>`;
 };
 openPicker=function(slot){
@@ -1843,7 +1843,7 @@ function finishChess(result){if(ctimer)clearInterval(ctimer);const elo={"Benjami
 
 function claimGallery(r){
  if(game.galleryClaims[r])return;
- const ids=allCards.filter(c=>c.rarity===r&&c.id!=="gallery_mythical_jacky");
+ const ids=allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive&&c.id!=="gallery_mythical_jacky");
  if(!ids.length||!ids.every(c=>(game.owned[c.id]||0)>0)){toast("Discover every "+r+" player first.");return}
  game.galleryClaims[r]=true;
  if(r==="Common")game.coins+=2000;
