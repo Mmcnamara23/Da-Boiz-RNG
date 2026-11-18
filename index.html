@@ -892,7 +892,7 @@ return `<div class="card ${c.rarity}">
 <div class="emoji">${c.emoji}</div>
 <div class="rating">${c.rating}</div>
 <div class="name">${c.name}</div>
-<div class="rarity">${c.rarity}</div>${actions}</div>`;
+<div class="rarity">${c.id==="gallery_aura_liam_og"?"HACK CLUB OG":c.rarity}</div>${actions}</div>`;
 }
 
 function setTab(tab){
@@ -1349,7 +1349,7 @@ function pickWinterCard(){
  return weights[weights.length-1].card;
 }
 const mythJacky={id:"gallery_mythical_jacky",name:"Mythical Jacky Chan",emoji:"🥋",rarity:"Mythical",rating:99,price:5000};
-const hackClubOG={id:"gallery_aura_liam_og",name:"HACK CLUB OG Liam Sutherland",emoji:"🖤",rarity:"HACK CLUB OG",rating:100,price:0,exclusive:true};
+const hackClubOG={id:"gallery_aura_liam_og",name:"HACK CLUB OG Liam Sutherland",emoji:"🖤",rarity:"HACK-CLUB-OG",rating:100,price:0,exclusive:true};
 const snowLiam={id:"liam_snowtherland",name:"Liam Snowtherland",emoji:"🎅",rarity:"Winter Wildcards",rating:99,price:5000,promo:true,exclusive:true};
 const leoCard={id:"leo_lambert",name:"Leo Lambert",emoji:"♟️",rarity:"Icon",rating:99,price:10000};
 [mythJacky,snowLiam,leoCard,hackClubOG].forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
@@ -1469,7 +1469,7 @@ const previousRender=render, previousOpenPack=openPack, previousBindButtons=bind
 mythical.forEach(c=>{if(c.rating>=96){c.rarity="Aura";c.aura=true}});
 allCards.forEach(c=>{if(mythical.some(m=>m.id===c.id)&&c.rating>=96){c.rarity="Aura";c.aura=true}});
 const auraCards=mythical.filter(c=>c.rating>=96);rarityRank.Aura=7;
-const hackClubStyle=document.createElement("style");hackClubStyle.textContent=".card.HACK\\ CLUB\\ OG,.HACK\\ CLUB\\ OG.card{background:linear-gradient(145deg,#050505,#202020 55%,#000)!important;border:2px solid #777!important;box-shadow:0 0 18px #000!important;color:#fff!important}.card.HACK\\ CLUB\\ OG .rating,.card.HACK\\ CLUB\\ OG .rarity{color:#fff!important}";document.head.appendChild(hackClubStyle);
+const hackClubStyle=document.createElement("style");hackClubStyle.textContent=".card.HACK-CLUB-OG,.HACK-CLUB-OG.card{background:linear-gradient(145deg,#050505,#202020 55%,#000)!important;border:2px solid #777!important;box-shadow:0 0 18px #000!important;color:#fff!important}.card.HACK-CLUB-OG .rating,.card.HACK-CLUB-OG .rarity{color:#fff!important}";document.head.appendChild(hackClubStyle);
 const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
