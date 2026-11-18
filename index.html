@@ -1747,6 +1747,83 @@ game.coins-=price;game.potion={multiplier:mult,until:Date.now()+120000};
 persistRender();toast(mult+"x luck activated for 2 minutes!");
 }
 
+
+/* DA BOIZ RNG requested expansion — additive patch, preserving the original game. */
+(function(){
+positionNames.splice(0,positionNames.length,"GK","CB","CB","CB","CM","CM","ST");
+game.team=(Array.isArray(game.team)?game.team:[]).slice(0,7);while(game.team.length<7)game.team.push(null);game.formation="3-2-1";
+teamCards=function(){return game.team.map(id=>id?getCard(id):null)};
+teamRating=function(){const t=teamCards();return t.every(Boolean)&&t.length===7?Math.round(t.reduce((s,c)=>s+c.rating,0)/7):0};
+const ben={id:"benjamin_fraser",name:"Benjamin Fraser",emoji:"🧩",rarity:"Common",rating:20,price:100};
+if(!cards.some(c=>c.id===ben.id))cards.push(ben);if(!allCards.some(c=>c.id===ben.id))allCards.push(ben);
+const winter=[
+["brody_snowell","Brody Snowell",82,"Uncommon"],["dexter_clauswick","Dexter Clauswick",84,"Winter Wildcards"],["matthew_baublesley","Matthew Bauble-sley",81,"Winter Wildcards"],["numaii_elfie","Numaii Elfie-Madden",86,"Winter Wildcards"],["freddie_frostfield","Freddie Frostfield",89,"Winter Wildcards"],["max_rolfenbells","Max Rolfenbells",82,"Winter Wildcards"],["ashton_elflott","Ashton Elflott",84,"Winter Wildcards"],["oscar_holiday","Oscar Robert Ho-Ho-Harper",93,"Winter Wildcards"],["jayden_jingle","Jayden Jingle-barteh",84,"Winter Wildcards"],["henry_worsleigh","Henry James Worsleigh",91,"Winter Wildcards"],["vittorio_present","Vittorio Present-zzelli",84,"Winter Wildcards"],["zain_mistleah","Zain Mistleah",81,"Winter Wildcards"],["lil_mistle_mumps","Lil Mistle-Mumps",84,"Winter Wildcards"]
+].map(x=>({id:x[0],name:x[1],emoji:"🎄",rating:x[2],rarity:x[3],price:5000,promo:true}));
+winter.forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
+const mythJacky={id:"gallery_mythical_jacky",name:"Mythical Jacky Chan",emoji:"🥋",rarity:"Mythical",rating:99,price:5000};
+const snowLiam={id:"liam_snowtherland",name:"Liam Snowtherland",emoji:"🎅",rarity:"Winter Wildcards",rating:99,price:5000};
+const leoCard={id:"leo_lambert",name:"Leo Lambert",emoji:"♟️",rarity:"Icon",rating:99,price:10000};
+[mythJacky,snowLiam,leoCard].forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
+const excludeIds=new Set(["nose_breather_lil_mumps",ben.id,...winter.map(c=>c.id),mythJacky.id,snowLiam.id,leoCard.id]);
+randomRewardCards.splice(0,randomRewardCards.length,...allCards.filter(c=>!excludeIds.has(c.id)));
+packDefs.splice(0,packDefs.length,
+{id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:80,Uncommon:13,Rare:5.5,Epic:1.4,Legendary:.1},description:"Free pack • 5 players",className:"low"},
+{id:"high",name:"HIGH T PACK",icon:"💜",price:7500,pulls:5,odds:{Common:40,Uncommon:30,Rare:18,Epic:10,Legendary:1.8,Icon:.2},description:"5 players • Top-tier odds",className:"high"},
+{id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:100},description:"Guaranteed Mythical player",className:"mega"});
+normalPick=function(pack){
+ if(pack.id==="mega"){let pool=mythical,ws=pool.map(c=>c.id==="myth_jacky_chan"?.1:8.3),n=Math.random()*ws.reduce((a,b)=>a+b,0);for(let i=0;i<pool.length;i++){n-=ws[i];if(n<0)return pool[i]}return pool[0]}
+ let odds={...pack.odds};if(game.potion&&game.potion.until>Date.now()){Object.keys(odds).forEach(r=>{if(r!=="Common")odds[r]*=game.potion.multiplier});let sum=Object.values(odds).reduce((a,b)=>a+b,0);Object.keys(odds).forEach(r=>odds[r]=odds[r]/sum*100)}
+ const rarity=weightedRarity(odds);let pool=cards.filter(c=>c.rarity===rarity&&c.id!==ben.id);if(pack.id==="low"&&rarity==="Common")pool.push(ben);if(!pool.length)pool=cards.filter(c=>c.rarity!=="Icon"&&c.id!==ben.id);return pool[Math.floor(Math.random()*pool.length)];
+};
+game.chess=game.chess||{elo:100,wins:0,losses:0,draws:0,beaten:[],claimed:{}};
+game.galleryClaims=game.galleryClaims||{};
+const oldTeam=renderTeam;
+renderTeam=function(){
+ const slots=game.team.map((id,i)=>{const c=id?getCard(id):null,lock=game.match?.status==="running";return `<div class="position"><span class="position-role">${positionNames[i]}</span><div class="small">POSITION ${i+1}</div>${c?`<div style="font-size:26px">${c.emoji}</div><b>${c.name}</b><div class="rating">${c.rating}</div><span class="badge">${c.rarity}</span>`:"<b>Empty slot</b>"}<button data-slot="${i}" ${lock?"disabled":""}>${c?"CHANGE PLAYER":"SELECT PLAYER"}</button>${c?`<button class="secondary" data-clear="${i}" ${lock?"disabled":""}>REMOVE</button>`:""}</div>`}).join("");
+ const rows=[[0],[1,2,3],[4,5],[6]];
+ const match=game.match;let panel=match? `<div class="match-panel"><h3>⚽ ${match.status==="running"?"LIVE MATCH":"FULL TIME"}</h3><p>DA BOIZ XI ${getMatchScore().home} - ${getMatchScore().away} ${opponentName()}</p>${match.status==="finished"?'<button data-claimmatch>CLAIM MATCH RESULT</button>':""}</div>`:`<div class="match-panel"><h3>QUICK MATCH</h3><p>90 seconds • 3 tokens • Win 10 / Draw 4 / Loss 0</p><button data-startmatch ${!game.team.every(Boolean)||game.tokens<3?"disabled":""}>START MATCH</button></div>`;
+ return `<section><div class="sectionhero"><h2>⚽ MY SQUAD</h2><p>Seven-player 3-2-1 formation • one GK, three CB, two CM, one ST.</p><span class="badge">TEAM RATING: ${teamRating()||"NOT COMPLETE"}</span></div><div class="pitch">${rows.map(row=>`<div class="pitchrow">${row.map(i=>{const c=game.team[i]?getCard(game.team[i]):null;return `<div class="position">${positionNames[i]}<br>${c?`${c.emoji}<br><b>${c.name}</b><br>${c.rating}`:"➕ Empty"}</div>`}).join("")}</div>`).join("")}</div>${panel}<div class="grid">${slots}</div></section>`;
+};
+openPicker=function(slot){
+ if(isOpening||game.match?.status==="running")return;const list=document.getElementById("playerList");list.innerHTML="";
+ document.getElementById("pickerSubtitle").textContent=positionNames[slot]+" • Position "+(slot+1);
+ getOwned().sort((a,b)=>b.rating-a.rating).forEach(c=>{const used=game.team.filter((id,i)=>i!==slot&&id===c.id).length,available=(game.owned[c.id]||0)>used,el=document.createElement("button");el.className="playeroption";el.disabled=!available;el.innerHTML=`<span class="miniemoji">${c.emoji}</span><span class="playerinfo"><b>${c.name}</b><small>${c.rarity} • ${game.owned[c.id]} copies</small></span><span class="ovr">${c.rating}</span>`;el.onclick=()=>{if(!available)return;game.team[slot]=c.id;save();document.getElementById("playerPicker").classList.remove("show");render()};list.appendChild(el)});
+ document.getElementById("playerPicker").classList.add("show");
+};
+renderAlbum=function(){
+ const gallery=allCards.filter(c=>c.id!=="benjamin_fraser"||true),unique=gallery.filter(c=>(game.owned[c.id]||0)>0),pct=Math.round(unique.length/gallery.length*100);
+ return `<section><div class="sectionhero"><h2>🖼️ THE GALLERY</h2><p>Discover players. Duplicate copies count once toward completion.</p><span class="badge">${pct}% • ${unique.length}/${gallery.length}</span></div><div class="grid">${gallery.map(c=>game.owned[c.id]?cardHTML(c,`<div class="small">Copies: ${game.owned[c.id]}</div>`):`<div class="card ${c.rarity}" style="opacity:.4"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">${c.rarity}</div></div>`).join("")}</div><div class="panel"><h3>Winter Wildcards</h3><p>${winter.filter(c=>(game.owned[c.id]||0)>0).length}/13 discovered. Collect all 13 to unlock Liam Snowtherland (99).</p></div></section>`;
+};
+const oldObjectives=renderObjectives;
+renderObjectives=function(){return `<section><div class="sectionhero"><h2>🏆 OBJECTIVES & CHESS REWARDS</h2><p>Squad and chess milestones.</p></div><div class="subnav"><button data-objtab="squad">Squad</button><button data-objtab="chess">Chess rewards</button></div><div id="objContent">${oldObjectives()}</div></section>`};
+function chessRewardHTML(){const c=game.chess;return `<div class="panel"><h3>♟️ CHESS REWARDS</h3><p>ELO: <b>${c.elo}</b> • Wins ${c.wins} • Losses ${c.losses} • Draws ${c.draws}</p><p>250 ELO: 25 tokens • 500 ELO: 45 tokens • Beat Leo Lambert: exclusive 99 card.</p><div class="grid">${[["Benjamin Fraser",100],["Max Rolfe",125],["Dexter Chadwick",170],["Lil Mumps",220],["Vittorio Petruzzelli",260],["Henry James Worsell",310],["Oscar Robert Harper",500],["Leo Lambert",2000]].map(x=>`<div class="shopitem"><b>${x[0]}</b><p>${x[1]} ELO</p><button data-chess-opponent="${x[0]}">PLAY CHESS</button></div>`).join("")}</div><div id="chessBoard"></div></div>`};
+const oldBind=bindButtons;
+bindButtons=function(){oldBind();document.querySelectorAll("[data-objtab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-objtab]").forEach(x=>x.classList.toggle("active",x===b));document.getElementById("objContent").innerHTML=b.dataset.objtab==="chess"?chessRewardHTML():oldObjectives()});document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>startChess(b.dataset.chessOpponent));};
+const endPromo=new Date("2027-01-01T00:00:00Z").getTime();
+function openWinter(){if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");if(game.coins<12000)return toast("Not enough coins.");game.coins-=12000;const a=winter[Math.floor(Math.random()*winter.length)],b=winter.filter(x=>x.id!==a.id)[Math.floor(Math.random()*(winter.length-1))],dups=[award(a),award(b)];if(winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);pendingDuplicateSales=[a,b].map((c,i)=>dups[i]?{id:c.id,stored:false}:null).filter(Boolean);isOpening=true;save();showReveal({title:"❄️ WINTER WILDCARDS",subtitle:"Two promo players",results:[a,b],duplicateFlags:dups,walkouts:true})}
+const oldPacks=renderPacks;
+renderPacks=function(){const left=Math.max(0,endPromo-Date.now()),timer=Math.floor(left/86400000)+"d "+Math.floor(left%86400000/3600000)+"h "+Math.floor(left%3600000/60000)+"m";return oldPacks()+(Date.now()<endPromo?`<div class="panel" style="margin-top:16px;border:2px solid #176b3a;background:#0c2b19"><h2>❄️ WINTER WILDCARDS</h2><p>2 players • 12,000 coins • Expires in ${timer}</p><button data-winter>OPEN WINTER WILDCARDS</button></div>`:"")};
+const oldRenderSettings=renderSettings;
+renderSettings=function(){return oldRenderSettings()+`<div class="panel"><h3>Save management</h3><button data-save-export>EXPORT SAVE</button> <button data-save-import>IMPORT SAVE</button> <button data-save-clear>CLEAR SAVE</button><input id="save-file" type="file" accept="application/json" hidden></div>`};
+const bindSettings=bindButtons;
+bindButtons=function(){bindSettings();const ex=document.querySelector("[data-save-export]");if(ex)ex.onclick=()=>{const a=document.createElement("a"),u=URL.createObjectURL(new Blob([JSON.stringify(game,null,2)],{type:"application/json"}));a.href=u;a.download="da-boiz-rng-save.json";a.click();URL.revokeObjectURL(u)};const im=document.querySelector("[data-save-import]");if(im)im.onclick=()=>document.getElementById("save-file").click();const fi=document.getElementById("save-file");if(fi)fi.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem(SAVE_KEY,JSON.stringify(d));location.reload()}catch(e){toast("Invalid save file")}};if(fi.files[0])r.readAsText(fi.files[0])};const cl=document.querySelector("[data-save-clear]");if(cl)cl.onclick=()=>{if(confirm("Clear all game progress?")){localStorage.removeItem(SAVE_KEY);location.reload()}}};
+createMatch=function(){if(!game.team.every(Boolean)){toast("Fill all seven squad positions first.");return}const old=game.team;const res=oldCreateMatchGuard();return res};
+function oldCreateMatchGuard(){return createMatchOriginal()}
+const createMatchOriginal=window.createMatch||createMatch;
+claimObjective=function(target){const o=objectives.find(x=>x.rating===target);if(!o||game.claimed[target]||teamRating()<target||!teamCards().every(Boolean))return;game.claimed[target]=true;game.coins+=o.coins;game.tokens+=o.tokens;save();render();toast("Objective claimed!")};
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-chess-opponent]");if(!b)return;
+ const name=b.dataset.chessOpponent;
+ if(!window.Chess){const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";s.onload=()=>beginChess(name);s.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(s)}else beginChess(name);
+});
+let cg=null,ct=600,ctimer=null,oppName="";
+function beginChess(name){oppName=name;cg=new Chess();ct=600;const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct<=0)finishChess("loss")},1000)}
+function drawChess(){const el=document.getElementById("chessBoard"),board=cg.board(),symbols={wp:"♙",wn:"♘",wb:"♗",wr:"♖",wq:"♕",wk:"♔",bp:"♟",bn:"♞",bb:"♝",br:"♜",bq:"♛",bk:"♚"};let s='<p>Playing '+oppName+' • <b id="chess-clock">10:00</b></p><div style="display:grid;grid-template-columns:repeat(8,1fr);max-width:480px;margin:auto">';for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=board[r][c],sq="abcdefgh"[c]+(8-r);s+=`<button data-sq="${sq}" style="aspect-ratio:1;background:${(r+c)%2?"#73543c":"#e7d8b5"};font-size:clamp(20px,4vw,38px)">${p?symbols[p.color+p.type]:""}</button>`}el.innerHTML=s+'</div><p id="chess-status">White to move • Select a piece then its destination</p><button data-chess-resign>Resign</button>';el.querySelectorAll("[data-sq]").forEach(b=>b.onclick=()=>chessSquare(b.dataset.sq));el.querySelector("[data-chess-resign]").onclick=()=>finishChess("loss")}
+let selectedSq=null;
+function chessSquare(sq){if(!cg||cg.game_over())return;if(!selectedSq){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;return}const m=cg.move({from:selectedSq,to:sq,promotion:"q"});selectedSq=null;if(!m){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;return}if(cg.game_over())return finishChess(cg.in_checkmate()?"win":"draw");setTimeout(()=>{const moves=cg.moves({verbose:true});if(!moves.length)return finishChess("draw");const val={p:1,n:3,b:3,r:5,q:9,k:0};let chosen=moves[Math.floor(Math.random()*moves.length)];if(oppName==="Leo Lambert"||oppName==="Oscar Robert Harper"){chosen=moves.sort((a,b)=>(val[(b.captured||"")]-val[(a.captured||"")]))[0]}cg.move(chosen);if(cg.game_over())finishChess(cg.in_checkmate()?"loss":"draw");else drawChess()},350);drawChess()}
+function finishChess(result){if(ctimer)clearInterval(ctimer);const elo={"Benjamin Fraser":100,"Max Rolfe":125,"Dexter Chadwick":170,"Lil Mumps":220,"Vittorio Petruzzelli":260,"Henry James Worsell":310,"Oscar Robert Harper":500,"Leo Lambert":2000}[oppName]||100;const delta=result==="win"?Math.max(8,Math.round((elo-game.chess.elo)/35)+16):result==="loss"?-Math.max(4,Math.round((game.chess.elo-elo)/45)+8):2;game.chess.elo=Math.max(100,game.chess.elo+delta);if(result==="win"){game.chess.wins++;if(!game.chess.beaten.includes(oppName))game.chess.beaten.push(oppName);if(oppName==="Leo Lambert")game.owned[leoCard.id]=Math.max(1,game.owned[leoCard.id]||0)}else if(result==="loss")game.chess.losses++;else game.chess.draws++;game.chess.history=game.chess.history||[];game.chess.history.push({opponent:oppName,result,delta,date:Date.now()});cg=null;save();toast("Chess "+result+" • ELO "+(delta>=0?"+":"")+delta);render()}
+})();
+
 render();
 startMatchTimer();
 </script>
