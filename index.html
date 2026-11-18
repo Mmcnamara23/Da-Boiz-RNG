@@ -1534,7 +1534,16 @@ render=function(){
  updateMatchHUD();
  const eloAfter=document.getElementById("chessElo");if(eloAfter)eloAfter.textContent=game.chess.elo;
 };
-bindButtons=function(){previousBindButtons();document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim))};
+bindButtons=function(){
+ previousBindButtons();
+ document.querySelectorAll("[data-openpack]").forEach(b=>b.onclick=()=>openPack(b.dataset.openpack));
+ document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
+ document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
+ document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
+ document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>beginChess(b.dataset.chessOpponent));
+ document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
+ document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+};
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
 
 
