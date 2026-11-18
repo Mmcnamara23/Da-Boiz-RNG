@@ -747,7 +747,7 @@ transition-duration:.01ms!important;
  <nav>
   <button class="active" data-tab="shops">🛍️ Shops</button>
   <button data-tab="teamhub">⚽ Team</button>
-  <button data-tab="sbcs">🧩 SBC's</button>
+  <button data-tab="sbcs">♟️ Chess</button>
   <button data-tab="settings">⚙️ Settings</button>
  </nav>
  <div class="match-hud" id="matchHud">
@@ -1006,7 +1006,7 @@ const teamViews={team:renderTeam,objectives:renderObjectives,album:renderAlbum};
 content=`<div class="subnav">
 <button data-team-tab="team" class="${activeTeamTab==="team"?"active":""}">⚽ Squad</button>
 <button data-team-tab="objectives" class="${activeTeamTab==="objectives"?"active":""}">🏆 Team Objectives</button>
-<button data-team-tab="album" class="${activeTeamTab==="album"?"active":""}">📚 Album</button>
+<button data-team-tab="album" class="${activeTeamTab==="album"?"active":""}">📚 Gallery</button>
 </div>${teamViews[activeTeamTab]()}`;
 }else if(activeTab==="sbcs"){
 content=`<div class="subnav">
@@ -1859,6 +1859,61 @@ function claimChessReward(n){
  if(game.chess.claimed[n]||game.chess.elo<n)return;
  game.chess.claimed[n]=true;game.tokens+=n===250?25:45;save();render();toast("Chess reward claimed!");
 }
+
+const previousRender=render, previousOpenPack=openPack, previousBindButtons=bindButtons;
+mythical.forEach(c=>{if(c.rating>=96){c.rarity="Aura";c.aura=true}});
+allCards.forEach(c=>{if(mythical.some(m=>m.id===c.id)&&c.rating>=96){c.rarity="Aura";c.aura=true}});
+const auraCards=mythical.filter(c=>c.rating>=96);
+const auraStyle=document.createElement("style");
+auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
+document.head.appendChild(auraStyle);
+packDefs.splice(0,packDefs.length,
+ {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:54.2,Uncommon:25,Rare:12,Epic:7.2,Legendary:.6,Icon:.91,Mythical:.09},description:"Free pack • 5 players • Mythical chance 0.09%",className:"low"},
+ {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:100},description:"Mythical players, with a 0.5% Aura chance",className:"mega"},
+ {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"2 Winter Wildcards • Limited-time promo",className:"winter"}
+);
+normalPick=function(pack){
+ if(pack.id==="mega"){const pool=Math.random()<0.005?auraCards:mythical.filter(c=>c.rating<96);return pool[Math.floor(Math.random()*pool.length)]}
+ let odds={...pack.odds};if(game.potion&&game.potion.until>Date.now()){const m=game.potion.multiplier;Object.keys(odds).forEach(r=>{if(r!=="Common")odds[r]*=m})}
+ const rarity=weightedRarity(odds);let pool=cards.filter(c=>c.rarity===rarity);if(!pool.length)pool=allCards.filter(c=>c.rarity===rarity&&!c.exclusive&&!c.promo);return pool[Math.floor(Math.random()*pool.length)]||cards[0];
+};
+award=function(c){game.owned[c.id]=(game.owned[c.id]||0)+1;return false};
+revealCardElement=function(c){const wrap=document.createElement("div");wrap.className="revealcard card-revealed";const card=document.createElement("div");card.innerHTML=cardHTML(c);wrap.appendChild(card.firstElementChild);return wrap};
+updateRevealStorageStatus=function(){};
+openWinter=function(){
+ if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");
+ const p=packDefs.find(x=>x.id==="winter");if(!p||game.coins<p.price)return toast("Not enough coins.");
+ game.coins-=p.price;const results=[0,1].map(()=>winter[Math.floor(Math.random()*winter.length)]);
+ results.forEach(award);if(winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);
+ isOpening=true;save();showReveal({title:p.name,subtitle:"Two promo players",results,duplicateFlags:[false,false],walkouts:true});
+};
+openPack=function(id){if(id==="winter"){openWinter();return}return previousOpenPack(id)};
+renderPacks=function(){
+ const left=Math.max(0,endPromo-Date.now()),timer=Math.floor(left/86400000)+"d "+Math.floor(left%86400000/3600000)+"h "+Math.floor(left%3600000/60000)+"m";
+ return `<section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>Open packs, discover rare players and build your ultimate squad.</p><span class="badge">🪙 ${money(game.coins)} COINS AVAILABLE</span></div><div class="grid">${packDefs.map(p=>`<div class="pack ${p.className}"><div class="packicon">${p.icon}</div><div class="packname">${p.name}</div><div class="price">${p.price===0?"FREE":"🪙 "+money(p.price)}</div><div class="packdesc">${p.description}${p.id==="winter"&&Date.now()<endPromo?" • Expires in "+timer:""}</div><div class="packstats"><span>🃏 ${p.pulls} players</span><span>${p.id==="mega"?"✨ 0.5% Aura chance":p.id==="winter"?"🎄 Promo pack":"✨ Pack odds"}</span></div><div class="packfoot"><button data-openpack="${p.id}" ${game.coins<p.price?"disabled":""}>${game.coins<p.price?"NOT ENOUGH COINS":"OPEN PACK →"}</button></div></div>`).join("")}</div></section>`;
+};
+renderAlbum=function(){
+ const rarities=["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Aura","Winter Wildcards"];
+ const groups=rarities.map(r=>{
+  const set=allCards.filter(c=>c.rarity===r);if(!set.length)return "";
+  const found=set.filter(c=>(game.owned[c.id]||0)>0).length,pct=Math.round(found/set.length*100);
+  let reward="No set reward";if(r==="Common")reward="2,000 coins";if(r==="Uncommon")reward="6,000 coins";if(r==="Rare")reward="8,000 coins";if(r==="Epic")reward="10,000 coins";if(r==="Legendary")reward="10 tokens";if(r==="Icon")reward="10 tokens + 5,000 coins";if(r==="Mythical")reward="Exclusive Mythical Jacky Chan (99)";if(r==="Aura")reward="Aura set completion";if(r==="Winter Wildcards")reward="Collect all 13 to unlock Liam Snowtherland (99)";
+  const canClaim=["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical"].includes(r)&&found===set.length&&!game.galleryClaims[r];
+  const cardsHtml=set.map(c=>{const count=game.owned[c.id]||0;return count?cardHTML(c,`<div class="small">Collected • Copies: ${count}</div>`):`<div class="card ${c.rarity}" style="opacity:.48;filter:grayscale(.85)"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">${c.rarity}</div></div>`}).join("");
+  return `<div class="panel gallery-set"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>${r} Set</h2><b>${found}/${set.length} • ${pct}%</b></div><p>Set reward: <b>${reward}</b></p><div class="bar"><span style="width:${pct}%"></span></div>${canClaim?`<button data-gallery-claim="${r}">CLAIM SET REWARD</button>`:""}<div class="grid" style="margin-top:14px">${cardsHtml}</div></div>`;
+ }).join("");
+ return `<section><div class="sectionhero"><h2>📚 THE GALLERY</h2><p>Every card is shown in its rarity set. Discover cards to reveal them and track your collection.</p></div>${groups}</section>`;
+};
+document.querySelectorAll('nav button[data-tab="sbcs"]').forEach(b=>b.textContent="♟️ Chess");
+const originalSetTab=setTab;
+setTab=function(tab){if(isOpening)return;activeTab=tab;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
+render=function(){
+ if(activeTab==="sbcs"){document.getElementById("coins").textContent=money(game.coins);document.getElementById("tokens").textContent=money(game.tokens);document.getElementById("teamRating").textContent=teamRating()||"—";document.getElementById("app").innerHTML='<section><div class="sectionhero"><h2>♟️ CHESS</h2><p>Coming soon.</p></div></section>';updateMatchHUD();return}
+ previousRender();
+};
+bindButtons=function(){previousBindButtons();document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim))};
+const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
+
 render();
 startMatchTimer();
 </script>
