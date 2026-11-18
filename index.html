@@ -1514,17 +1514,35 @@ const originalSetTab=setTab;
 setTab=function(tab){if(isOpening)return;if(game.chess&&game.chess.active&&tab!=="sbcs"){toast("Finish or forfeit your chess game before leaving Chess.");return}activeTab=tab;document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
 setShopTab=function(tab){if(isOpening)return;activeShopTab=["packs","luck","tokenshop"].includes(tab)?tab:"packs";activeTab="shops";render()};
 render=function(){
- if(activeTab==="sbcs"){
-  const app=document.getElementById("app");if(!app)return;
-  const coins=document.getElementById("coins"),tokens=document.getElementById("tokens"),rating=document.getElementById("teamRating");
-  if(coins)coins.textContent=money(game.coins);if(tokens)tokens.textContent=money(game.tokens);if(rating)rating.textContent=teamRating()||"—";
+ const app=document.getElementById("app");
+ if(!app)return;
+ const coins=document.getElementById("coins"),tokens=document.getElementById("tokens"),rating=document.getElementById("teamRating");
+ if(coins)coins.textContent=money(game.coins);
+ if(tokens)tokens.textContent=money(game.tokens);
+ if(rating)rating.textContent=teamRating()||"—";
+ if(activeTab==="shops"){
+  if(!["packs","luck","tokenshop"].includes(activeShopTab))activeShopTab="packs";
+  const views={packs:renderPacks,luck:renderLuck,tokenshop:renderTokenShop};
+  let shopContent="";
+  try{
+   const view=views[activeShopTab];
+   if(typeof view!=="function")throw new Error("Missing shop view: "+activeShopTab);
+   shopContent=view();
+   if(typeof shopContent!=="string"||!shopContent.trim())throw new Error("Shop view returned empty content: "+activeShopTab);
+  }catch(err){
+   console.error("Da Boiz shop render error:",err);
+   shopContent='<section class="panel"><h2>Shop loading error</h2><p>The shop screen hit an error. Refresh the page and try again.</p></section>';
+  }
+  app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopContent;
+ }else if(activeTab==="sbcs"){
   app.innerHTML=chessRewardHTML();
-  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
-  bindButtons();updateMatchHUD();
-  const elo=document.getElementById("chessElo");if(elo&&game.chess)elo.textContent=game.chess.elo;
  }else{
   previousRender();
  }
+ document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
+ bindButtons();
+ updateMatchHUD();
+ const elo=document.getElementById("chessElo");if(elo&&game.chess)elo.textContent=game.chess.elo;
 };
 bindButtons=function(){
  try{previousBindButtons()}catch(err){console.error("Legacy button binding failed:",err)}
