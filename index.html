@@ -1511,30 +1511,27 @@ renderAlbum=function(){
 };
 document.querySelectorAll('nav button[data-tab="sbcs"]').forEach(b=>b.textContent="♟️ Chess");
 const originalSetTab=setTab;
-setTab=function(tab){if(isOpening)return;if(game.chess.active&&tab!=="sbcs"){toast("Finish or forfeit your chess game before leaving Chess.");return}activeTab=tab;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
+setTab=function(tab){if(isOpening)return;if(game.chess&&game.chess.active&&tab!=="sbcs"){toast("Finish or forfeit your chess game before leaving Chess.");return}activeTab=tab;document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
+setShopTab=function(tab){if(isOpening)return;activeShopTab=["packs","luck","tokenshop"].includes(tab)?tab:"packs";activeTab="shops";render()};
 render=function(){
- const app=document.getElementById("app");
- if(!app)return;
- document.getElementById("coins").textContent=money(game.coins);
- document.getElementById("tokens").textContent=money(game.tokens);
- document.getElementById("teamRating").textContent=teamRating()||"—";
- const eloEl=document.getElementById("chessElo");if(eloEl)eloEl.textContent=game.chess.elo;
- if(activeTab==="sbcs"){
-   app.innerHTML=chessRewardHTML();
- }else if(activeTab==="shops"){
-   if(!["packs","luck","tokenshop"].includes(activeShopTab))activeShopTab="packs";
-   const shopViews={packs:renderPacks,luck:renderLuck,tokenshop:renderTokenShop};
-   app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopViews[activeShopTab]();
- }else{
-   previousRender();
- }
- document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
- bindButtons();
- updateMatchHUD();
- const eloAfter=document.getElementById("chessElo");if(eloAfter)eloAfter.textContent=game.chess.elo;
+ const app=document.getElementById("app");if(!app)return;
+ const coins=document.getElementById("coins"),tokens=document.getElementById("tokens"),rating=document.getElementById("teamRating");
+ if(coins)coins.textContent=money(game.coins);if(tokens)tokens.textContent=money(game.tokens);if(rating)rating.textContent=teamRating()||"—";
+ if(activeTab==="shops"){
+  if(!["packs","luck","tokenshop"].includes(activeShopTab))activeShopTab="packs";
+  let shopContent="";
+  try{const views={packs:renderPacks,luck:renderLuck,tokenshop:renderTokenShop};shopContent=views[activeShopTab]();}
+  catch(err){console.error("Shop render failed:",err);shopContent='<section class="panel"><h2>Shop temporarily unavailable</h2><p>The shop encountered an error. Please refresh the page.</p></section>';}
+  app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopContent;
+ }else if(activeTab==="sbcs"){app.innerHTML=chessRewardHTML();}
+ else{previousRender();}
+ document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
+ bindButtons();updateMatchHUD();
+ const elo=document.getElementById("chessElo");if(elo&&game.chess)elo.textContent=game.chess.elo;
 };
 bindButtons=function(){
- previousBindButtons();
+ try{previousBindButtons()}catch(err){console.error("Legacy button binding failed:",err)}
+ document.querySelectorAll("[data-shop-tab]").forEach(b=>b.onclick=()=>setShopTab(b.dataset.shopTab));
  document.querySelectorAll("[data-openpack]").forEach(b=>b.onclick=()=>openPack(b.dataset.openpack));
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
