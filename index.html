@@ -715,7 +715,7 @@ body.chess-active nav{pointer-events:none;opacity:.45}body.chess-active .logo{op
  <nav>
   <button class="active" data-tab="shops">🛍️ Shops</button>
   <button data-tab="teamhub">⚽ Team</button>
-  <button data-tab="sbcs">♟️ Chess</button>
+  <button data-tab="sbcs">🧩 SBC's</button>
   <button data-tab="settings">⚙️ Settings</button>
  </nav>
  <div class="match-hud" id="matchHud">
@@ -1650,7 +1650,7 @@ render=function(){
   }
   app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopContent;
  }else if(activeTab==="sbcs"){
-  app.innerHTML=chessRewardHTML();
+  app.innerHTML='<section><div class="sectionhero"><h2>🧩 SBC\'s</h2><p>Coming soon.</p></div></section>';
  }else{
   previousRender();
  }
@@ -1665,9 +1665,9 @@ bindButtons=function(){
  document.querySelectorAll("[data-openpack]").forEach(b=>b.onclick=()=>openPack(b.dataset.openpack));
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
- document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
- document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>startChessFromButton(b));
- document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>startChessFromButton(b));
+
+
+
 
 
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
@@ -1690,48 +1690,6 @@ claimGallery=function(r){
  if(r==="Aura")game.owned["gallery_aura_liam_og"]=(game.owned["gallery_aura_liam_og"]||0)+1;
  save();render();toast(r+" Gallery reward claimed!");
 };
-// Reliable delegated click routing: dynamic screens replace #app.innerHTML, so
-// route every game button from the document instead of relying on stale inline bindings.
-document.addEventListener("click",function(event){
- const button=event.target&&event.target.closest?event.target.closest(
-  'nav button[data-tab],[data-shop-tab],[data-team-tab],[data-openpack],[data-slot],[data-clear],[data-claim],[data-potion],[data-tokenbuy],[data-startmatch],[data-claimmatch],[data-winter],[data-gallery-claim],[data-chess-reward],[data-chess-opponent],[data-chess-resume],[data-objtab],[data-save-export],[data-save-import],[data-save-clear]'
- ):null;
- if(!button)return;
- event.preventDefault();
- event.stopImmediatePropagation();
- try{
-  if(button.matches('nav button[data-tab]'))setTab(button.dataset.tab);
-  else if(button.hasAttribute("data-shop-tab"))setShopTab(button.dataset.shopTab);
-  else if(button.hasAttribute("data-team-tab"))setTeamTab(button.dataset.teamTab);
-  else if(button.hasAttribute("data-openpack"))openPack(button.dataset.openpack);
-  else if(button.hasAttribute("data-slot"))openPicker(Number(button.dataset.slot));
-  else if(button.hasAttribute("data-clear")){
-   if(game.match&&game.match.status==="running"){toast("You cannot change your team during a match!");return;}
-   game.team[Number(button.dataset.clear)]=null;persistRender();
-  }else if(button.hasAttribute("data-claim"))claimObjective(Number(button.dataset.claim));
-  else if(button.hasAttribute("data-potion"))buyPotion(Number(button.dataset.potion));
-  else if(button.hasAttribute("data-tokenbuy"))buyTokenItem(button.dataset.tokenbuy);
-  else if(button.hasAttribute("data-startmatch"))createMatch();
-  else if(button.hasAttribute("data-claimmatch"))claimMatch();
-  else if(button.hasAttribute("data-winter"))openWinter();
-  else if(button.hasAttribute("data-gallery-claim"))claimGallery(button.dataset.galleryClaim);
-  else if(button.hasAttribute("data-chess-reward"))claimChessReward(Number(button.dataset.chessReward));
-  else if(button.hasAttribute("data-chess-opponent")||button.hasAttribute("data-chess-resume"))startChessFromButton(button);
-  else if(button.hasAttribute("data-objtab")){
-   document.querySelectorAll("[data-objtab]").forEach(x=>x.classList.toggle("active",x===button));
-   const target=document.getElementById("objContent");
-   if(target)target.innerHTML=button.dataset.objtab==="chess"?chessRewardHTML():oldObjectives();
-   bindButtons();
-  }else if(button.hasAttribute("data-save-export")){
-   const a=document.createElement("a"),u=URL.createObjectURL(new Blob([JSON.stringify(game,null,2)],{type:"application/json"}));
-   a.href=u;a.download="da-boiz-rng-save.json";a.click();URL.revokeObjectURL(u);
-  }else if(button.hasAttribute("data-save-import"))document.getElementById("save-file").click();
-  else if(button.hasAttribute("data-save-clear")){
-   if(confirm("Clear all game progress?")){localStorage.removeItem(SAVE_KEY);location.reload();}
-  }
- }catch(err){console.error("Da Boiz button action failed:",err);toast("That button hit an error. Please refresh and try again.");}
-},true);
-
 render();
 startMatchTimer();
 </script>
