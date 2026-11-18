@@ -1514,18 +1514,25 @@ document.querySelectorAll('nav button[data-tab="sbcs"]').forEach(b=>b.textConten
 const originalSetTab=setTab;
 setTab=function(tab){if(isOpening)return;if(game.chess.active&&tab!=="sbcs"){toast("Finish or forfeit your chess game before leaving Chess.");return}activeTab=tab;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
 render=function(){
+ const app=document.getElementById("app");
+ if(!app)return;
  document.getElementById("coins").textContent=money(game.coins);
  document.getElementById("tokens").textContent=money(game.tokens);
  document.getElementById("teamRating").textContent=teamRating()||"—";
  const eloEl=document.getElementById("chessElo");if(eloEl)eloEl.textContent=game.chess.elo;
  if(activeTab==="sbcs"){
-   document.getElementById("app").innerHTML=chessRewardHTML();
-   bindButtons();
-   updateMatchHUD();
-   return;
+   app.innerHTML=chessRewardHTML();
+ }else if(activeTab==="shops"){
+   if(!["packs","luck","tokenshop"].includes(activeShopTab))activeShopTab="packs";
+   const shopViews={packs:renderPacks,luck:renderLuck,tokenshop:renderTokenShop};
+   app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopViews[activeShopTab]();
+ }else{
+   previousRender();
  }
- previousRender();
- const eloEl2=document.getElementById("chessElo");if(eloEl2)eloEl2.textContent=game.chess.elo;
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
+ bindButtons();
+ updateMatchHUD();
+ const eloAfter=document.getElementById("chessElo");if(eloAfter)eloAfter.textContent=game.chess.elo;
 };
 bindButtons=function(){previousBindButtons();document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim))};
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
