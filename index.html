@@ -1519,13 +1519,6 @@ function awardPackCard(c){
 revealCardElement=function(c,isDuplicate=false,index=0){
  const wrap=document.createElement("div");wrap.className="revealcard card-revealed";
  const card=document.createElement("div");card.innerHTML=cardHTML(c);wrap.appendChild(card.firstElementChild);
- if(isDuplicate){
-  const value=duplicateSellValue(c);
-  const sold=document.createElement("div");sold.className="duplicate-sold";
-  sold.textContent=value>0?"DUPLICATE • SOLD FOR "+money(value)+" COINS":"DUPLICATE • SOLD FOR 0 COINS";
-  sold.style.cssText="margin-top:7px;padding:6px 8px;border-radius:8px;background:#173c2b;color:#8dffb2;font-size:11px;font-weight:900;text-align:center";
-  wrap.appendChild(sold);
- }
  return wrap;
 };
 updateRevealStorageStatus=function(){};
@@ -1561,7 +1554,8 @@ openPack=function(id){
   save();
   const tokenText=tokenPulls?" • +"+tokenPulls+" token"+(tokenPulls===1?"":"s"):"";
   const bonusText=bonusTokens?" • BONUS: +2 tokens!":"";
-  showReveal({title:pack.name,subtitle:results.length+" player"+(results.length===1?"":"s")+" in your pack"+tokenText+bonusText,results,duplicateFlags,walkouts:true});
+  const coinText=sold?" • +"+money(sold)+" coins":"";
+  showReveal({title:pack.name,subtitle:results.length+" player"+(results.length===1?"":"s")+" in your pack"+tokenText+coinText+bonusText,results,duplicateFlags,walkouts:true});
  }catch(err){game.coins=oldCoins;game.tokens=oldTokens;isOpening=false;save();console.error(err);toast("Pack opening failed — coins returned.");render()}
 };
 renderPacks=function(){
