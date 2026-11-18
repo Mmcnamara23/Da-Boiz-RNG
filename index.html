@@ -1334,6 +1334,15 @@ const winter=[
 ["brody_snowell","Brody Snowell",82,"Uncommon"],["dexter_clauswick","Dexter Clauswick",84,"Winter Wildcards"],["matthew_baublesley","Matthew Bauble-sley",81,"Winter Wildcards"],["numaii_elfie","Numaii Elfie-Madden",86,"Winter Wildcards"],["freddie_frostfield","Freddie Frostfield",89,"Winter Wildcards"],["max_rolfenbells","Max Rolfenbells",82,"Winter Wildcards"],["ashton_elflott","Ashton Elflott",84,"Winter Wildcards"],["oscar_holiday","Oscar Robert Ho-Ho-Harper",93,"Winter Wildcards"],["jayden_jingle","Jayden Jingle-barteh",84,"Winter Wildcards"],["henry_worsleigh","Henry James Worsleigh",91,"Winter Wildcards"],["vittorio_present","Vittorio Present-zzelli",84,"Winter Wildcards"],["zain_mistleah","Zain Mistleah",81,"Winter Wildcards"],["lil_mistle_mumps","Lil Mistle-Mumps",84,"Winter Wildcards"]
 ].map(x=>({id:x[0],name:x[1],emoji:"🎄",rating:x[2],rarity:x[3],price:5000,promo:true}));
 winter.forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
+winter.find(c=>c.id==="henry_worsleigh").rating=96;
+winter.find(c=>c.id==="oscar_holiday").rating=98;
+function pickWinterCard(){
+ const rareIds=new Set(["henry_worsleigh","oscar_holiday"]);
+ const weights=winter.map(c=>({card:c,weight:rareIds.has(c.id)?0.07:(99.86/11)}));
+ let roll=Math.random()*100;
+ for(const item of weights){roll-=item.weight;if(roll<0)return item.card}
+ return weights[weights.length-1].card;
+}
 const mythJacky={id:"gallery_mythical_jacky",name:"Mythical Jacky Chan",emoji:"🥋",rarity:"Mythical",rating:99,price:5000};
 const snowLiam={id:"liam_snowtherland",name:"Liam Snowtherland",emoji:"🎅",rarity:"Winter Wildcards",rating:99,price:5000,promo:true,exclusive:true};
 const leoCard={id:"leo_lambert",name:"Leo Lambert",emoji:"♟️",rarity:"Icon",rating:99,price:10000};
@@ -1457,14 +1466,20 @@ const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
 packDefs.splice(0,packDefs.length,
- {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:54.2,Uncommon:25,Rare:12,Epic:7.2,Legendary:.6,Icon:.91,Mythical:.09},description:"Free pack • 5 players • Mythical chance 0.09%",className:"low"},
- {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:100},description:"Mythical players, with a 0.5% Aura chance",className:"mega"},
- {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"2 Winter Wildcards • Limited-time promo",className:"winter"}
+ {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:51.691,Uncommon:25,Rare:19,Epic:4,Legendary:.3,Icon:.009},description:"Free pack • 5 players • No Mythical, Aura or Winter cards",className:"low"},
+ {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"99.95% Mythical • 0.05% Aura chance",className:"mega"},
+ {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"2 Winter Wildcards • Henry & Oscar are ultra-rare",className:"winter"}
 );
 normalPick=function(pack){
- if(pack.id==="mega"){const pool=Math.random()<0.005?auraCards:mythical.filter(c=>c.rating<96);return pool[Math.floor(Math.random()*pool.length)]}
- let odds={...pack.odds};if(game.potion&&game.potion.until>Date.now()){const m=game.potion.multiplier;Object.keys(odds).forEach(r=>{if(r!=="Common")odds[r]*=m})}
- const rarity=weightedRarity(odds);let pool=cards.filter(c=>c.rarity===rarity);if(!pool.length)pool=allCards.filter(c=>c.rarity===rarity&&!c.exclusive&&!c.promo);return pool[Math.floor(Math.random()*pool.length)]||cards[0];
+ const rarity=weightedRarity(pack.odds||{});
+ let pool=[];
+ if(pack.id==="mega"){
+  pool=rarity==="Aura"?auraCards:mythical.filter(c=>c.rarity==="Mythical");
+ }else{
+  pool=cards.filter(c=>c.rarity===rarity&&!c.promo&&!c.exclusive);
+ }
+ if(!pool.length)throw new Error("No players configured for rarity: "+rarity);
+ return pool[Math.floor(Math.random()*pool.length)];
 };
 award=function(c){game.owned[c.id]=(game.owned[c.id]||0)+1;return false};
 revealCardElement=function(c){const wrap=document.createElement("div");wrap.className="revealcard card-revealed";const card=document.createElement("div");card.innerHTML=cardHTML(c);wrap.appendChild(card.firstElementChild);return wrap};
@@ -1473,7 +1488,7 @@ openWinter=function(){
  
  if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");
  const p=packDefs.find(x=>x.id==="winter");if(!p||game.coins<p.price)return toast("Not enough coins.");
- game.coins-=p.price;const results=[0,1].map(()=>winter[Math.floor(Math.random()*winter.length)]);
+ game.coins-=p.price;const results=[0,1].map(()=>pickWinterCard());
  results.forEach(award);if(winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);
  isOpening=true;save();showReveal({title:p.name,subtitle:"Two promo players",results,duplicateFlags:[false,false],walkouts:true});
 };
