@@ -1436,6 +1436,7 @@ function resumeChess(){const a=game.chess.active;if(!a||!window.Chess)return;opp
 function drawChess(){const el=document.getElementById("chessBoard"),board=cg.board(),symbols={wp:"♙",wn:"♘",wb:"♗",wr:"♖",wq:"♕",wk:"♔",bp:"♟",bn:"♞",bb:"♝",br:"♜",bq:"♛",bk:"♚"};let s='<p>Playing '+oppName+' • <b id="chess-clock">10:00</b></p><div style="display:grid;grid-template-columns:repeat(8,1fr);max-width:480px;margin:auto">';for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=board[r][c],sq="abcdefgh"[c]+(8-r);s+=`<button data-sq="${sq}" class="${selectedSq===sq?"selected":""}" style="aspect-ratio:1;background:${(r+c)%2?"#73543c":"#e7d8b5"};font-size:clamp(20px,4vw,38px)">${p?symbols[p.color+p.type]:""}</button>`}el.innerHTML=s+'</div><p id="chess-status">White to move • Select a piece then its destination</p><div class="chess-active-banner"><span>Leaving this page is locked until the game ends.</span><button data-chess-resign>FORFEIT • LOSE ELO</button></div>';el.querySelectorAll("[data-sq]").forEach(b=>b.onclick=()=>chessSquare(b.dataset.sq));el.querySelector("[data-chess-resign]").onclick=()=>{if(confirm("Forfeit this game and lose ELO?"))finishChess("loss")}}
 function chessSquare(sq){if(!cg||cg.game_over())return;if(!selectedSq){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}const m=cg.move({from:selectedSq,to:sq,promotion:"q"});selectedSq=null;if(!m){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}game.chess.active.moves.push(m.san);if(cg.game_over())return finishChess(cg.in_checkmate()?"win":"draw");setTimeout(()=>{const moves=cg.moves({verbose:true});if(!moves.length)return finishChess("draw");const val={p:1,n:3,b:3,r:5,q:9,k:0};let chosen=moves[Math.floor(Math.random()*moves.length)];if(oppName==="Leo Lambert"||oppName==="Oscar Robert Harper"){chosen=moves.sort((a,b)=>(val[(b.captured||"")]-val[(a.captured||"")]))[0]}const ai=cg.move(chosen);game.chess.active.moves.push(ai.san);save();if(cg.game_over())finishChess(cg.in_checkmate()?"loss":"draw");else drawChess()},350);drawChess()}
 function finishChess(result){if(ctimer)clearInterval(ctimer);document.body.classList.remove("chess-active");const elo={"Benjamin Fraser":100,"Max Rolfe":125,"Dexter Chadwick":170,"Lil Mumps":220,"Vittorio Petruzzelli":260,"Henry James Worsell":310,"Oscar Robert Harper":500,"Leo Lambert":2000}[oppName]||100;const delta=result==="win"?Math.max(8,Math.round((elo-game.chess.elo)/35)+16):result==="loss"?-Math.max(4,Math.round((game.chess.elo-elo)/45)+8):2;game.chess.elo=Math.max(100,game.chess.elo+delta);if(result==="win"){game.chess.wins++;if(!game.chess.beaten.includes(oppName))game.chess.beaten.push(oppName);if(oppName==="Leo Lambert")game.owned[leoCard.id]=Math.max(1,game.owned[leoCard.id]||0)}else if(result==="loss")game.chess.losses++;else game.chess.draws++;game.chess.history=game.chess.history||[];game.chess.history.push({opponent:oppName,result,delta,date:Date.now()});game.chess.active=null;cg=null;selectedSq=null;save();toast("Chess "+result+" • ELO "+(delta>=0?"+":"")+delta);render()}
+window.daBoizWinterPack={cards:winter,pick:pickWinterCard,snowLiam:snowLiam};
 })();
 
 
@@ -1468,7 +1469,7 @@ document.head.appendChild(auraStyle);
 packDefs.splice(0,packDefs.length,
  {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:55,Uncommon:20,Rare:9,Epic:4,Legendary:.1,Icon:.005},description:"DA BOIZ: Built different. Every pull tells a story.",className:"low"},
  {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"DA BOIZ: Legends aren’t found. They’re packed.",className:"mega"},
- {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:45000,pulls:2,description:"DA BOIZ: Through every storm, legends rise.",className:"winter"}
+ {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:12000,pulls:2,description:"DA BOIZ: Through every storm, legends rise.",className:"winter"}
 );
 normalPick=function(pack){
  if(pack.id==="mega"){
@@ -1486,7 +1487,7 @@ normalPick=function(pack){
   if(!pool.length)throw new Error("No LOW T players configured for rarity: "+rarity);
   return pool[Math.floor(Math.random()*pool.length)];
  }
- if(pack.id==="winter")return pickWinterCard();
+ if(pack.id==="winter")return window.daBoizWinterPack.pick();
  const rarity=weightedRarity(pack.odds||{});
  const pool=cards.filter(c=>c.rarity===rarity&&!c.promo&&!c.exclusive);
  if(!pool.length)throw new Error("No players configured for rarity: "+rarity);
@@ -1522,41 +1523,41 @@ revealCardElement=function(c,isDuplicate=false,index=0){
  return wrap;
 };
 updateRevealStorageStatus=function(){};
-openWinter=function(){
- 
- if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");
- const p=packDefs.find(x=>x.id==="winter");if(!p||game.coins<p.price)return toast("Not enough coins.");
- game.coins-=p.price;const results=[0,1].map(()=>pickWinterCard());
- const duplicateFlags=results.map(c=>award(c));
- const sold=results.reduce((sum,c,i)=>sum+(duplicateFlags[i]?duplicateSellValue(c):0),0);
- const tokensWon=awardPackTokens();
- if(winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);
- isOpening=true;save();showReveal({title:p.name,subtitle:"Two promo players"+(sold?" • Duplicates auto-sold for "+money(sold)+" coins":"")+(tokensWon?" • BONUS: +2 tokens!":""),results,duplicateFlags,walkouts:true});
-};
+openWinter=function(){return openPack("winter");};
 openPack=function(id){
  if(isOpening)return;
  const pack=packDefs.find(p=>p.id===id);
  if(!pack)return toast("Pack unavailable.");
  if(game.coins<pack.price)return toast("Not enough coins.");
- const oldCoins=game.coins,oldTokens=game.tokens;
+ const oldCoins=Number(game.coins)||0,oldTokens=Number(game.tokens)||0,oldOwned={...(game.owned||{})};
  try{
   const pulls=Array.from({length:pack.pulls},()=>normalPick(pack));
   const tokenPulls=pulls.filter(c=>c===null).length;
   const results=pulls.filter(Boolean);
   if(results.length+tokenPulls!==pack.pulls)throw new Error("Pack reward pool invalid");
-  game.coins-=pack.price;isOpening=true;
-  game.tokens=(Number(game.tokens)||0)+tokenPulls;
+  if(id==="winter"&&results.length!==2)throw new Error("Winter pack did not produce two players");
+  game.coins=oldCoins-pack.price;
+  isOpening=true;
+  game.tokens=oldTokens+tokenPulls;
   const saleResults=results.map(c=>awardPackCard(c));
   const duplicateFlags=saleResults.map(x=>x.duplicate);
   const sold=saleResults.reduce((sum,x)=>sum+x.value,0);
   const bonusTokens=awardPackTokens();
-  if(id==="winter"&&winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);
+  if(id==="winter"&&window.daBoizWinterPack.cards.every(c=>(game.owned[c.id]||0)>0)){
+   const special=window.daBoizWinterPack.snowLiam;
+   game.owned[special.id]=Math.max(1,Number(game.owned[special.id])||0);
+  }
   save();
   const tokenText=tokenPulls?" • +"+tokenPulls+" token"+(tokenPulls===1?"":"s"):"";
-  const bonusText=bonusTokens?" • BONUS: +2 tokens!":"";
   const coinText=sold?" • +"+money(sold)+" coins":"";
+  const bonusText=bonusTokens?" • BONUS: +2 tokens!":"";
   showReveal({title:pack.name,subtitle:results.length+" player"+(results.length===1?"":"s")+" in your pack"+tokenText+coinText+bonusText,results,duplicateFlags,walkouts:true});
- }catch(err){game.coins=oldCoins;game.tokens=oldTokens;isOpening=false;save();console.error(err);toast("Pack opening failed — coins returned.");render()}
+ }catch(err){
+  game.coins=oldCoins;game.tokens=oldTokens;game.owned=oldOwned;isOpening=false;save();
+  console.error("Pack opening failed ("+id+"):",err);
+  toast("Pack opening failed — coins returned. Please try again.");
+  render();
+ }
 };
 renderPacks=function(){
  const coins=Number(game.coins)||0;
@@ -1608,7 +1609,7 @@ render=function(){
      const name=String(p&&p.name||"PACK"),desc=String(p&&p.description||"Open to discover players.");
      const icon=String(p&&p.icon||"🎁"),cls=String(p&&p.className||"");
      const locked=balance<price;
-     return '<div class="pack '+cls+'"><div class="packicon">'+icon+'</div><div class="packname">'+name+'</div><div class="price">'+(price===0?"FREE":"🪙 "+fmt(price))+'</div><div class="packdesc">'+desc+'</div><div class="packstats"><span>🃏 '+pulls+' players</span><span>'+(id==="mega"?"✨ Mythical pack":id==="winter"?"🎄 Promo pack":"✨ Pack odds")+'</span></div><div class="packfoot"><button data-openpack="'+id+'" '+(locked?"disabled":"")+'>'+(locked?"NOT ENOUGH COINS":"OPEN PACK →")+'</button></div></div>';
+     return '<div class="pack '+cls+'"><div class="packicon">'+icon+'</div><div class="packname">'+name+'</div><div class="price">'+(price===0?"FREE":"🪙 "+fmt(price))+'</div><div class="packdesc">'+desc+'</div><div class="packstats"><span>🃏 '+pulls+' players</span></div><div class="packfoot"><button data-openpack="'+id+'" '+(locked?"disabled":"")+'>'+(locked?"NOT ENOUGH COINS":"OPEN PACK →")+'</button></div></div>';
     }).join("");
     shopContent='<section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>Open packs, discover rare players and build your ultimate squad.</p><span class="badge">🪙 '+fmt(balance)+' COINS AVAILABLE</span></div><div class="grid">'+(packCards||'<div class="panel">No packs are currently configured.</div>')+'</div></section>';
    }else{
