@@ -1150,7 +1150,7 @@ document.getElementById("revealSubtitle").textContent=data.subtitle||"";
 updateRevealStorageStatus();document.getElementById("walkoutBanner").innerHTML="";
 document.getElementById("pickHint").textContent="";document.getElementById("revealActions").innerHTML="";
 grid.innerHTML="";overlay.classList.add("show");document.getElementById("closeReveal").disabled=true;
-const walkout=data.walkouts?bestWalkout(data.results):null;const rest=walkout?data.results.filter(c=>c!==walkout):data.results.slice();
+const walkout=data.forceWalkout?(data.results[0]||null):(data.walkouts?bestWalkout(data.results):null);const rest=walkout?data.results.filter(c=>c!==walkout):data.results.slice();
 
 function finish(){
 if(run!==openingRun)return;
@@ -1185,7 +1185,7 @@ let front=document.createElement("div");front.className="flip-front";front.inner
 inner.appendChild(back);inner.appendChild(front);special.appendChild(inner);grid.appendChild(special);
 animationTimer=setTimeout(()=>{
 if(run!==openingRun)return;
-let icon=rarity==="Mythical"?"🌌":rarity==="Icon"?"⚡":rarity==="Legendary"?"👑":rarity==="Epic"?"💜":"💎";
+let icon=rarity==="Winter Wildcards"?"❄️":rarity==="Mythical"?"🌌":rarity==="Icon"?"⚡":rarity==="Legendary"?"👑":rarity==="Epic"?"💜":"💎";
 document.getElementById("walkoutBanner").innerHTML=`<div class="walkouttitle">YOU PACKED A...</div><div class="walkout-subtitle">${rarity.toUpperCase()} ${icon}</div>`;
 document.getElementById("pickHint").textContent="REVEALING PLAYER...";
 animationTimer=setTimeout(()=>{if(run!==openingRun)return;inner.classList.add("flip-now")},550);
@@ -1366,7 +1366,7 @@ cardHTML=function(c,actions=""){
  if(c.promo)out=out.replace('<div class="card ','<div class="card winter-card ').replace('<div class="rating">','<div class="promo-label">PROMO</div><div class="rating">');
  return out;
 };
-const winterStyle=document.createElement("style");winterStyle.textContent=".winter-card{border:3px solid #237a45!important;background:linear-gradient(145deg,#092315,#14552f)!important;box-shadow:0 0 16px #1c8a4a55}.promo-label{background:#176b3a;color:#fff;font-weight:900;letter-spacing:2px;padding:4px 8px;border-radius:6px;margin-bottom:6px;text-align:center;font-size:11px}";document.head.appendChild(winterStyle);
+const winterStyle=document.createElement("style");winterStyle.textContent=".winter-card{border:3px solid #237a45!important;background:linear-gradient(145deg,#092315,#14552f)!important;box-shadow:0 0 16px #1c8a4a55}.promo-label{background:#176b3a;color:#fff;font-weight:900;letter-spacing:2px;padding:4px 8px;border-radius:6px;margin-bottom:6px;text-align:center;font-size:11px}.card.Token{border:3px solid #facc15!important;background:linear-gradient(145deg,#59420b,#211805)!important;box-shadow:0 0 22px #facc1566!important}.card.Token .rarity{color:#fde68a}.card.Token .emoji{font-size:46px}";document.head.appendChild(winterStyle);
 const oldTeam=renderTeam;
 renderTeam=function(){
  const slots=game.team.map((id,i)=>{const c=id?getCard(id):null,lock=game.match?.status==="running";return `<div class="position"><span class="position-role">${positionNames[i]}</span><div class="small">POSITION ${i+1}</div>${c?`<div style="font-size:26px">${c.emoji}</div><b>${c.name}</b><div class="rating">${c.rating}</div><span class="badge">${c.rarity}</span>`:"<b>Empty slot</b>"}<button data-slot="${i}" ${lock?"disabled":""}>${c?"CHANGE PLAYER":"SELECT PLAYER"}</button>${c?`<button class="secondary" data-clear="${i}" ${lock?"disabled":""}>REMOVE</button>`:""}</div>`}).join("");
@@ -1555,7 +1555,7 @@ openPack=function(id){
   const revealDuplicateFlags=[...duplicateFlags,...tokenCards.map(()=>false)];
   const coinText=sold?" • +"+money(sold)+" coins":"";
   const bonusText=bonusTokens?" • BONUS: +2 tokens!":"";
-  showReveal({title:pack.name,subtitle:revealResults.length+" reward"+(revealResults.length===1?"":"s")+" in your pack"+coinText+bonusText,results:revealResults,duplicateFlags:revealDuplicateFlags,walkouts:true});
+  showReveal({title:pack.name,subtitle:revealResults.length+" reward"+(revealResults.length===1?"":"s")+" in your pack"+coinText+bonusText,results:revealResults,duplicateFlags:revealDuplicateFlags,walkouts:true,forceWalkout:id==="winter"});
  }catch(err){
   game.coins=oldCoins;game.tokens=oldTokens;game.owned=oldOwned;isOpening=false;save();
   console.error("Pack opening failed ("+id+"):",err);
