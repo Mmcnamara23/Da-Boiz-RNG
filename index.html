@@ -1214,13 +1214,13 @@ const costs={x2:100,pick79:75};const cost=costs[type];
 if(game.tokens<cost){toast("Not enough tokens!");return}
 game.tokens-=cost;isOpening=true;save();
 if(type==="x2"){
-let pool=randomRewardCards.filter(c=>c.rating>=84&&c.rarity!=="Aura");
+let pool=randomRewardCards.filter(c=>c.id!==hackClubOG.id&&c.rating>=84&&c.rarity!=="Aura");
 let results=[weightedCard(pool,tokenRewardWeights),weightedCard(pool,tokenRewardWeights)];let duplicateFlags=results.map(c=>award(c));
 save();showReveal({title:"84+ x2 TOKEN PACK",subtitle:"Two guaranteed 84+ players",results,walkouts:true,duplicateFlags});return;
 }
 let config={pick79:{count:5,need:2,min:79,title:"2 OF 5 • 79+ PLAYER PICK"}}[type];
 if(!config){game.tokens+=cost;isOpening=false;save();toast("Token reward unavailable.");return;}
-let pool=randomRewardCards.filter(c=>c.rating>=config.min&&c.rarity!=="Aura");let candidates=[];let excluded=new Set();
+let pool=randomRewardCards.filter(c=>c.id!==hackClubOG.id&&c.rating>=config.min&&c.rarity!=="Aura");let candidates=[];let excluded=new Set();
 for(let i=0;i<config.count;i++){
 let c=weightedCard(pool,tokenRewardWeights,excluded);
 candidates.push(c);
@@ -1353,7 +1353,7 @@ const hackClubOG={id:"gallery_aura_liam_og",name:"HACK CLUB OG Liam Sutherland",
 const snowLiam={id:"liam_snowtherland",name:"Liam Snowtherland",emoji:"🎅",rarity:"Winter Wildcards",rating:99,price:5000,promo:true,exclusive:true};
 const leoCard={id:"leo_lambert",name:"Leo Lambert",emoji:"♟️",rarity:"Icon",rating:99,price:10000};
 [mythJacky,snowLiam,leoCard,hackClubOG].forEach(c=>{if(!allCards.some(x=>x.id===c.id))allCards.push(c)});
-const excludeIds=new Set(["nose_breather_lil_mumps",ben.id,...winter.map(c=>c.id),mythJacky.id,snowLiam.id,leoCard.id]);
+const excludeIds=new Set(["nose_breather_lil_mumps",ben.id,...winter.map(c=>c.id),mythJacky.id,snowLiam.id,leoCard.id,hackClubOG.id]);
 randomRewardCards.splice(0,randomRewardCards.length,...allCards.filter(c=>!excludeIds.has(c.id)));
 packDefs.splice(0,packDefs.length,
 {id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:80,Uncommon:13,Rare:5.5,Epic:1.4,Legendary:.1},tokenChance:.10,tokenAmount:2,description:"Free pack • 5 players",className:"low"},
