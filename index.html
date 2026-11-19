@@ -1750,6 +1750,27 @@ bindButtons=function(){
 };
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
 
+// Token-shop purchase safety net: delegated handling keeps these buttons working
+// even when the shop is rerendered or legacy button bindings change.
+document.addEventListener("click",function(event){
+ const button=event.target&&event.target.closest?event.target.closest("[data-tokenbuy]"):null;
+ if(!button||button.disabled)return;
+ event.preventDefault();
+ event.stopImmediatePropagation();
+ const tokenBalance=Number(game.tokens)||0;
+ try{
+  buyTokenItem(button.dataset.tokenbuy);
+ }catch(err){
+  game.tokens=tokenBalance;
+  isOpening=false;
+  pickState=null;
+  save();
+  console.error("Token shop purchase failed:",err);
+  render();
+  toast("Purchase failed safely — your tokens have been returned. Please try again.");
+ }
+},true);
+
 // Chess-only navigation safety net: bypass the legacy tab-handler chain.
 document.addEventListener("click",function(event){
  const button=event.target&&event.target.closest?event.target.closest('nav button[data-tab="sbcs"]'):null;
