@@ -1441,7 +1441,8 @@ function chessRewardHTML(){
  if(!Array.isArray(c.beaten))c.beaten=[];
  if(!Array.isArray(c.history))c.history=[];
  if(!c.claimed||typeof c.claimed!=="object"||Array.isArray(c.claimed))c.claimed={};
- const active=c.active&&typeof c.active==="object"?c.active:null;\n const view=c.view==="matches"?"matches":"quests";
+ const active=c.active&&typeof c.active==="object"?c.active:null;
+ const view=c.view==="matches"?"matches":"quests";
  const history=c.history.slice(-8).reverse().map(h=>{
   h=h&&typeof h==="object"?h:{};
   const result=String(h.result||"");
@@ -1452,12 +1453,16 @@ function chessRewardHTML(){
  const quests=[["first-game","First game",c.history.length>=1,10,"Complete one chess game"],["first-win","First victory",c.wins>=1,15,"Win against any bot"],["bot-collector","Bot collector",c.beaten.length>=3,25,"Defeat three different bots"]];
  if(!c.questClaims||typeof c.questClaims!=="object"||Array.isArray(c.questClaims))c.questClaims={};
  const questHTML=quests.map(q=>'<div class="chess-reward"><b>'+q[1]+'</b><span>'+q[4]+'</span><small>'+(q[2]?'COMPLETED':'IN PROGRESS')+' • '+q[3]+' TOKENS</small><button data-chess-quest="'+q[0]+'" '+(!q[2]||c.questClaims[q[0]]?'disabled':'')+'>'+(c.questClaims[q[0]]?'CLAIMED':q[2]?'CLAIM REWARD':'NOT COMPLETE')+'</button></div>').join("");
+ const eloHTML='<div class="chess-section-head"><h3>🎯 ELO milestone rewards</h3><p>Reach a rating milestone to claim bonus tokens.</p></div><div class="chess-rewards"><div class="chess-reward"><b>250 ELO</b><span>25 tokens</span><button data-chess-reward="250" '+(c.elo<250||c.claimed[250]?"disabled":"")+'>'+(c.claimed[250]?"CLAIMED":"CLAIM")+'</button></div><div class="chess-reward"><b>500 ELO</b><span>45 tokens</span><button data-chess-reward="500" '+(c.elo<500||c.claimed[500]?"disabled":"")+'>'+(c.claimed[500]?"CLAIMED":"CLAIM")+'</button></div></div>';
+ const leoHTML='<div class="chess-section-head"><h3>🏆 Special player quest</h3><p>Defeat Leo Lambert to earn his exclusive 99 OVR Icon card.</p></div><div class="chess-rewards"><div class="chess-reward"><b>LEO LAMBERT • 99 OVR ICON</b><span>'+(c.beaten.includes("Leo Lambert")?"You defeated Leo — the card is in your club.":"Beat the 2000 ELO Leo Lambert bot to unlock this card.")+'</span><small>'+(game.owned[leoCard.id]?"COMPLETED • CARD UNLOCKED":"IN PROGRESS • NOT YET DEFEATED")+'</small><button disabled>'+(game.owned[leoCard.id]?"CARD UNLOCKED":"DEFEAT LEO TO UNLOCK")+'</button></div></div>';
+ const questsPanel=eloHTML+'<div class="chess-section-head"><h3>♟️ Chess quests</h3><p>Complete challenges to earn bonus tokens.</p></div><div class="chess-rewards">'+questHTML+'</div>'+leoHTML;
+ const matchesPanel='<div class="chess-section-head"><h3>Choose your opponent</h3><p>Opponents get stronger as their ELO increases.</p></div><div class="chess-opponents">'+opponents.map(x=>'<div class="chess-opponent"><div class="chess-op-avatar">'+x[2]+'</div><div><b>'+x[0]+'</b><small>'+x[1]+' ELO '+(c.beaten.includes(x[0])?" • DEFEATED":"")+'</small></div><button data-chess-opponent="'+x[0]+'" '+(active?"disabled":"")+'>'+(c.beaten.includes(x[0])?"REMATCH":"PLAY")+'</button></div>').join("")+'</div><div class="chess-section-head"><h3>Recent games</h3></div><div class="chess-history">'+history+'</div>';
  return '<section class="chess-page">'+
   '<div class="sectionhero chess-hero"><div class="chess-kicker">DA BOIZ RNG • RANKED CHESS</div><h2>♟️ CHESS ARENA</h2><p>Choose an opponent, play a full legal chess game and climb the ELO ladder.</p><div class="chess-elo-card"><span>CURRENT RATING</span><strong>'+c.elo+'</strong><small>'+c.wins+' W • '+c.draws+' D • '+c.losses+' L</small></div><p class="small" style="margin-top:10px">🛡️ ELO safety: if you are on 100 ELO, you cannot lose any more points.</p></div>'+
   (active?'<div class="chess-active-banner"><b>GAME IN PROGRESS</b><span>Playing '+String(active.opponent||"your opponent")+'</span><button data-chess-resume>RETURN TO YOUR GAME</button></div>':"")+
   '<div class="chess-tabs"><button type="button" data-chess-view="quests" class="'+(view==="quests"?"active":"")+'">🏆 Quests & ELO rewards</button><button type="button" data-chess-view="matches" class="'+(view==="matches"?"active":"")+'">♟️ Matches</button></div>'+
-  '<div class="chess-view '+(view==="quests"?"":"hidden")+'" data-chess-panel="quests">'+eloBlock+questBlock+'</div>'+
-  '<div class="chess-view '+(view==="matches"?"":"hidden")+'" data-chess-panel="matches">'+matchesBlock+'</div>'+
+  '<div class="chess-view '+(view==="quests"?"":"hidden")+'" data-chess-panel="quests">'+(view==="quests"?questsPanel:"")+'</div>'+
+  '<div class="chess-view '+(view==="matches"?"":"hidden")+'" data-chess-panel="matches">'+(view==="matches"?matchesPanel:"")+'</div>'+
   '<div id="chessBoard" class="chess-board-wrap"></div></section>';
 }
 const oldBind=bindButtons;
