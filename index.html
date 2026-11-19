@@ -1598,7 +1598,7 @@ renderAlbum=function(){
 };
 document.querySelectorAll('nav button[data-tab="sbcs"]').forEach(b=>b.textContent="♟️ Chess");
 const originalSetTab=setTab;
-setTab=function(tab){if(isOpening)return;if(game.chess&&game.chess.active&&tab!=="sbcs"){toast("Finish or forfeit your chess game before leaving Chess.");return}activeTab=tab;document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
+setTab=function(tab){if(isOpening&&tab!=="sbcs")return;if(game.chess&&game.chess.active&&tab!=="sbcs"){toast("Finish or forfeit your chess game before leaving Chess.");return}activeTab=tab;document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
 setShopTab=function(tab){if(isOpening)return;activeShopTab=["packs","luck","tokenshop"].includes(tab)?tab:"packs";activeTab="shops";render()};
 render=function(){
  const app=document.getElementById("app");
