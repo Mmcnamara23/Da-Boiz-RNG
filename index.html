@@ -1719,7 +1719,8 @@ render=function(){
 };
 bindButtons=function(){
  try{previousBindButtons()}catch(err){console.error("Legacy button binding failed:",err)}
- document.querySelectorAll("[data-chess-view]").forEach(b=>b.onclick=()=>{activeChessView=b.dataset.chessView;render()});
+ document.querySelectorAll("[data-chess-view]").forEach(b=>b.onclick=()=>{activeChessView=b.dataset.chessView;const app=document.getElementById("app");app.innerHTML=chessRewardHTML();bindButtons()});
+ document.querySelectorAll("[data-team-tab]").forEach(b=>b.onclick=()=>setTeamTab(b.dataset.teamTab));
  document.querySelectorAll("[data-shop-tab]").forEach(b=>b.onclick=()=>setShopTab(b.dataset.shopTab));
  document.querySelectorAll("[data-openpack]").forEach(b=>b.onclick=()=>openPack(b.dataset.openpack));
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
