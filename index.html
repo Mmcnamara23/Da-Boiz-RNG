@@ -1689,7 +1689,8 @@ document.addEventListener("click",function(event){
   }catch(buttonError){console.error("Chess button setup failed:",buttonError)}
  }catch(chessError){
   console.error("Chess screen failed to render:",chessError);
-  app.innerHTML='<section class="panel"><h2>Chess could not load</h2><p>Please refresh the game. If this message stays, open the browser console and share the error.</p></section>';
+  const detail=String(chessError&&chessError.stack||chessError||"Unknown Chess error");
+  app.innerHTML='<section class="panel"><h2>Chess error details</h2><p style="white-space:pre-wrap;overflow-wrap:anywhere">'+detail.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</p></section>';
  }
 },true);
 
