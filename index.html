@@ -720,8 +720,8 @@ body.chess-active #app #chessGrid .capture-ring{position:absolute;inset:5%;borde
 body.chess-active #app #chessBoard #chess-status{width:100%;text-align:center;font-size:clamp(13px,1.8vw,17px);margin:0}
 body.chess-active #app #chessBoard .chess-active-banner{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;text-align:center;font-size:13px}
 body.chess-active #app #chessBoard .chess-active-banner button{padding:9px 14px;font-size:12px}
-@media(max-width:600px){body.chess-active #app{padding:6px!important}body.chess-active #app #chessBoard{gap:clamp(6px,1vh,10px)}body.chess-active #app #chessGrid{width:min(94vw,64vh)}body.chess-active #app #chessGrid .piece{font-size:clamp(23px,10vw,52px)}body.chess-active #app #chessGrid .piece:not(.pawn){font-size:clamp(25px,10.3vw,54px)}body.chess-active #app #chessGrid .capture-ring{border-width:3px}}
-body.chess-active #app #chessGrid .piece:not(.pawn){font-size:clamp(27px,7.6vw,72px)}</style></head>
+@media(max-width:600px){body.chess-active #app{padding:6px!important}body.chess-active #app #chessBoard{gap:clamp(6px,1vh,10px)}body.chess-active #app #chessGrid{width:min(94vw,64vh)}body.chess-active #app #chessGrid .piece{font-size:clamp(23px,10vw,52px)}body.chess-active #app #chessGrid .capture-ring{border-width:3px}}
+</style></head>
 <body>
 <header>
  <div class="headtop">
@@ -1491,7 +1491,7 @@ function drawChess(){
  let s='<p>Playing '+oppName+' • <b id="chess-clock">10:00</b></p><div id="chessGrid" role="group" aria-label="Chess board">';
  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
   const p=board[r][c],sq="abcdefgh"[c]+(8-r),target=targetMap.get(sq),selected=selectedSq===sq;
-  const piece=p?'<span class="piece '+(p.color==="w"?"white":"black")+(p.type==="p"?" pawn":"")+'" style="color:'+(p.color==="w"?"#ffffff":"#111111")+' !important;-webkit-text-fill-color:'+(p.color==="w"?"#ffffff":"#111111")+' !important;-webkit-text-stroke:'+(p.color==="w"?"1.5px #171717":"1.2px #f7ead5")+' !important;text-shadow:0 2px 2px #0008">'+symbols[p.type]+'</span>':"";
+  const piece=p?'<span class="piece '+(p.color==="w"?"white":"black")+'" style="color:'+(p.color==="w"?"#ffffff":"#111111")+' !important;-webkit-text-fill-color:'+(p.color==="w"?"#ffffff":"#111111")+' !important;-webkit-text-stroke:'+(p.color==="w"?"1.5px #171717":"1.2px #f7ead5")+' !important;text-shadow:0 2px 2px #0008">'+symbols[p.type]+'</span>':"";
   s+='<button type="button" data-sq="'+sq+'" aria-label="'+sq+(p?', '+(p.color==="w"?"white":"black")+' '+p.type:"")+(target?", legal move destination":"")+'" class="chess-square '+((r+c)%2?"dark":"light")+(selected?" selected":"")+'">'+piece+(target?(target.captured||target.flags.includes("e")?'<span class="capture-ring"></span>':'<span class="move-dot"></span>'):"")+'</button>';
  }
  el.innerHTML=s+'</div><p id="chess-status">White to move • Select a piece then a highlighted destination</p><div class="chess-active-banner"><span>You are in full-screen Chess mode. Leaving forfeits this game.</span><button data-chess-resign>LEAVE GAME • FORFEIT</button></div>';
