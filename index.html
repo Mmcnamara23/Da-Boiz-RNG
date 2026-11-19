@@ -1654,7 +1654,7 @@ bindButtons=function(){
  document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
  document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>beginChess(b.dataset.chessOpponent));
  document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
- document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+ document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="sbcs"){activeTab="sbcs";render();return}setTab(b.dataset.tab)});
 };
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
 
