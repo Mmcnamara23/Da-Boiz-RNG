@@ -1819,6 +1819,59 @@ claimGallery=function(r){
  save();render();toast(r+" Gallery reward claimed!");
 };
 render();
+// Final token-shop transaction handler. Recover a stale opening lock left by an
+// interrupted reveal, validate the reward pool before charging, and refund on errors.
+buyTokenItem=function(type){
+ const overlay=document.getElementById("reveal");
+ if(isOpening&&overlay&&overlay.classList.contains("show"))return;
+ isOpening=false;
+ const costs={pick79:75,x2:100},cost=costs[type];
+ if(!cost){toast("That token reward is unavailable.");return}
+ const balance=Math.max(0,Number(game.tokens)||0);
+ if(balance<cost){toast("Not enough tokens!");return}
+ let pool=[],config=null;
+ if(type==="x2"){
+  pool=randomRewardCards.filter(c=>c&&c.id!==hackClubOG.id&&Number(c.rating)>=84&&c.rarity!=="Aura");
+  if(!pool.length){toast("No eligible 84+ players are available right now.");return}
+ }else{
+  config={count:5,need:2,min:79,title:"2 OF 5 • 79+ PLAYER PICK"};
+  pool=randomRewardCards.filter(c=>c&&c.id!==hackClubOG.id&&Number(c.rating)>=config.min&&c.rarity!=="Aura");
+  if(pool.length<config.count){toast("Not enough eligible players for this pick.");return}
+ }
+ try{
+  if(type==="x2"){
+   const results=[weightedCard(pool,tokenRewardWeights),weightedCard(pool,tokenRewardWeights)];
+   if(results.some(c=>!c))throw new Error("Could not create both 84+ rewards");
+   game.tokens=balance-cost;
+   const duplicateFlags=results.map(c=>awardPackCard(c).duplicate);
+   save();isOpening=true;
+   showReveal({title:"84+ x2 TOKEN PACK",subtitle:"Two guaranteed players rated 84 or higher",results,duplicateFlags,walkouts:true});
+  }else{
+   const candidates=[],excluded=new Set();
+   for(let i=0;i<config.count;i++){
+    const c=weightedCard(pool,tokenRewardWeights,excluded);
+    if(!c)throw new Error("Could not create all player-pick candidates");
+    candidates.push(c);excluded.add(c.id);
+   }
+   game.tokens=balance-cost;save();isOpening=true;showPick(config,candidates);
+  }
+  render();
+ }catch(err){
+  game.tokens=balance;isOpening=false;pickState=null;
+  if(overlay)overlay.classList.remove("show","walkout-mode");
+  save();console.error("Token shop transaction error:",err);
+  render();toast("Purchase failed — your tokens have been refunded. Please try again.");
+ }
+};
+
+renderTokenShop=function(){
+ const balance=Math.max(0,Number(game.tokens)||0),fmt=n=>money(n);
+ return '<section><div class="sectionhero tokenhero"><h2>🪙 TOKEN EXCHANGE</h2><p>Trade tokens for special packs and player picks.</p><span class="badge">YOUR BALANCE: '+fmt(balance)+' TOKENS</span></div><div class="grid">'+
+ '<div class="shopitem"><div class="packicon">⚽</div><h3>2 of 5 Player Pick</h3><div class="price">75 Tokens</div><p>Five players rated 79+. Select exactly two.</p><button type="button" data-tokenbuy="pick79" '+(balance<75?'disabled':'')+'>START PICK</button></div>'+
+ '<div class="shopitem"><div class="packicon">🎁</div><h3>84+ x2 Pack</h3><div class="price">100 Tokens</div><p>Two guaranteed players rated 84 or higher.</p><button type="button" data-tokenbuy="x2" '+(balance<100?'disabled':'')+'>OPEN REWARD</button></div>'+
+ '</div></section>';
+};
+
 startMatchTimer();
 </script>
 </body>
