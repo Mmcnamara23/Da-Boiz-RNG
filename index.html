@@ -707,12 +707,12 @@ body.chess-active #app{display:flex!important;align-items:center!important;justi
 body.chess-active #app .chess-page{width:100%;max-width:none;min-height:0;height:100%;padding:0;margin:0;display:flex;align-items:center;justify-content:center}
 body.chess-active #app #chessBoard{width:100%;max-width:900px;min-height:0;height:100%;margin:0 auto;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.5vh,16px)}
 body.chess-active #app #chessBoard>p:first-child{width:100%;text-align:center;font-size:clamp(16px,2.4vw,25px);font-weight:850;margin:0}
-body.chess-active #app #chessGrid{width:min(min(88vw,70vh),680px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));overflow:hidden;border:2px solid #d6c5a3;box-shadow:0 16px 50px #0009;flex:0 1 auto}
+body.chess-active #app #chessGrid{width:min(min(96vw,80vh),900px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));overflow:hidden;border:2px solid #d6c5a3;box-shadow:0 16px 50px #0009;flex:0 1 auto}
 body.chess-active #app #chessGrid .chess-square{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;width:100%;height:100%;aspect-ratio:1;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;box-shadow:none!important;transform:none!important;line-height:1;overflow:hidden}
 body.chess-active #app #chessGrid .chess-square.light{background:#eee2c8!important}
 body.chess-active #app #chessGrid .chess-square.dark{background:#9b704d!important}
 body.chess-active #app #chessGrid .chess-square.selected{box-shadow:inset 0 0 0 4px #facc15!important;filter:brightness(1.12)}
-body.chess-active #app #chessGrid .piece{font-family:"DejaVu Sans","Segoe UI Symbol",serif;font-size:clamp(25px,7.2vw,68px);line-height:1;display:block;user-select:none}
+body.chess-active #app #chessGrid .piece{font-family:"DejaVu Sans","Segoe UI Symbol",serif;font-size:clamp(38px,10vw,100px);line-height:1;display:block;user-select:none}
 body.chess-active #app #chessGrid .piece.white{color:#fffdf4;-webkit-text-fill-color:#fffdf4;-webkit-text-stroke:1.3px #242424;text-shadow:0 2px 2px #0008}
 body.chess-active #app #chessGrid .piece.black{color:#171717;-webkit-text-fill-color:#171717;-webkit-text-stroke:.5px #f2e8d5;text-shadow:0 2px 2px #0006}
 body.chess-active #app #chessGrid .move-dot{position:absolute;width:24%;height:24%;border-radius:50%;background:#14532dcc;pointer-events:none}
@@ -720,7 +720,7 @@ body.chess-active #app #chessGrid .capture-ring{position:absolute;inset:5%;borde
 body.chess-active #app #chessBoard #chess-status{width:100%;text-align:center;font-size:clamp(13px,1.8vw,17px);margin:0}
 body.chess-active #app #chessBoard .chess-active-banner{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;text-align:center;font-size:13px}
 body.chess-active #app #chessBoard .chess-active-banner button{padding:9px 14px;font-size:12px}
-@media(max-width:600px){body.chess-active #app{padding:6px!important}body.chess-active #app #chessBoard{gap:clamp(6px,1vh,10px)}body.chess-active #app #chessGrid{width:min(94vw,64vh)}body.chess-active #app #chessGrid .piece{font-size:clamp(23px,10vw,52px)}body.chess-active #app #chessGrid .capture-ring{border-width:3px}}
+@media(max-width:600px){body.chess-active #app{padding:6px!important}body.chess-active #app #chessBoard{gap:clamp(6px,1vh,10px)}body.chess-active #app #chessGrid{width:min(94vw,64vh)}body.chess-active #app #chessGrid .piece{font-size:clamp(30px,11vw,58px)}body.chess-active #app #chessGrid .capture-ring{border-width:3px}}
 </style></head>
 <body>
 <header>
