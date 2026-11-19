@@ -1418,11 +1418,14 @@ function chessRewardHTML(){
   return '<div class="chess-history-row"><b>'+String(h.opponent||"Unknown opponent")+'</b><span>'+result.toUpperCase()+'</span><strong>'+(delta>=0?"+":"")+delta+' ELO</strong></div>';
  }).join("")||'<p class="small">Your completed games will appear here.</p>';
  const opponents=[["Benjamin Fraser",100,"🧩"],["Max Rolfe",125,"🔥"],["Dexter Chadwick",170,"🧢"],["Lil Mumps",220,"👃"],["Vittorio Petruzzelli",260,"👑"],["Henry James Worsell",310,"⚡"],["Oscar Robert Harper",500,"🌟"],["Leo Lambert",2000,"♟️"]];
+ const quests=[["first-game","First game",c.history.length>=1,10,"Complete one chess game"],["first-win","First victory",c.wins>=1,15,"Win against any bot"],["bot-collector","Bot collector",c.beaten.length>=3,25,"Defeat three different bots"]];
+ if(!c.questClaims||typeof c.questClaims!=="object"||Array.isArray(c.questClaims))c.questClaims={};
+ const questHTML=quests.map(q=>'<div class="chess-reward"><b>'+q[1]+'</b><span>'+q[4]+'</span><small>'+(q[2]?'COMPLETED':'IN PROGRESS')+' • '+q[3]+' TOKENS</small><button data-chess-quest="'+q[0]+'" '+(!q[2]||c.questClaims[q[0]]?'disabled':'')+'>'+(c.questClaims[q[0]]?'CLAIMED':q[2]?'CLAIM REWARD':'NOT COMPLETE')+'</button></div>').join("");
  return '<section class="chess-page">'+
   '<div class="sectionhero chess-hero"><div class="chess-kicker">DA BOIZ RNG • RANKED CHESS</div><h2>♟️ CHESS ARENA</h2><p>Choose an opponent, play a full legal chess game and climb the ELO ladder.</p><div class="chess-elo-card"><span>CURRENT RATING</span><strong>'+c.elo+'</strong><small>'+c.wins+' W • '+c.draws+' D • '+c.losses+' L</small></div></div>'+
   (active?'<div class="chess-active-banner"><b>GAME IN PROGRESS</b><span>Playing '+String(active.opponent||"your opponent")+'</span><button data-chess-resume>RETURN TO YOUR GAME</button></div>':"")+
   '<div class="chess-rewards"><div class="chess-reward"><b>250 ELO</b><span>25 tokens</span><button data-chess-reward="250" '+(c.elo<250||c.claimed[250]?"disabled":"")+'>'+(c.claimed[250]?"CLAIMED":"CLAIM")+'</button></div><div class="chess-reward"><b>500 ELO</b><span>45 tokens</span><button data-chess-reward="500" '+(c.elo<500||c.claimed[500]?"disabled":"")+'>'+(c.claimed[500]?"CLAIMED":"CLAIM")+'</button></div><div class="chess-reward"><b>LEO LAMBERT</b><span>Win to unlock exclusive 99-rated card</span><small>'+(c.beaten.includes("Leo Lambert")?"UNLOCKED":"LOCKED")+'</small></div></div>'+
-  '<div class="chess-section-head"><h3>Choose your opponent</h3><p>Opponents get stronger as their ELO increases.</p></div>'+
+  '<div class="chess-section-head"><h3>♟️ Chess quests</h3><p>Complete challenges to earn bonus tokens.</p></div><div class="chess-rewards">'+questHTML+'</div>'+  '<div class="chess-section-head"><h3>Choose your opponent</h3><p>Opponents get stronger as their ELO increases.</p></div>'+
   '<div class="chess-opponents">'+opponents.map(x=>'<div class="chess-opponent"><div class="chess-op-avatar">'+x[2]+'</div><div><b>'+x[0]+'</b><small>'+x[1]+' ELO '+(c.beaten.includes(x[0])?" • DEFEATED":"")+'</small></div><button data-chess-opponent="'+x[0]+'" '+(active?"disabled":"")+'>'+(c.beaten.includes(x[0])?"REMATCH":"PLAY")+'</button></div>').join("")+'</div>'+
   '<div class="chess-section-head"><h3>Recent games</h3></div><div class="chess-history">'+history+'</div>'+
   '<div id="chessBoard" class="chess-board-wrap"></div></section>';
@@ -1478,6 +1481,12 @@ function claimGallery(r){
  if(r==="Icon"){game.tokens+=10;game.coins+=5000}
  if(r==="Mythical")game.owned["gallery_mythical_jacky"]=(game.owned["gallery_mythical_jacky"]||0)+1;
  save();render();toast(r+" Gallery reward claimed!");
+}
+function claimChessQuest(id){
+ const quests={"first-game":{done:()=>game.chess.history.length>=1,reward:10},"first-win":{done:()=>game.chess.wins>=1,reward:15},"bot-collector":{done:()=>game.chess.beaten.length>=3,reward:25}};
+ const q=quests[id];if(!q||!q.done())return;
+ game.chess.questClaims=game.chess.questClaims||{};if(game.chess.questClaims[id])return;
+ game.chess.questClaims[id]=true;game.tokens+=q.reward;save();render();toast("Chess quest complete! +"+q.reward+" tokens");
 }
 function claimChessReward(n){
  if(game.chess.claimed[n]||game.chess.elo<n)return;
@@ -1670,7 +1679,7 @@ bindButtons=function(){
  document.querySelectorAll("[data-openpack]").forEach(b=>b.onclick=()=>openPack(b.dataset.openpack));
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
- document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
+ document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));document.querySelectorAll("[data-chess-quest]").forEach(b=>b.onclick=()=>claimChessQuest(b.dataset.chessQuest));
  document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>loadChessForOpponent(b.dataset.chessOpponent));
  document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="sbcs"){activeTab="sbcs";render();return}setTab(b.dataset.tab)});
