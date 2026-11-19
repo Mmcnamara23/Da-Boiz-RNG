@@ -1450,6 +1450,12 @@ document.addEventListener("click",e=>{
  if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=()=>beginChess(name);sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else beginChess(name);
 });
 let cg=null,ct=600,ctimer=null,oppName="",selectedSq=null;
+function loadChessForOpponent(name){
+ if(window.Chess){beginChess(name);return}
+ let existing=document.querySelector('script[data-chess-library]');
+ if(existing){existing.addEventListener("load",()=>beginChess(name),{once:true});existing.addEventListener("error",()=>toast("Chess library failed to load. Check your connection and try again."),{once:true});return}
+ const sc=document.createElement("script");sc.dataset.chessLibrary="true";sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=()=>beginChess(name);sc.onerror=()=>toast("Chess library failed to load. Check your connection and try again.");document.head.appendChild(sc);
+}
 function beginChess(name){oppName=name;cg=new Chess();ct=600;selectedSq=null;game.chess.active={opponent:name,moves:[],remaining:600};save();document.body.classList.add("chess-active");const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
 function resumeChess(){const a=game.chess.active;if(!a||!window.Chess)return;oppName=a.opponent;cg=new Chess();(a.moves||[]).forEach(m=>cg.move(m));ct=Math.max(1,Number(a.remaining)||600);selectedSq=null;document.body.classList.add("chess-active");drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
 function drawChess(){const el=document.getElementById("chessBoard"),board=cg.board(),symbols={wp:"♙",wn:"♘",wb:"♗",wr:"♖",wq:"♕",wk:"♔",bp:"♟",bn:"♞",bb:"♝",br:"♜",bq:"♛",bk:"♚"};let s='<p>Playing '+oppName+' • <b id="chess-clock">10:00</b></p><div style="display:grid;grid-template-columns:repeat(8,1fr);max-width:480px;margin:auto">';for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=board[r][c],sq="abcdefgh"[c]+(8-r);s+=`<button data-sq="${sq}" class="${selectedSq===sq?"selected":""}" style="aspect-ratio:1;background:${(r+c)%2?"#73543c":"#e7d8b5"};font-size:clamp(20px,4vw,38px)">${p?symbols[p.color+p.type]:""}</button>`}el.innerHTML=s+'</div><p id="chess-status">White to move • Select a piece then its destination</p><div class="chess-active-banner"><span>Leaving this page is locked until the game ends.</span><button data-chess-resign>FORFEIT • LOSE ELO</button></div>';el.querySelectorAll("[data-sq]").forEach(b=>b.onclick=()=>chessSquare(b.dataset.sq));el.querySelector("[data-chess-resign]").onclick=()=>{if(confirm("Forfeit this game and lose ELO?"))finishChess("loss")}}
@@ -1665,7 +1671,7 @@ bindButtons=function(){
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
  document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
- document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>beginChess(b.dataset.chessOpponent));
+ document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>loadChessForOpponent(b.dataset.chessOpponent));
  document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="sbcs"){activeTab="sbcs";render();return}setTab(b.dataset.tab)});
 };
@@ -1688,9 +1694,14 @@ document.addEventListener("click",function(event){
    document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
   }catch(buttonError){console.error("Chess button setup failed:",buttonError)}
  }catch(chessError){
-  console.error("Chess screen failed to render:",chessError);
-  const detail=String(chessError&&chessError.stack||chessError||"Unknown Chess error");
-  app.innerHTML='<section class="panel"><h2>Chess error details</h2><p style="white-space:pre-wrap;overflow-wrap:anywhere">'+detail.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</p></section>';
+  console.error("Chess screen failed to render; showing recovery arena:",chessError);
+  const names=[["Benjamin Fraser",100,"🧩"],["Max Rolfe",125,"🔥"],["Dexter Chadwick",170,"🧢"],["Lil Mumps",220,"👃"],["Vittorio Petruzzelli",260,"👑"],["Henry James Worsell",310,"⚡"],["Oscar Robert Harper",500,"🌟"],["Leo Lambert",2000,"♟️"]];
+  const c=(game&&game.chess&&typeof game.chess==="object")?game.chess:(game.chess={elo:100,wins:0,losses:0,draws:0,beaten:[],claimed:{}});
+  c.elo=Math.max(100,Number(c.elo)||100);c.wins=Number(c.wins)||0;c.losses=Number(c.losses)||0;c.draws=Number(c.draws)||0;
+  if(!Array.isArray(c.beaten))c.beaten=[];if(!c.claimed||typeof c.claimed!=="object")c.claimed={};
+  app.innerHTML='<section class="chess-page"><div class="sectionhero chess-hero"><div class="chess-kicker">DA BOIZ RNG • RANKED CHESS</div><h2>♟️ CHESS ARENA</h2><p>Choose a bot and play a full chess game.</p><div class="chess-elo-card"><span>CURRENT RATING</span><strong>'+c.elo+'</strong><small>'+c.wins+' W • '+c.draws+' D • '+c.losses+' L</small></div></div><div class="chess-rewards"><div class="chess-reward"><b>250 ELO</b><span>25 tokens</span><button data-chess-reward="250" '+(c.elo<250||c.claimed[250]?"disabled":"")+'>'+(c.claimed[250]?"CLAIMED":"CLAIM")+'</button></div><div class="chess-reward"><b>500 ELO</b><span>45 tokens</span><button data-chess-reward="500" '+(c.elo<500||c.claimed[500]?"disabled":"")+'>'+(c.claimed[500]?"CLAIMED":"CLAIM")+'</button></div></div><div class="chess-section-head"><h3>Choose your opponent</h3><p>Beat stronger bots to earn more ELO.</p></div><div class="chess-opponents">'+names.map(x=>'<div class="chess-opponent"><div class="chess-op-avatar">'+x[2]+'</div><div><b>'+x[0]+'</b><small>'+x[1]+' ELO</small></div><button data-chess-opponent="'+x[0]+'">PLAY</button></div>').join("")+'</div><div class="chess-section-head"><h3>♟️ Chess quests</h3><p>Earn tokens as you improve.</p></div><div class="chess-rewards"><div class="chess-reward"><b>First game</b><span>Complete 1 chess game</span></div><div class="chess-reward"><b>First victory</b><span>Win against any bot</span></div><div class="chess-reward"><b>Bot collector</b><span>Defeat 3 different opponents</span></div></div><div class="chess-section-head"><h3>Recent games</h3></div><div class="chess-history">Your completed games will appear here.</div><div id="chessBoard" class="chess-board-wrap"></div></section>';
+  document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
+  document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>loadChessForOpponent(b.dataset.chessOpponent));
  }
 },true);
 
