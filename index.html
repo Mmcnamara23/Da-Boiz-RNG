@@ -779,7 +779,8 @@ body.chess-active #app #chessBoard .chess-active-banner button{padding:9px 14px;
 <div class="toast" id="toast"></div>
 
 <script>
-const SAVE_KEY="daBoizRNG_full_v7";
+// v8 intentionally starts every tester with a clean launch save. Keep this key unchanged for future updates to preserve progress.
+const SAVE_KEY="daBoizRNG_full_v8";
 const positionNames=["GK","CB","CB","CM","ST"];
 
 const baseCards=[
@@ -892,7 +893,20 @@ let pickState=null;
 let toastTimer,animationTimer,openingRun=0;
 let matchInterval=null;
 let celebratedGoals=new Set();
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(game))}catch(e){}}
+function save(){
+ try{
+  game.saveVersion=1;
+  localStorage.setItem(SAVE_KEY,JSON.stringify(game));
+  return true;
+ }catch(e){
+  console.error("Could not save Da Boiz RNG progress:",e);
+  return false;
+ }
+}
+// Save the complete game object regularly and whenever the page is backgrounded or closed.
+setInterval(save,2000);
+window.addEventListener("pagehide",save);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")save()});
 function ownedCount(){return Object.values(game.owned).reduce((a,b)=>a+b,0)}
 function getCard(id){return allCards.find(c=>c.id===id)}
 function getOwned(){return Object.keys(game.owned).filter(id=>game.owned[id]>0).map(getCard).filter(Boolean)}
