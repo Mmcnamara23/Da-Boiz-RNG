@@ -716,6 +716,8 @@ body.chess-active #app #chessGrid .piece{font-family:"DejaVu Sans","Segoe UI Sym
 body.chess-active #app #chessGrid .piece.white-pawn{font-family:"DejaVu Sans","Segoe UI Symbol",serif!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1.8px #000!important;filter:none!important}
 body.chess-active #app #chessGrid .piece.white{color:#fffdf4;-webkit-text-fill-color:#fffdf4;-webkit-text-stroke:1.3px #242424;text-shadow:0 2px 2px #0008}
 body.chess-active #app #chessGrid .piece.black{color:#171717;-webkit-text-fill-color:#171717;-webkit-text-stroke:.5px #f2e8d5;text-shadow:0 2px 2px #0006}
+body.chess-active #app #chessGrid .piece{width:88%;height:88%;display:flex;align-items:center;justify-content:center;font-size:initial!important;line-height:1;user-select:none}
+body.chess-active #app #chessGrid .piece svg{display:block;width:100%;height:100%;overflow:visible}
 body.chess-active #app #chessGrid .move-dot{position:absolute;width:24%;height:24%;border-radius:50%;background:#14532dcc;pointer-events:none}
 body.chess-active #app #chessGrid .capture-ring{position:absolute;inset:5%;border:5px solid #14532dcc;border-radius:50%;pointer-events:none}
 body.chess-active #app #chessBoard #chess-status{width:100%;text-align:center;font-size:clamp(13px,1.8vw,17px);margin:0}
@@ -1484,6 +1486,18 @@ function loadChessForOpponent(name){
 }
 function beginChess(name){oppName=name;cg=new Chess();ct=600;selectedSq=null;game.chess.active={opponent:name,moves:[],remaining:600};save();document.body.classList.add("chess-active");const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
 function resumeChess(){const a=game.chess.active;if(!a||!window.Chess)return;oppName=a.opponent;cg=new Chess();(a.moves||[]).forEach(m=>cg.move(m));ct=Math.max(1,Number(a.remaining)||600);selectedSq=null;document.body.classList.add("chess-active");drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
+function chessPieceSvg(type,color){
+ const white=color==="w",fill=white?"#ffffff":"#111111",stroke=white?"#111111":"none",sw=white?4:0;
+ const shapes={
+  k:'<path d="M50 8V27 M40 17H60" fill="none" stroke-width="4.5" stroke-linecap="round"/><path d="M45 28 Q50 24 55 28 L59 37 Q78 42 82 58 Q85 72 73 80 L70 89 H30 L27 80 Q15 72 18 58 Q22 42 41 37Z"/><path d="M25 88H75 L81 98H19Z M17 100H83V108H17Z"/>',
+  q:'<path d="M14 24 L28 38 L34 19 L50 34 L66 19 L72 38 L86 24 L79 56 Q76 69 67 76 L68 88H32L33 76Q24 69 21 56Z"/><path d="M29 87H71L78 98H22Z M17 100H83V108H17Z"/>',
+  r:'<path d="M20 18H34V30H43V18H57V30H66V18H80V50H20Z"/><path d="M26 51H74L70 79Q68 87 75 91H25Q32 87 30 79Z"/><path d="M20 90H80L85 100H15Z M13 102H87V109H13Z"/>',
+  b:'<path d="M50 14 C39 14 35 25 39 35 C28 43 27 57 36 67 Q43 74 50 75 Q57 74 64 67 C73 57 72 43 61 35 C65 25 61 14 50 14Z"/><path d="M47 22L56 39" fill="none" stroke-width="4.5" stroke-linecap="round"/><path d="M36 76H64L70 87H30Z M25 90H75L81 100H19Z M16 102H84V109H16Z"/>',
+  n:'<path d="M25 88 Q17 75 22 57 Q27 39 42 25 L48 12 L58 22 Q73 22 80 39 Q86 55 79 74 L73 88Z"/><path d="M42 28L50 38 M56 31L60 35" fill="none" stroke-width="4" stroke-linecap="round"/><path d="M26 88H74L80 98H20Z M16 101H84V109H16Z"/>',
+  p:'<circle cx="50" cy="23" r="15"/><path d="M40 40H60 L57 49 Q57 65 68 86H32Q43 65 43 49Z"/><path d="M35 86H65L73 97H27Z M19 100H81V109H19Z"/>'
+ };
+ return '<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round">'+shapes[type]+'</g></svg>';
+}
 function drawChess(){
  const el=document.getElementById("chessBoard");if(!el||!cg)return;
  const board=cg.board(),symbols={p:"♟",n:"♞",b:"♝",r:"♜",q:"♛",k:"♚"};
@@ -1492,7 +1506,7 @@ function drawChess(){
  let s='<p>Playing '+oppName+' • <b id="chess-clock">10:00</b></p><div id="chessGrid" role="group" aria-label="Chess board">';
  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
   const p=board[r][c],sq="abcdefgh"[c]+(8-r),target=targetMap.get(sq),selected=selectedSq===sq;
-  const piece=p?'<span class="piece '+(p.color==="w"?"white":"black")+(p.color==="w"&&p.type==="p"?" white-pawn":"")+'" style="font-family:DejaVu Sans,Segoe UI Symbol,serif !important;color:'+(p.color==="w"?"#ffffff":"#111111")+' !important;-webkit-text-fill-color:'+(p.color==="w"?"#ffffff":"#111111")+' !important;-webkit-text-stroke:'+(p.color==="w"?"1.8px #000000":"1.2px #f7ead5")+' !important;text-shadow:0 2px 2px #0008">'+(p.type==="p"&&p.color==="w"?"♟︎":symbols[p.type])+'</span>':"";
+  const piece=p?'<span class="piece '+(p.color==="w"?"white":"black")+'">'+chessPieceSvg(p.type,p.color)+'</span>':"";
   s+='<button type="button" data-sq="'+sq+'" aria-label="'+sq+(p?', '+(p.color==="w"?"white":"black")+' '+p.type:"")+(target?", legal move destination":"")+'" class="chess-square '+((r+c)%2?"dark":"light")+(selected?" selected":"")+'">'+piece+(target?(target.captured||target.flags.includes("e")?'<span class="capture-ring"></span>':'<span class="move-dot"></span>'):"")+'</button>';
  }
  el.innerHTML=s+'</div><p id="chess-status">White to move • Select a piece then a highlighted destination</p><div class="chess-active-banner"><span>You are in full-screen Chess mode. Leaving forfeits this game.</span><button data-chess-resign>LEAVE GAME • FORFEIT</button></div>';
