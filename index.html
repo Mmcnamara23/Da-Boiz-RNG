@@ -1658,6 +1658,29 @@ bindButtons=function(){
 };
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
 
+// Chess-only navigation safety net: bypass the legacy tab-handler chain.
+document.addEventListener("click",function(event){
+ const button=event.target&&event.target.closest?event.target.closest('nav button[data-tab="sbcs"]'):null;
+ if(!button)return;
+ event.preventDefault();
+ event.stopImmediatePropagation();
+ activeTab="sbcs";
+ document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b===button));
+ const app=document.getElementById("app");
+ try{
+  app.innerHTML=chessRewardHTML();
+  try{
+   document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
+   document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>beginChess(b.dataset.chessOpponent));
+   document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
+  }catch(buttonError){console.error("Chess button setup failed:",buttonError)}
+ }catch(chessError){
+  console.error("Chess screen failed to render:",chessError);
+  app.innerHTML='<section class="panel"><h2>Chess could not load</h2><p>Please refresh the game. If this message stays, open the browser console and share the error.</p></section>';
+ }
+},true);
+
+
 
 claimGallery=function(r){
  if(game.galleryClaims[r])return;
