@@ -1890,7 +1890,8 @@ buyTokenItem=function(type){
    document.getElementById("closeReveal").disabled=false;
    document.getElementById("closeReveal").onclick=()=>{if(confirm("Close this player pick?"))closeReveal()};
    overlay.classList.add("show");
-   render();
+   const tokenCounter=document.getElementById("tokens");
+   if(tokenCounter)tokenCounter.textContent=money(game.tokens);
    return;
   }
   // Preserve the existing 84+ x2 reward flow.
@@ -1902,16 +1903,18 @@ buyTokenItem=function(type){
   const duplicateFlags=results.map(c=>awardPackCard(c).duplicate);
   save();isOpening=true;
   showReveal({title:"84+ x2 TOKEN PACK",subtitle:"Two guaranteed players rated 84 or higher",results,duplicateFlags,walkouts:true});
-  render();
+  const tokenCounter=document.getElementById("tokens");
+  if(tokenCounter)tokenCounter.textContent=money(game.tokens);
  }catch(err){
   game.tokens=balance;
   isOpening=false;
   pickState=null;
   if(overlay)overlay.classList.remove("show","walkout-mode");
   save();
+  const tokenCounter=document.getElementById("tokens");
+  if(tokenCounter)tokenCounter.textContent=money(game.tokens);
   console.error("Token shop purchase failed:",err);
-  render();
-  toast("Purchase failed and your tokens were returned. Please try again.");
+  toast("Purchase failed safely: "+(err&&err.message?err.message:"unknown error")+". Tokens returned.");
  }
 };
 
