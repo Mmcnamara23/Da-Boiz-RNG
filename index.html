@@ -1813,45 +1813,105 @@ render();
 // Final token-shop transaction handler. Recover a stale opening lock left by an
 // interrupted reveal, validate the reward pool before charging, and refund on errors.
 buyTokenItem=function(type){
+ const costs={pick79:75,x2:100};
+ const cost=costs[type];
+ if(!cost){toast("That token reward is unavailable.");return}
  const overlay=document.getElementById("reveal");
  if(isOpening&&overlay&&overlay.classList.contains("show"))return;
- isOpening=false;
- const costs={pick79:75,x2:100},cost=costs[type];
- if(!cost){toast("That token reward is unavailable.");return}
  const balance=Math.max(0,Number(game.tokens)||0);
  if(balance<cost){toast("Not enough tokens!");return}
- let pool=[],config=null;
- if(type==="x2"){
-  pool=randomRewardCards.filter(c=>c&&c.id!==hackClubOG.id&&Number(c.rating)>=84&&c.rarity!=="Aura");
-  if(!pool.length){toast("No eligible 84+ players are available right now.");return}
- }else{
-  config={count:5,need:2,min:79,title:"2 OF 5 • 79+ PLAYER PICK"};
-  pool=randomRewardCards.filter(c=>c&&c.id!==hackClubOG.id&&Number(c.rating)>=config.min&&c.rarity!=="Aura");
-  if(pool.length<config.count){toast("Not enough eligible players for this pick.");return}
- }
  try{
-  if(type==="x2"){
-   const results=[weightedCard(pool,tokenRewardWeights),weightedCard(pool,tokenRewardWeights)];
-   if(results.some(c=>!c))throw new Error("Could not create both 84+ rewards");
-   game.tokens=balance-cost;
-   const duplicateFlags=results.map(c=>awardPackCard(c).duplicate);
-   save();isOpening=true;
-   showReveal({title:"84+ x2 TOKEN PACK",subtitle:"Two guaranteed players rated 84 or higher",results,duplicateFlags,walkouts:true});
-  }else{
-   const candidates=[],excluded=new Set();
-   for(let i=0;i<config.count;i++){
-    const c=weightedCard(pool,tokenRewardWeights,excluded);
-    if(!c)throw new Error("Could not create all player-pick candidates");
-    candidates.push(c);excluded.add(c.id);
+  if(type==="pick79"){
+   // Build the pool from the full card catalogue, excluding every special
+   // promo/aura category while retaining ordinary base and Mythical cards.
+   const pool=allCards.filter(c=>
+    c&&Number(c.rating)>=79&&
+    c.rarity!=="Aura"&&c.rarity!=="Winter Wildcards"&&c.rarity!=="HACK-CLUB-OG"&&
+    !c.aura&&!c.promo&&!c.exclusive&&
+    c.id!=="gallery_aura_liam_og"&&c.id!=="liam_snowtherland"&&
+    c.id!=="nose_breather_lil_mumps"
+   );
+   const unique=[...new Map(pool.map(c=>[c.id,c])).values()];
+   if(unique.length<5){toast("There aren't five eligible 79+ players available.");return}
+   const candidates=[],remaining=unique.slice();
+   while(candidates.length<5){
+    const c=weightedCard(remaining,tokenRewardWeights);
+    if(!c)throw new Error("Unable to select five eligible players");
+    candidates.push(c);
+    const index=remaining.findIndex(x=>x.id===c.id);
+    if(index>=0)remaining.splice(index,1);
    }
-   game.tokens=balance-cost;save();isOpening=true;showPick(config,candidates);
+   // Charge only after all five candidates have been safely prepared.
+   game.tokens=balance-cost;
+   save();
+   isOpening=true;
+   pickState={config:{count:5,need:2,min:79,title:"79+ PLAYER PICK • CHOOSE 2 OF 5"},candidates,selected:new Set(),revealed:5};
+   const grid=document.getElementById("revealGrid");
+   if(!overlay||!grid)throw new Error("Player-pick screen is missing");
+   overlay.classList.remove("walkout-mode");
+   document.getElementById("revealTitle").textContent="79+ PLAYER PICK";
+   document.getElementById("revealSubtitle").textContent="Five eligible players. Choose exactly two to keep.";
+   document.getElementById("walkoutBanner").innerHTML="";
+   document.getElementById("pickHint").textContent="SELECT 2 OF 5 PLAYERS";
+   grid.innerHTML="";
+   candidates.forEach(c=>{
+    const el=document.createElement("div");
+    el.className="revealcard card-revealed";
+    el.innerHTML=cardHTML(c,'<div class="card-actions"><button type="button">SELECT</button></div>');
+    el.querySelector("button").onclick=()=>{
+     if(!pickState)return;
+     const selected=pickState.selected;
+     if(selected.has(c.id))selected.delete(c.id);
+     else if(selected.size<2)selected.add(c.id);
+     else{toast("You can only choose two players.");return}
+     el.classList.toggle("selected",selected.has(c.id));
+     el.querySelector("button").textContent=selected.has(c.id)?"✓ SELECTED":"SELECT";
+     document.getElementById("pickHint").textContent="SELECT 2 OF 5 • "+selected.size+"/2 SELECTED";
+     document.getElementById("confirmPick").disabled=selected.size!==2;
+    };
+    grid.appendChild(el);
+   });
+   document.getElementById("revealActions").innerHTML='<button type="button" id="confirmPick" disabled>CONFIRM 2 PLAYERS</button>';
+   document.getElementById("confirmPick").onclick=()=>{
+    if(!pickState||pickState.selected.size!==2)return;
+    const chosen=pickState.candidates.filter(c=>pickState.selected.has(c.id));
+    const duplicates=chosen.map(c=>award(c));
+    save();
+    pickState=null;
+    document.getElementById("revealTitle").textContent="PLAYER PICK CONFIRMED!";
+    document.getElementById("revealSubtitle").textContent="Your two selected players have been added to your collection.";
+    document.getElementById("pickHint").textContent="";
+    grid.innerHTML="";
+    chosen.forEach((c,i)=>grid.appendChild(revealCardElement(c,duplicates[i],i)));
+    document.getElementById("revealActions").innerHTML='<button type="button" id="pickDone">CONTINUE</button>';
+    document.getElementById("pickDone").onclick=closeReveal;
+    document.getElementById("closeReveal").onclick=closeReveal;
+   };
+   document.getElementById("closeReveal").disabled=false;
+   document.getElementById("closeReveal").onclick=()=>{if(confirm("Close this player pick?"))closeReveal()};
+   overlay.classList.add("show");
+   render();
+   return;
   }
+  // Preserve the existing 84+ x2 reward flow.
+  const pool=randomRewardCards.filter(c=>c&&c.id!==hackClubOG.id&&Number(c.rating)>=84&&c.rarity!=="Aura"&&c.rarity!=="Winter Wildcards"&&c.rarity!=="HACK-CLUB-OG"&&!c.aura&&!c.promo&&!c.exclusive);
+  if(pool.length<1){toast("No eligible 84+ players are available right now.");return}
+  const results=[weightedCard(pool,tokenRewardWeights),weightedCard(pool,tokenRewardWeights)];
+  if(results.some(c=>!c))throw new Error("Unable to select 84+ rewards");
+  game.tokens=balance-cost;
+  const duplicateFlags=results.map(c=>awardPackCard(c).duplicate);
+  save();isOpening=true;
+  showReveal({title:"84+ x2 TOKEN PACK",subtitle:"Two guaranteed players rated 84 or higher",results,duplicateFlags,walkouts:true});
   render();
  }catch(err){
-  game.tokens=balance;isOpening=false;pickState=null;
+  game.tokens=balance;
+  isOpening=false;
+  pickState=null;
   if(overlay)overlay.classList.remove("show","walkout-mode");
-  save();console.error("Token shop transaction error:",err);
-  render();toast("Purchase failed — your tokens have been refunded. Please try again.");
+  save();
+  console.error("Token shop purchase failed:",err);
+  render();
+  toast("Purchase failed and your tokens were returned. Please try again.");
  }
 };
 
