@@ -1526,7 +1526,64 @@ function drawChess(){
  el.querySelectorAll("[data-sq]").forEach(b=>b.onclick=()=>chessSquare(b.dataset.sq));
  el.querySelector("[data-chess-resign]").onclick=()=>{if(confirm("Forfeit this game and lose ELO?"))finishChess("loss")};
 }
-function chessSquare(sq){if(!cg||cg.game_over())return;if(!selectedSq){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}const m=cg.move({from:selectedSq,to:sq,promotion:"q"});selectedSq=null;if(!m){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}game.chess.active.moves.push(m.san);if(cg.game_over())return finishChess(cg.in_checkmate()?"win":"draw");setTimeout(()=>{const moves=cg.moves({verbose:true});if(!moves.length)return finishChess("draw");const val={p:1,n:3,b:3,r:5,q:9,k:0};let chosen=moves[Math.floor(Math.random()*moves.length)];if(oppName===""||oppName==="Oscar Robert Harper"){chosen=moves.sort((a,b)=>(val[(b.captured||"")]-val[(a.captured||"")]))[0]}const ai=cg.move(chosen);game.chess.active.moves.push(ai.san);save();if(cg.game_over())finishChess(cg.in_checkmate()?"loss":"draw");else drawChess()},350);drawChess()}
+function chessBotMove(){
+ if(!cg)return null;
+ const elo=({"Benjamin Fraser":100,"Max Rolfe":125,"Dexter Chadwick":170,"Lil Mumps":220,"Vittorio Petruzzelli":260,"Henry James Worsell":310,"Oscar Robert Harper":500}[oppName]||100);
+ const depth=elo>=500?4:elo>=260?3:elo>=170?2:1;
+ const nodeLimit=elo>=500?6500:elo>=260?3600:elo>=170?1400:180;
+ let nodes=0;
+ const values={p:100,n:320,b:335,r:500,q:900,k:20000};
+ function evaluate(pos){
+  if(pos.in_checkmate())return pos.turn()==="b"?-100000:100000;
+  if(pos.game_over())return 0;
+  const board=pos.board();let score=0,minorDevelopment=0,center=0;
+  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+   const p=board[r][c];if(!p)continue;
+   const sign=p.color==="b"?1:-1;
+   score+=sign*values[p.type];
+   const advance=p.color==="b"?r:7-r;
+   if(p.type==="p")score+=sign*(advance*5+(c>=2&&c<=5?8:0));
+   if((p.type==="n"||p.type==="b")&&advance>0)minorDevelopment+=sign*7;
+   if(["d4","e4","d5","e5"].includes("abcdefgh"[c]+(8-r)))center+=sign*9;
+  }
+  return score+minorDevelopment+center;
+ }
+ function ordered(moves){
+  return moves.sort((a,b)=>{
+   const score=m=>((m.captured?values[m.captured]*10-values[m.piece]:0)+(m.promotion?values[m.promotion]:0)+(m.san&&m.san.includes("+")?35:0));
+   return score(b)-score(a);
+  });
+ }
+ function search(pos,ply,alpha,beta){
+  if(++nodes>=nodeLimit||ply===0||pos.game_over())return evaluate(pos);
+  const moves=ordered(pos.moves({verbose:true}));
+  if(!moves.length)return evaluate(pos);
+  const maximizing=pos.turn()==="b";let best=maximizing?-Infinity:Infinity;
+  for(const m of moves){
+   if(nodes>=nodeLimit)break;
+   const child=new Chess(pos.fen());
+   child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});
+   const score=search(child,ply-1,alpha,beta);
+   if(maximizing){best=Math.max(best,score);alpha=Math.max(alpha,best)}
+   else{best=Math.min(best,score);beta=Math.min(beta,best)}
+   if(beta<=alpha)break;
+  }
+  return best===-Infinity||best===Infinity?evaluate(pos):best;
+ }
+ const moves=cg.moves({verbose:true});if(!moves.length)return null;
+ if(depth===1&&elo<170)return moves[Math.floor(Math.random()*moves.length)];
+ let best=[],bestScore=-Infinity;
+ for(const m of ordered(moves)){
+  if(nodes>=nodeLimit)break;
+  const child=new Chess(cg.fen());
+  child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});
+  const score=search(child,depth-1,-Infinity,Infinity);
+  if(score>bestScore){bestScore=score;best=[m]}
+  else if(score===bestScore)best.push(m);
+ }
+ return (best.length?best:moves)[Math.floor(Math.random()*(best.length?best.length:moves.length))];
+}
+function chessSquare(sq){if(!cg||cg.game_over())return;if(!selectedSq){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}const m=cg.move({from:selectedSq,to:sq,promotion:"q"});selectedSq=null;if(!m){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}game.chess.active.moves.push(m.san);if(cg.game_over())return finishChess(cg.in_checkmate()?"win":"draw");setTimeout(()=>{if(!cg||!game.chess.active)return;const chosen=chessBotMove();if(!chosen)return finishChess("draw");const ai=cg.move({from:chosen.from,to:chosen.to,promotion:chosen.promotion||"q"});if(!ai)return finishChess("draw");game.chess.active.moves.push(ai.san);save();if(cg.game_over())finishChess(cg.in_checkmate()?"loss":"draw");else drawChess()},350);drawChess()}
 function finishChess(result){if(ctimer)clearInterval(ctimer);document.body.classList.remove("chess-active");const elo={"Benjamin Fraser":100,"Max Rolfe":125,"Dexter Chadwick":170,"Lil Mumps":220,"Vittorio Petruzzelli":260,"Henry James Worsell":310,"Oscar Robert Harper":500}[oppName]||100;const delta=result==="win"?Math.max(8,Math.round((elo-game.chess.elo)/35)+16):result==="loss"?(game.chess.elo<=100?0:-Math.max(4,Math.round((game.chess.elo-elo)/45)+8)):2;game.chess.elo=Math.max(100,game.chess.elo+delta);if(result==="win"){game.chess.wins++;if(!game.chess.beaten.includes(oppName))game.chess.beaten.push(oppName);}else if(result==="loss")game.chess.losses++;else game.chess.draws++;game.chess.history=game.chess.history||[];game.chess.history.push({opponent:oppName,result,delta,date:Date.now()});game.chess.active=null;cg=null;selectedSq=null;save();toast("Chess "+result+" • ELO "+(delta>=0?"+":"")+delta);render()}
 window.daBoizWinterPack={cards:winter,pick:pickWinterCard,snowLiam:snowLiam};
 })();
