@@ -1770,8 +1770,8 @@ renderAlbum=function(){
   {rarity:"Legendary",cards:allCards.filter(c=>c.rarity==="Legendary"),need:null,reward:"10 tokens"},
   {rarity:"Icon",cards:allCards.filter(c=>c.rarity==="Icon"),need:4,reward:"Nose Breather Lil Mumps (98)"},
   {rarity:"Mythical",cards:allCards.filter(c=>c.rarity==="Mythical"),need:9,reward:"50 tokens + 25,000 coins"},
-  {rarity:"Aura",cards:auraCards,need:3,reward:"HACK CLUB OG Liam Sutherland (100)"},
-  {rarity:"Winter Wildcards",cards:winter,need:null,reward:"Collect all 13 to unlock Liam Snowtherland (99)"}
+  {rarity:"Aura",cards:allCards.filter(c=>c.rarity==="Aura"),need:3,reward:"HACK CLUB OG Liam Sutherland (100)"},
+  {rarity:"Winter Wildcards",cards:allCards.filter(c=>c.rarity==="Winter Wildcards"),need:null,reward:"Collect all 13 to unlock Liam Snowtherland (99)"}
  ];
  const groups=sets.map(set=>{
   if(!set.cards.length)return "";
@@ -1785,7 +1785,7 @@ renderAlbum=function(){
 };
 claimGallery=function(r){
  if(game.galleryClaims[r])return;
- const setCards=r==="Aura"?auraCards:allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive);
+ const setCards=r==="Aura"?allCards.filter(c=>c.rarity==="Aura"):allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive);
  const thresholds={Icon:4,Mythical:9,Aura:3},need=thresholds[r]??setCards.length;
  const found=setCards.filter(c=>(game.owned[c.id]||0)>0).length;
  if(!setCards.length||found<need){toast("Discover "+need+" "+r+" players first.");return}
