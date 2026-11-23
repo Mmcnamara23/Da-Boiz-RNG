@@ -785,22 +785,29 @@ const positionNames=["GK","CB","CB","CM","ST"];
 
 const baseCards=[
 ["brody","Brody Doel","🐺","Uncommon",76,300],
+["benjamin_fraser","Benjamin Fraser","🧩","Common",55,100],
+["ollie_dixon","Ollie Dixon","⚡","Epic",85,1200],
+["blake_weller","Blake Weller","🛡️","Rare",80,600],
+["ralph_lott","Ralph Lott","👑","Legendary",88,3000],
+["henry_burton","Henry Burton","🏆","Epic",83,1200],
+["jake_xhelo","Jake Xhelo","🐍","Rare",81,600],
 ["dexter","Dexter Chadwick","🧢","Rare",78,600],
-["matthew","Matthew Bardsley","😎","Common",72,100],
+["matthew","Matthew Bardsley","😎","Uncommon",72,300],
 ["numaii","Numaii Leslie-Madden","🦊","Common",67,100],
 ["freddie","Freddie Fifield","⚽","Uncommon",74,300],
-["max_rolfe","Max Rolfe","🔥","Common",68,100],
+["max_rolfe","Max Rolfe","🔥","Common",69,100],
 ["ashton","Ashton Elliott","🦁","Rare",77,600],
 ["oscar","Oscar Robert Harper","👑","Epic",83,1200],
-["jayden","Jayden Jobarteh","💎","Uncommon",75,300],
+["jayden","Jayden Jobarteh","💎","Rare",75,600],
 ["henry","Henry James Worsell","⚡","Epic",82,1200],
 ["vittorio","Vittorio Petruzzelli","🦈","Legendary",88,3000],
 ["zain","Zain Miah","🚀","Epic",84,1200],
 ["lil_mumps","Lil Mumps","🎤","Legendary",88,3000],
 ["liam","Liam Sutherland","🌠","Icon",93,10000],
-["max_worboys","Max Worboys","🐐","Icon",94,10000],
+["max_worboys","Max Worboys","🐐","Icon",92,10000],
 ["jacky_chan","Jacky Chan","🥋","Icon",95,10000],
-["riley_may","Riley May","🌟","Icon",93,10000]
+["riley_may","Riley May","🌟","Icon",91,10000],
+["leo_lambert","Leo Lambert","🦁","Icon",94,10000]
 ].map(x=>({id:x[0],name:x[1],emoji:x[2],rarity:x[3],rating:x[4],price:x[5]}));
 
 const cards=baseCards.map(c=>({...c}));
@@ -844,7 +851,7 @@ const rarityPrice={Common:100,Uncommon:300,Rare:600,Epic:1200,Legendary:3000,Ico
 const rarityRank={Common:0,Uncommon:1,Rare:2,Epic:3,Legendary:4,Icon:5,Mythical:6};
 
 const packDefs=[
-{id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:80,Uncommon:13,Rare:5.5,Epic:1.4,Legendary:.1},tokenChance:.10,tokenAmount:2,description:"Free pack • 5 players",className:"low"},
+{id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:31.265,Uncommon:27.791,Rare:20.843,Epic:8.337,Legendary:.9,Icon:.5},tokenChance:.10,tokenAmount:2,description:"Free pack • 5 players",className:"low"},
 {id:"mid",name:"MID T PACK",icon:"🎁",price:3500,pulls:5,odds:{Common:64,Uncommon:22,Rare:9,Epic:4.2,Legendary:.7,Icon:.1},tokenChance:.07,tokenAmount:3,description:"5 players • Better odds",className:"mid"},
 {id:"high",name:"HIGH T PACK",icon:"💜",price:7500,pulls:5,odds:{Common:40,Uncommon:30,Rare:18,Epic:10,Legendary:1.8,Icon:.2},tokenChance:.08,tokenAmount:4,description:"5 players • Top-tier odds",className:"high"},
 {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:100},description:"Guaranteed Mythical player",className:"mega"}
@@ -1371,7 +1378,7 @@ positionNames.splice(0,positionNames.length,"GK","CB","CB","CB","CM","CM","ST");
 game.team=(Array.isArray(game.team)?game.team:[]).slice(0,7);while(game.team.length<7)game.team.push(null);game.formation="3-2-1";
 teamCards=function(){return game.team.map(id=>id?getCard(id):null)};
 teamRating=function(){const t=teamCards();return t.every(Boolean)&&t.length===7?Math.round(t.reduce((s,c)=>s+c.rating,0)/7):0};
-const ben={id:"benjamin_fraser",name:"Benjamin Fraser",emoji:"🧩",rarity:"Common",rating:20,price:100};
+const ben={id:"benjamin_fraser",name:"Benjamin Fraser",emoji:"🧩",rarity:"Common",rating:55,price:100};
 if(!cards.some(c=>c.id===ben.id))cards.push(ben);if(!allCards.some(c=>c.id===ben.id))allCards.push(ben);
 const winter=[
 ["brody_snowell","Brody Snowell",82,"Winter Wildcards"],["dexter_clauswick","Dexter Clauswick",84,"Winter Wildcards"],["matthew_baublesley","Matthew Bauble-sley",81,"Winter Wildcards"],["numaii_elfie","Numaii Elfie-Madden",86,"Winter Wildcards"],["freddie_frostfield","Freddie Frostfield",89,"Winter Wildcards"],["max_rolfenbells","Max Rolfenbells",82,"Winter Wildcards"],["ashton_elflott","Ashton Elflott",84,"Winter Wildcards"],["oscar_holiday","Oscar Robert Ho-Ho-Harper",93,"Winter Wildcards"],["jayden_jingle","Jayden Jingle-barteh",84,"Winter Wildcards"],["henry_worsleigh","Henry James Worsleigh",91,"Winter Wildcards"],["vittorio_present","Vittorio Present-zzelli",84,"Winter Wildcards"],["zain_mistleah","Zain Mistleah",81,"Winter Wildcards"],["lil_mistle_mumps","Lil Mistle-Mumps",84,"Winter Wildcards"]
@@ -1623,7 +1630,7 @@ const auraStyle=document.createElement("style");
 auraStyle.textContent='.card.Aura,.Aura.card{background:linear-gradient(145deg,#ff35cf,#ff8be8 45%,#ff2b9d)!important;border:2px solid #ff8be8!important;box-shadow:0 0 18px #ff35cf99!important;color:#24001d!important}.card.Aura .rating,.card.Aura .rarity{color:#5b003e!important}.pack.winter{background:linear-gradient(145deg,#192d27,#101827);border-color:#287a4d}.pack.winter .packicon{filter:drop-shadow(0 0 10px #38d879)}#revealStorageStatus,.card-status,.storage-button{display:none!important}';
 document.head.appendChild(auraStyle);
 packDefs.splice(0,packDefs.length,
- {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:55,Uncommon:20,Rare:9,Epic:4,Legendary:.1,Icon:.005},description:"DA BOIZ: Built different. Every pull tells a story.",className:"low"},
+ {id:"high",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:31.265,Uncommon:27.791,Rare:20.843,Epic:8.337,Legendary:.9,Icon:.5},description:"DA BOIZ: Built different. Every pull tells a story.",className:"low"},
  {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:99.95,Aura:.05},description:"DA BOIZ: Legends aren’t found. They’re packed.",className:"mega"},
  {id:"winter",name:"WINTER WILDCARDS",icon:"❄️",price:40000,pulls:2,description:"DA BOIZ: Through every storm, legends rise.",className:"winter"}
 );
@@ -1635,7 +1642,7 @@ normalPick=function(pack){
   return pool[Math.floor(Math.random()*pool.length)];
  }
  if(pack.id==="high"){
-  const odds={Common:55,Uncommon:20,Rare:9,Epic:4,Legendary:.1,Icon:.005};
+  const odds={Common:31.265,Uncommon:27.791,Rare:20.843,Epic:8.337,Legendary:.9,Icon:.5};
   const total=Object.values(odds).reduce((sum,value)=>sum+value,0);
   if(Math.random()*100>=total)return null; // Remaining 11.895% awards 1 token instead of a player.
   const rarity=weightedRarity(odds);
