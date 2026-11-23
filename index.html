@@ -804,8 +804,8 @@ Mythical:0.002
 };
 
 
-const rarityPrice={Common:100,Uncommon:300,Rare:600,Epic:1200,Legendary:3000,Icon:10000,Mythical:5000};
-const rarityRank={Common:0,Uncommon:1,Rare:2,Epic:3,Legendary:4,Icon:5,Mythical:6};
+const rarityPrice={Common:100,Uncommon:300,Rare:100,Epic:250,Legendary:700,Icon:1000,Mythical:0,Aura:0};
+const rarityRank={Common:0,Uncommon:1,Rare:2,Epic:3,Legendary:4,Icon:5,Mythical:6,Aura:7};
 
 const packDefs=[
 {id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:31.265,Uncommon:27.791,Rare:20.843,Epic:8.337,Legendary:.9,Icon:.5},tokenChance:.10,tokenAmount:2,description:"Free pack • 5 players",className:"low"},
@@ -846,7 +846,7 @@ game.settings=game.settings||{};
 game.settings.walkouts=game.settings.walkouts||{};
 game.match=game.match&&typeof game.match==="object"?game.match:null;
 game.lastMatch=game.lastMatch||null;
-["Rare","Epic","Legendary","Icon","Mythical"].forEach(r=>{
+["Rare","Epic","Legendary","Icon","Mythical","Aura"].forEach(r=>{
 if(typeof game.settings.walkouts[r]!=="boolean")game.settings.walkouts[r]=true;
 });
 
@@ -936,6 +936,15 @@ return `<section>
 </section>`;
 }
 
+function sellPlayer(id){
+const c=getCard(id);const count=Number(game.owned[id])||0;
+if(!c||count<=0)return;
+const value=Number(rarityPrice[c.rarity])||0;
+if(c.rarity==="Mythical"||value<=0){toast("Mythical players cannot be sold.");return;}
+game.owned[id]=count-1;if(game.owned[id]<=0)delete game.owned[id];
+game.coins+=value;save();render();toast("Sold "+c.name+" for "+money(value)+" coins.");
+}
+
 function renderTeam(){
 const slots=game.team.map((id,i)=>{
 const c=id?getCard(id):null;
@@ -964,7 +973,7 @@ return `<section>
 ${rows.map(row=>`<div class="pitchrow">${row.map(i=>{let c=game.team[i]?getCard(game.team[i]):null;return `<div class="position"><span class="position-role">${positionNames[i]}</span>${c?`${c.emoji}<br><b>${c.name}</b><br><strong>${c.rating} OVR</strong>`:`➕<br><b>${positionNames[i]} Empty</b>`}</div>`}).join("")}</div>`).join("")}
 </div>${matchPanel}
 <h2 style="margin-top:24px">Squad Positions</h2><div class="grid">${slots}</div>
-<div class="panel" style="margin-top:17px"><h3>Your Players</h3><div class="playerlist">${getOwned().sort((a,b)=>b.rating-a.rating).map(c=>`<div class="playeroption"><span class="miniemoji">${c.emoji}</span><span class="playerinfo"><b>${c.name}</b><small>${c.rarity} • Owned: ${game.owned[c.id]}</small></span><span class="ovr">${c.rating}</span></div>`).join("")||"Open a pack to get your first player."}</div></div>
+<div class="panel" style="margin-top:17px"><h3>Your Players</h3><div class="playerlist">${getOwned().sort((a,b)=>b.rating-a.rating).map(c=>`<div class="playeroption"><span class="miniemoji">${c.emoji}</span><span class="playerinfo"><b>${c.name}</b><small>${c.rarity} • Owned: ${game.owned[c.id]}</small></span><span class="ovr">${c.rating}</span><button class="secondary player-sell-button" data-sell-player="${c.id}" ${c.rarity==="Mythical"||!(rarityPrice[c.rarity]>0)?"disabled":""}>${c.rarity==="Mythical"?"CANNOT SELL":"SELL • "+money(rarityPrice[c.rarity]||0)+" COINS"}</button></div>`).join("")||"Open a pack to get your first player."}</div></div>
 ${game.lastMatch?`<div class="panel" style="margin-top:15px"><h3>Last match</h3><p>${game.lastMatch.result}: ${game.lastMatch.home} - ${game.lastMatch.away} ${game.lastMatch.opponent||"GOATS XI"} • ${game.lastMatch.reward} tokens earned</p></div>`:""}
 </section>`;
 }
@@ -995,7 +1004,7 @@ return `<section><div class="sectionhero"><h2>📚 PLAYER ALBUM</h2><p>Discover 
 }
 
 function renderSettings(){
-return `<section><div class="sectionhero"><h2>⚙️ SETTINGS</h2><p>Choose which rarities trigger the special card flip reveal. Progress lasts only while this page stays open.</p></div><div class="grid">${["Rare","Epic","Legendary","Icon","Mythical"].map(r=>`<div class="setting"><div><b>${r} Walkout</b><div class="small">Special reveal for ${r} players</div></div><input type="checkbox" data-walkout="${r}" ${game.settings.walkouts[r]?"checked":""}></div>`).join("")}</div></section>`;
+return `<section><div class="sectionhero"><h2>⚙️ SETTINGS</h2><p>Choose which rarities trigger the special card flip reveal. Aura walkouts are always on and take priority over every other rarity.</p></div><div class="grid">${["Rare","Epic","Legendary","Icon","Mythical"].map(r=>`<div class="setting"><div><b>${r} Walkout</b><div class="small">Special reveal for ${r} players</div></div><input type="checkbox" data-walkout="${r}" ${game.settings.walkouts[r]?"checked":""}></div>`).join("")}<div class="setting"><div><b>Aura Walkout</b><div class="small">Always on • Aura cards always take priority</div></div><input type="checkbox" checked disabled aria-label="Aura walkout always on"></div></div><div class="panel" style="margin-top:18px"><h3>⚠️ Reset Game</h3><p class="small">Delete your saved coins, tokens, players, team and progression on this device.</p><button type="button" class="reset-game-button" data-reset-game>RESET GAME</button></div></section>`;
 }
 
 /* MATCH FUNCTIONS */
@@ -1080,6 +1089,12 @@ document.querySelectorAll("[data-claimmatch]").forEach(b=>b.onclick=claimMatch);
 document.querySelectorAll("[data-walkout]").forEach(b=>b.onchange=()=>{
 game.settings.walkouts[b.dataset.walkout]=b.checked;save();toast(b.dataset.walkout+" walkout "+(b.checked?"enabled":"disabled"));
 });
+document.querySelectorAll("[data-reset-game]").forEach(b=>b.onclick=()=>{
+if(!confirm("Are you sure? This permanently resets all Da Boiz RNG progress on this device."))return;
+localStorage.removeItem(SAVE_KEY);
+window.location.reload();
+});
+document.querySelectorAll("[data-sell-player]").forEach(b=>b.onclick=()=>sellPlayer(b.dataset.sellPlayer));
 let f=document.getElementById("formation");
 if(f)f.onchange=()=>{if(game.match?.status==="running")return;game.formation=f.value;save();render()};
 }
@@ -1124,7 +1139,7 @@ if(p.tokenChance&&Math.random()<p.tokenChance){tokens=p.tokenAmount;game.tokens+
 let duplicateFlags=results.map(c=>award(c));save();
 showReveal({title:p.name,subtitle:`${results.length} player${results.length===1?"":"s"} in your pack${tokens?` • BONUS +${tokens} TOKENS`:""}`,results,duplicateFlags,walkouts:true});
 }
-function revealEffect(c){return ["Rare","Epic","Legendary","Icon","Mythical","Aura"].includes(c.rarity)&&game.settings.walkouts[c.rarity]}
+function revealEffect(c){return c.rarity==="Aura"||(["Rare","Epic","Legendary","Icon","Mythical"].includes(c.rarity)&&game.settings.walkouts[c.rarity])}
 function bestWalkout(results){return results.filter(revealEffect).sort((a,b)=>(rarityRank[b.rarity]-rarityRank[a.rarity])||(b.rating-a.rating))[0]||null}
 function walkoutMarkup(c){
 let icon=c.rarity==="Mythical"?"🌌":c.rarity==="Icon"?"⚡":c.rarity==="Legendary"?"👑":c.rarity==="Epic"?"💜":"💎";
@@ -1822,17 +1837,17 @@ startMatchTimer();
   lowt:{name:"LOW T PACK",icon:"📦",className:"low",odds:{Common:50,Uncommon:20,Rare:13,Epic:6},rarities:["Common","Uncommon","Rare","Epic"],tokens:true},
   mid:{name:"MID TIER PACK",icon:"🎁",className:"mid",odds:{Common:39,Uncommon:17,Rare:16,Epic:11,Legendary:.1},rarities:["Common","Uncommon","Rare","Epic","Legendary"],tokens:true},
   cool:{name:"COOL KIDS PACK",icon:"😎",className:"cool",odds:{Common:35,Uncommon:20,Rare:22,Epic:16,Legendary:.4,Icon:.05},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon"],tokens:true},
-  high:{name:"HIGH T PACK",icon:"💜",className:"high",odds:{Common:28,Uncommon:10,Rare:25,Epic:22,Legendary:.6,Icon:.4,Mythical:8},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical"],tokens:true},
-  mega:{name:"MEGA PACK",icon:"🚀",className:"mega",odds:{Common:16,Uncommon:9,Rare:29,Epic:26,Legendary:.9,Icon:.5,Mythical:9,"Winter Wildcards":.9},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Winter Wildcards"],tokens:true},
+  high:{name:"HIGH T PACK",icon:"💜",className:"high",odds:{Common:28,Uncommon:17,Rare:25,Epic:22,Legendary:.6,Icon:.4,Mythical:1},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical"],tokens:true},
+  mega:{name:"MEGA PACK",icon:"🚀",className:"mega",odds:{Common:16,Uncommon:16,Rare:29,Epic:26,Legendary:.9,Icon:.5,Mythical:2,"Winter Wildcards":.9},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Winter Wildcards"],tokens:true},
   aura:{name:"AURA PACK",icon:"💫",className:"aura",odds:{Common:20,Uncommon:15,Rare:20,Epic:25,Legendary:1.1,Icon:.8,Mythical:6,"Winter Wildcards":1.4,Aura:.6},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Winter Wildcards","Aura"],tokens:true}
  };
  const upgrades={
   foundation:{to:"lowt",coins:0,tokens:5},
   lowt:{to:"mid",coins:6000,tokens:0},
   mid:{to:"cool",coins:0,tokens:25},
-  cool:{to:"high",coins:24000,tokens:0},
-  high:{to:"mega",coins:40000,tokens:20},
-  mega:{to:"aura",coins:50000,tokens:50}
+  cool:{to:"high",coins:40000,tokens:0},
+  high:{to:"mega",coins:52000,tokens:20},
+  mega:{to:"aura",coins:0,tokens:100}
  };
  const promoMega={id:"promo-mythical",name:"GUARANTEED MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,className:"mega"};
  const promoWinter={id:"promo-winter",name:"GUARANTEED WINTER WILDCARD PACK",icon:"❄️",price:40000,pulls:2,className:"winter"};
@@ -1871,7 +1886,7 @@ startMatchTimer();
  .upgrade-panel button{width:100%;margin-top:auto}.main-pack-card-dominant{min-height:440px;padding:38px 28px;border-width:3px;box-shadow:0 18px 48px #0008,0 0 35px #8b5cf633}.main-pack-card-dominant .packicon{font-size:88px}.main-pack-card-dominant .packname{font-size:clamp(34px,6vw,54px)}.current-pack-label,.upgrade-kicker{font-size:12px;font-weight:1000;letter-spacing:2px;color:#c4b5fd}.open-main-pack{font-size:18px;padding:18px 24px;max-width:520px;width:100%;margin:12px auto 0}.upgrade-panel-prominent{margin:14px auto;padding:14px 18px;border:1px solid #a78bfa;border-radius:14px;background:linear-gradient(120deg,#211b40,#111827);text-align:center;width:min(100%,620px);min-height:0}.upgrade-panel-prominent h2{margin:5px 0;font-size:18px}.upgrade-panel-prominent p{max-width:720px;margin:7px auto}.upgrade-panel-prominent .upgrade-cost{font-size:16px;display:inline-block;padding:7px 14px;border:1px solid #475569;margin:6px}.upgrade-action{display:inline-block;max-width:520px;margin:6px auto;font-size:16px;padding:12px 18px}.upgrade-hint{font-size:13px}.pack-rarity-list{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:12px 0}
  .pack-rarity-list span{padding:6px 10px;border-radius:20px;background:#25314a;border:1px solid #52627c;font-weight:800;font-size:12px}
  .promo-pack-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
- .promo-pack-row .pack{margin:0}.pack.foundation{border-color:#b08a55;background:linear-gradient(145deg,#302515,#151923)}
+ .promo-pack-row .pack{margin:0}.player-sell-button{font-size:11px;padding:8px 10px;white-space:nowrap}.reset-game-button{width:100%;background:linear-gradient(135deg,#b91c1c,#7f1d1d);border-color:#ef4444}.pack.foundation{border-color:#b08a55;background:linear-gradient(145deg,#302515,#151923)}
  .pack.cool{border-color:#38bdf8}.pack.aura{border-color:#ec65d7;background:linear-gradient(145deg,#451447,#17152c)}
  @media(max-width:700px){.pack-progression{grid-template-columns:1fr}.promo-pack-row{grid-template-columns:1fr}.main-pack-card{min-height:260px}}
  `;
