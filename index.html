@@ -1771,7 +1771,7 @@ renderAlbum=function(){
 };
 claimGallery=function(r){
  if(game.galleryClaims[r])return;
- const setCards=r==="Aura"?auraCards:allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive&&c.id!=="gallery_mythical_jacky");
+ const setCards=r==="Aura"?auraCards:allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive);
  const thresholds={Icon:4,Mythical:9,Aura:3},need=thresholds[r]??setCards.length;
  const found=setCards.filter(c=>(game.owned[c.id]||0)>0).length;
  if(!setCards.length||found<need){toast("Discover "+need+" "+r+" players first.");return}
