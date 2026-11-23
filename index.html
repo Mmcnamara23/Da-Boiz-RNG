@@ -1762,27 +1762,38 @@ renderTokenShop=function(){
 const originalGetCardForExclusiveReward=getCard;
 getCard=function(id){return id===noseBreatherRewardCard.id?noseBreatherRewardCard:originalGetCardForExclusiveReward(id)};
 renderAlbum=function(){
- const sets=[
-  {rarity:"Common",cards:allCards.filter(c=>c.rarity==="Common"),need:null,reward:"2,000 coins"},
-  {rarity:"Uncommon",cards:allCards.filter(c=>c.rarity==="Uncommon"),need:null,reward:"6,000 coins"},
-  {rarity:"Rare",cards:allCards.filter(c=>c.rarity==="Rare"),need:null,reward:"8,000 coins"},
-  {rarity:"Epic",cards:allCards.filter(c=>c.rarity==="Epic"),need:null,reward:"10,000 coins"},
-  {rarity:"Legendary",cards:allCards.filter(c=>c.rarity==="Legendary"),need:null,reward:"10 tokens"},
-  {rarity:"Icon",cards:allCards.filter(c=>c.rarity==="Icon"),need:4,reward:"Nose Breather Lil Mumps (98)"},
-  {rarity:"Mythical",cards:allCards.filter(c=>c.rarity==="Mythical"),need:9,reward:"50 tokens + 25,000 coins"},
-  {rarity:"Aura",cards:allCards.filter(c=>c.rarity==="Aura"),need:3,reward:"HACK CLUB OG Liam Sutherland (100)"},
-  {rarity:"Winter Wildcards",cards:allCards.filter(c=>c.rarity==="Winter Wildcards"),need:null,reward:"Collect all 13 to unlock Liam Snowtherland (99)"}
- ];
- const groups=sets.map(set=>{
-  if(!set.cards.length)return "";
-  const found=set.cards.filter(c=>(game.owned[c.id]||0)>0).length;
-  const need=set.need??set.cards.length,pct=Math.round(found/set.cards.length*100);
-  const canClaim=found>=need&&!game.galleryClaims[set.rarity]&&set.rarity!=="Winter Wildcards";
-  const cardsHtml=set.cards.map(c=>{const count=game.owned[c.id]||0;return count?cardHTML(c,`<div class="small">Collected • Copies: ${count}</div>`):`<div class="card ${c.rarity}" style="opacity:.48;filter:grayscale(.85)"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">${c.rarity}</div></div>`}).join("");
-  return `<div class="panel gallery-set"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>${set.rarity} Set</h2><b>${found}/${set.cards.length} • ${pct}%</b></div><p>Set reward: <b>${set.reward}</b></p><p class="small">${need} of ${set.cards.length} required</p><div class="bar"><span style="width:${pct}%"></span></div>${canClaim?`<button data-gallery-claim="${set.rarity}">CLAIM SET REWARD</button>`:""}<div class="grid" style="margin-top:14px">${cardsHtml}</div></div>`;
- }).join("");
- return `<section><div class="sectionhero"><h2>📚 THE GALLERY</h2><p>Collect players to unlock set rewards. Duplicate copies count once.</p></div>${groups}</section>`;
-};
+  try{
+   if(!game.owned||typeof game.owned!=="object")game.owned={};
+   if(!game.galleryClaims||typeof game.galleryClaims!=="object")game.galleryClaims={};
+   const sets=[
+    {rarity:"Common",cards:allCards.filter(c=>c.rarity==="Common"),need:null,reward:"2,000 coins"},
+    {rarity:"Uncommon",cards:allCards.filter(c=>c.rarity==="Uncommon"),need:null,reward:"6,000 coins"},
+    {rarity:"Rare",cards:allCards.filter(c=>c.rarity==="Rare"),need:null,reward:"8,000 coins"},
+    {rarity:"Epic",cards:allCards.filter(c=>c.rarity==="Epic"),need:null,reward:"10,000 coins"},
+    {rarity:"Legendary",cards:allCards.filter(c=>c.rarity==="Legendary"),need:null,reward:"10 tokens"},
+    {rarity:"Icon",cards:allCards.filter(c=>c.rarity==="Icon"),need:4,reward:"Nose Breather Lil Mumps (98)"},
+    {rarity:"Mythical",cards:allCards.filter(c=>c.rarity==="Mythical"),need:9,reward:"50 tokens + 25,000 coins"},
+    {rarity:"Aura",cards:allCards.filter(c=>c.rarity==="Aura"),need:3,reward:"HACK CLUB OG Liam Sutherland (100)"},
+    {rarity:"Winter Wildcards",cards:allCards.filter(c=>c.rarity==="Winter Wildcards"),need:null,reward:"Collect all 13 to unlock Liam Snowtherland (99)"}
+   ];
+   const groups=sets.map(set=>{
+    if(!set.cards.length)return "";
+    const found=set.cards.filter(c=>Number(game.owned[c.id])>0).length;
+    const need=set.need===null?set.cards.length:set.need;
+    const pct=Math.round(found/Math.max(1,set.cards.length)*100);
+    const canClaim=found>=need&&!game.galleryClaims[set.rarity]&&set.rarity!=="Winter Wildcards";
+    const cardsHtml=set.cards.map(c=>{
+     const count=Number(game.owned[c.id])||0;
+     return count?'<div class="card '+c.rarity+'"><div class="emoji">'+c.emoji+'</div><div class="rating">'+c.rating+'</div><div class="name">'+c.name+'</div><div class="rarity">'+c.rarity+'</div><div class="small">Collected • Copies: '+count+'</div></div>':'<div class="card '+c.rarity+'" style="opacity:.48;filter:grayscale(.85)"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">'+c.rarity+'</div></div>';
+    }).join("");
+    return '<div class="panel gallery-set"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>'+set.rarity+' Set</h2><b>'+found+'/'+set.cards.length+' • '+pct+'%</b></div><p>Set reward: <b>'+set.reward+'</b></p><p class="small">'+need+' of '+set.cards.length+' required</p><div class="bar"><span style="width:'+pct+'%"></span></div>'+(canClaim?'<button data-gallery-claim="'+set.rarity+'">CLAIM SET REWARD</button>':'')+'<div class="grid" style="margin-top:14px">'+cardsHtml+'</div></div>';
+   }).join("");
+   return '<section><div class="sectionhero"><h2>📚 THE GALLERY</h2><p>Collect players to unlock set rewards. Duplicate copies count once.</p></div>'+groups+'</section>';
+  }catch(err){
+   console.error("Gallery renderer failed:",err);
+   return '<section class="panel"><h2>Gallery error details</h2><p>'+String(err&&err.message||err)+'</p></section>';
+  }
+ };
 claimGallery=function(r){
  if(game.galleryClaims[r])return;
  const setCards=r==="Aura"?allCards.filter(c=>c.rarity==="Aura"):allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive);
