@@ -682,49 +682,7 @@ transition-duration:.01ms!important;
 .flip-inner,.walkouttitle,.revealcard,.walkout-subtitle{animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
 </style>
-<style id="chess-arena-style">
-.chess-hero{text-align:center;background:radial-gradient(circle at top,#40306c,#111827 68%);border:1px solid #8b5cf6}
-.chess-kicker{font-size:11px;letter-spacing:3px;color:#c4b5fd;font-weight:900}
-.chess-elo-card{display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin-top:14px;padding:12px 34px;border:1px solid #a78bfa;border-radius:16px;background:#120d25}
-.chess-elo-card span,.chess-elo-card small{font-size:11px;color:#c4b5fd;letter-spacing:1px}.chess-elo-card strong{font-size:42px;color:#fff}
-.chess-rewards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
-.chess-reward,.chess-opponent,.chess-history{background:#151c2d;border:1px solid #34415c;border-radius:14px;padding:14px}
-.chess-reward{display:flex;flex-direction:column;gap:7px}.chess-reward span,.chess-opponent small{color:#aab5c9;font-size:12px}
-.chess-section-head{margin:22px 0 10px}.chess-section-head h3{margin:0 0 4px}.chess-section-head p{margin:0;color:#9ca3af;font-size:13px}
-.chess-opponents{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-.chess-opponent{display:flex;align-items:center;gap:10px}.chess-opponent>div:nth-child(2){flex:1;min-width:0}.chess-op-avatar{font-size:26px}.chess-opponent small{display:block}
-.chess-active-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px;margin:12px 0;background:#3b1d28;border:1px solid #fb7185;border-radius:14px}.chess-active-banner span{flex:1}
-.chess-history-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #30394c;font-size:13px}.chess-history-row:last-child{border:0}
-.chess-board-wrap{margin-top:18px;padding:12px;background:#101827;border:1px solid #475569;border-radius:16px}
-#chessBoard [data-sq]{border:0;cursor:pointer;display:grid;place-items:center;color:#101010}
-#chessBoard [data-sq].selected{outline:4px solid #facc15;outline-offset:-4px}
-body.chess-active{overflow:hidden!important}body.chess-active header,body.chess-active footer{display:none!important}body.chess-active #app{position:fixed!important;inset:0!important;z-index:9999!important;overflow-y:auto!important;background:#080d18!important;padding:clamp(12px,3vw,30px)!important;margin:0!important;width:100vw!important;max-width:none!important;box-sizing:border-box!important}body.chess-active #app .chess-page{max-width:1100px;margin:0 auto;min-height:100vh;padding-bottom:40px}body.chess-active #app .chess-page> :not(#chessBoard){display:none!important}body.chess-active #app #chessBoard{display:block!important;max-width:760px;margin:0 auto;padding:clamp(14px,3vw,28px);min-height:85vh;box-sizing:border-box}body.chess-active #app #chessBoard>p:first-child{text-align:center;font-size:clamp(20px,3vw,28px);font-weight:800;margin:10px 0 24px}body.chess-active #app #chessBoard>div{max-width:min(76vh,680px)!important;width:100%;}body.chess-active #app #chessBoard>p:nth-last-child(2){text-align:center;font-size:16px;margin:18px 0}body.chess-active #app .chess-board-wrap{margin-top:24px}body.chess-active nav{pointer-events:none;opacity:.45}body.chess-active .logo{opacity:.7}
-@media(max-width:600px){.chess-opponent{padding:10px}.chess-elo-card strong{font-size:34px}}
-
-/* Responsive centred chessboard */
-body.chess-active{height:100dvh;overflow:hidden!important}
-body.chess-active #app{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;padding:clamp(8px,2vw,22px)!important}
-body.chess-active #app .chess-page{width:100%;max-width:none;min-height:0;height:100%;padding:0;margin:0;display:flex;align-items:center;justify-content:center}
-body.chess-active #app #chessBoard{width:100%;max-width:900px;min-height:0;height:100%;margin:0 auto;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.5vh,16px)}
-body.chess-active #app #chessBoard>p:first-child{width:100%;text-align:center;font-size:clamp(16px,2.4vw,25px);font-weight:850;margin:0}
-body.chess-active #app #chessGrid{width:min(min(96vw,80vh),900px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));overflow:hidden;border:2px solid #d6c5a3;box-shadow:0 16px 50px #0009;flex:0 1 auto}
-body.chess-active #app #chessGrid .chess-square{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;width:100%;height:100%;aspect-ratio:1;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;box-shadow:none!important;transform:none!important;line-height:1;overflow:hidden}
-body.chess-active #app #chessGrid .chess-square.light{background:#eee2c8!important}
-body.chess-active #app #chessGrid .chess-square.dark{background:#9b704d!important}
-body.chess-active #app #chessGrid .chess-square.selected{box-shadow:inset 0 0 0 4px #facc15!important;filter:brightness(1.12)}
-body.chess-active #app #chessGrid .piece{font-family:"DejaVu Sans","Segoe UI Symbol",serif;font-size:clamp(38px,10vw,100px);line-height:1;display:block;user-select:none}
-body.chess-active #app #chessGrid .piece.white-pawn{font-family:"DejaVu Sans","Segoe UI Symbol",serif!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1.8px #000!important;filter:none!important}
-body.chess-active #app #chessGrid .piece.white{color:#fffdf4;-webkit-text-fill-color:#fffdf4;-webkit-text-stroke:1.3px #242424;text-shadow:0 2px 2px #0008}
-body.chess-active #app #chessGrid .piece.black{color:#171717;-webkit-text-fill-color:#171717;-webkit-text-stroke:.5px #f2e8d5;text-shadow:0 2px 2px #0006}
-body.chess-active #app #chessGrid .piece{width:88%;height:88%;display:flex;align-items:center;justify-content:center;font-size:initial!important;line-height:1;user-select:none}
-body.chess-active #app #chessGrid .piece svg{display:block;width:100%;height:100%;overflow:visible}
-body.chess-active #app #chessGrid .move-dot{position:absolute;width:24%;height:24%;border-radius:50%;background:#14532dcc;pointer-events:none}
-body.chess-active #app #chessGrid .capture-ring{position:absolute;inset:5%;border:5px solid #14532dcc;border-radius:50%;pointer-events:none}
-body.chess-active #app #chessBoard #chess-status{width:100%;text-align:center;font-size:clamp(13px,1.8vw,17px);margin:0}
-body.chess-active #app #chessBoard .chess-active-banner{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;text-align:center;font-size:13px}
-body.chess-active #app #chessBoard .chess-active-banner button{padding:9px 14px;font-size:12px}
-@media(max-width:600px){body.chess-active #app{padding:6px!important}body.chess-active #app #chessBoard{gap:clamp(6px,1vh,10px)}body.chess-active #app #chessGrid{width:min(94vw,64vh)}body.chess-active #app #chessGrid .piece{font-size:clamp(30px,11vw,58px)}body.chess-active #app #chessGrid .capture-ring{border-width:3px}}
-</style></head>
+</head>
 <body>
 <header>
  <div class="headtop">
@@ -733,7 +691,7 @@ body.chess-active #app #chessBoard .chess-active-banner button{padding:9px 14px;
    <div class="stat">🪙 <span id="coins">0</span></div>
    <div class="stat">🪙 Tokens: <span id="tokens">0</span></div>
    <div class="stat">⭐ Team: <span id="teamRating">—</span></div>
-   <div class="stat chess-elo-stat">♟️ ELO: <span id="chessElo">100</span></div>
+   
   </div>
  </div>
  <nav>
@@ -874,6 +832,8 @@ const opponentTeams=[
 let game;
 try{game=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
 if(!game||typeof game!=="object")game={};
+delete game.chess;
+try{localStorage.setItem(SAVE_KEY,JSON.stringify(game))}catch(e){}
 
 game.coins=Number(game.coins??0);
 game.tokens=Number(game.tokens??0);
@@ -969,7 +929,7 @@ content=`<div class="subnav">
 <button data-team-tab="objectives" class="${activeTeamTab==="objectives"?"active":""}">🏆 Team Objectives</button>
 <button data-team-tab="album" class="${activeTeamTab==="album"?"active":""}">📚 Gallery</button>
 </div>${teamViews[activeTeamTab]()}`;
-}else if(activeTab==="minigames"){content='<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="pack-card"><div class="pack-emoji">♟️</div><h3>Chess</h3><p>Play chess against the bots, earn ELO and claim rewards.</p><button data-open-minigame-chess>OPEN CHESS</button></div></div></section>';}else content=renderSettings();
+}else if(activeTab==="minigames"){content='<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Coming Friday 27th November.</p></div></section>';}else content=renderSettings();
 document.getElementById("app").innerHTML=content;
 bindButtons();
 updateMatchHUD();
@@ -1408,7 +1368,6 @@ normalPick=function(pack){
  let odds={...pack.odds};if(game.potion&&game.potion.until>Date.now()){Object.keys(odds).forEach(r=>{if(r!=="Common")odds[r]*=game.potion.multiplier});let sum=Object.values(odds).reduce((a,b)=>a+b,0);Object.keys(odds).forEach(r=>odds[r]=odds[r]/sum*100)}
  const rarity=weightedRarity(odds);let pool=cards.filter(c=>c.rarity===rarity&&c.id!==ben.id);if(pack.id==="low"&&rarity==="Common")pool.push(ben);if(!pool.length)pool=cards.filter(c=>c.rarity!=="Icon"&&c.id!==ben.id);return pool[Math.floor(Math.random()*pool.length)];
 };
-game.chess=game.chess||{elo:100,wins:0,losses:0,draws:0,beaten:[],claimed:{}};game.chess.elo=Math.max(100,Number(game.chess.elo)||100);game.chess.wins=Number(game.chess.wins)||0;game.chess.losses=Number(game.chess.losses)||0;game.chess.draws=Number(game.chess.draws)||0;game.chess.beaten=game.chess.beaten||[];game.chess.claimed=game.chess.claimed||{};
 game.galleryClaims=game.galleryClaims||{};
 const originalCardHTML=cardHTML;
 cardHTML=function(c,actions=""){
@@ -1444,41 +1403,8 @@ renderAlbum=function(){
 };
 const oldObjectives=renderObjectives;
 renderObjectives=oldObjectives;
-function chessRewardHTML(){
- if(!game.chess||typeof game.chess!=="object"||Array.isArray(game.chess))game.chess={};
- const c=game.chess;
- c.elo=Math.max(100,Number(c.elo)||100);
- c.wins=Math.max(0,Number(c.wins)||0);
- c.draws=Math.max(0,Number(c.draws)||0);
- c.losses=Math.max(0,Number(c.losses)||0);
- if(!Array.isArray(c.beaten))c.beaten=[];
- if(!Array.isArray(c.history))c.history=[];
- if(!c.claimed||typeof c.claimed!=="object"||Array.isArray(c.claimed))c.claimed={};
- const active=c.active&&typeof c.active==="object"?c.active:null;
- const history=c.history.slice(-8).reverse().map(h=>{
-  h=h&&typeof h==="object"?h:{};
-  const result=String(h.result||"");
-  const delta=Number(h.delta)||0;
-  return '<div class="chess-history-row"><b>'+String(h.opponent||"Unknown opponent")+'</b><span>'+result.toUpperCase()+'</span><strong>'+(delta>=0?"+":"")+delta+' ELO</strong></div>';
- }).join("")||'<p class="small">Your completed games will appear here.</p>';
- const opponents=[["Benjamin Fraser",100,"🧩"],["Max Rolfe",125,"🔥"],["Dexter Chadwick",170,"🧢"],["Lil Mumps",220,"👃"],["Vittorio Petruzzelli",260,"👑"],["Henry James Worsell",310,"⚡"],["Oscar Robert Harper",500,"🌟"]];
- const quests=[["first-game","First game",c.history.length>=1,10,"Complete one chess game"],["first-win","First victory",c.wins>=1,15,"Win against any bot"],["bot-collector","Bot collector",c.beaten.length>=3,25,"Defeat three different bots"]];
- if(!c.questClaims||typeof c.questClaims!=="object"||Array.isArray(c.questClaims))c.questClaims={};
- const questHTML=quests.map(q=>'<div class="chess-reward"><b>'+q[1]+'</b><span>'+q[4]+'</span><small>'+(q[2]?'COMPLETED':'IN PROGRESS')+' • '+q[3]+' TOKENS</small><button data-chess-quest="'+q[0]+'" '+(!q[2]||c.questClaims[q[0]]?'disabled':'')+'>'+(c.questClaims[q[0]]?'CLAIMED':q[2]?'CLAIM REWARD':'NOT COMPLETE')+'</button></div>').join("");
- return '<section class="chess-page">'+
-  '<div class="sectionhero chess-hero"><div class="chess-kicker">DA BOIZ RNG • RANKED CHESS</div><h2>♟️ CHESS ARENA</h2><p>Choose an opponent, play a full legal chess game and climb the ELO ladder.</p><div class="chess-elo-card"><span>CURRENT RATING</span><strong>'+c.elo+'</strong><small>'+c.wins+' W • '+c.draws+' D • '+c.losses+' L</small></div><p class="small" style="margin-top:10px">🛡️ ELO safety: if you are on 100 ELO, you cannot lose any more points.</p></div>'+
-  (active?'<div class="chess-active-banner"><b>GAME IN PROGRESS</b><span>Playing '+String(active.opponent||"your opponent")+'</span><button data-chess-resume>RETURN TO YOUR GAME</button></div>':"")+
-  '<div class="chess-rewards"><div class="chess-reward"><b>250 ELO</b><span>25 tokens</span><button data-chess-reward="250" '+(c.elo<250||c.claimed[250]?"disabled":"")+'>'+(c.claimed[250]?"CLAIMED":"CLAIM")+'</button></div><div class="chess-reward"><b>500 ELO</b><span>45 tokens</span><button data-chess-reward="500" '+(c.elo<500||c.claimed[500]?"disabled":"")+'>'+(c.claimed[500]?"CLAIMED":"CLAIM")+'</button></div></div>'+
-  '<div class="chess-section-head"><h3>♟️ Chess quests</h3><p>Complete challenges to earn bonus tokens.</p></div><div class="chess-rewards">'+questHTML+'</div>'+
-+  '<div class="chess-section-head"><h3>Choose your opponent</h3><p>Opponents get stronger as their ELO increases.</p></div>'+
-  '<div class="chess-opponents">'+opponents.map(x=>'<div class="chess-opponent"><div class="chess-op-avatar">'+x[2]+'</div><div><b>'+x[0]+'</b><small>'+x[1]+' ELO '+(c.beaten.includes(x[0])?" • DEFEATED":"")+'</small></div><button data-chess-opponent="'+x[0]+'" '+(active?"disabled":"")+'>'+(c.beaten.includes(x[0])?"REMATCH":"PLAY")+'</button></div>').join("")+'</div>'+
-  '<div class="chess-section-head"><h3>Recent games</h3></div><div class="chess-history">'+history+'</div>'+
-  '<div id="chessBoard" class="chess-board-wrap"></div></section>';
-}
 const oldBind=bindButtons;
-bindButtons=function(){oldBind();document.querySelectorAll("[data-objtab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-objtab]").forEach(x=>x.classList.toggle("active",x===b));document.getElementById("objContent").innerHTML=b.dataset.objtab==="chess"?chessRewardHTML():oldObjectives()});document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
- document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
- document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(+b.dataset.chessReward));document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>startChess(b.dataset.chessOpponent));};
+bindButtons=function(){oldBind();document.querySelectorAll("[data-objtab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-objtab]").forEach(x=>x.classList.toggle("active",x===b));document.getElementById("objContent").innerHTML=oldObjectives()});document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);};
 const endPromo=new Date("2027-01-01T00:00:00Z").getTime();
 function openWinter(){if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");if(game.coins<12000)return toast("Not enough coins.");game.coins-=12000;const a=winter[Math.floor(Math.random()*winter.length)],b=winter.filter(x=>x.id!==a.id)[Math.floor(Math.random()*(winter.length-1))],dups=[award(a),award(b)];if(winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);isOpening=true;save();showReveal({title:"❄️ WINTER WILDCARDS",subtitle:"Two promo players",results:[a,b],duplicateFlags:dups,walkouts:true})}
 const oldPacks=renderPacks;
@@ -1490,108 +1416,6 @@ bindButtons=function(){bindSettings();const ex=document.querySelector("[data-sav
 const createMatchOriginal=createMatch;
 createMatch=function(){if(!game.team.every(Boolean)){toast("Fill all seven squad positions first.");return}return createMatchOriginal()};
 claimObjective=function(target){const o=objectives.find(x=>x.rating===target);if(!o||game.claimed[target]||teamRating()<target||!teamCards().every(Boolean))return;game.claimed[target]=true;game.coins+=o.coins;game.tokens+=o.tokens;save();render();toast("Objective claimed!")};
-document.addEventListener("click",e=>{
- const resume=e.target.closest("[data-chess-resume]");
- if(resume){if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else resumeChess();return}
- const b=e.target.closest("[data-chess-opponent]");if(!b)return;
- const name=b.dataset.chessOpponent;
- if(!window.Chess){const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=()=>beginChess(name);sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}else beginChess(name);
-});
-let cg=null,ct=600,ctimer=null,oppName="",selectedSq=null;
-function loadChessForOpponent(name){
- if(window.Chess){beginChess(name);return}
- let existing=document.querySelector('script[data-chess-library]');
- if(existing){existing.addEventListener("load",()=>beginChess(name),{once:true});existing.addEventListener("error",()=>toast("Chess library failed to load. Check your connection and try again."),{once:true});return}
- const sc=document.createElement("script");sc.dataset.chessLibrary="true";sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=()=>beginChess(name);sc.onerror=()=>toast("Chess library failed to load. Check your connection and try again.");document.head.appendChild(sc);
-}
-function beginChess(name){oppName=name;cg=new Chess();ct=600;selectedSq=null;game.chess.active={opponent:name,moves:[],remaining:600};save();document.body.classList.add("chess-active");const el=document.getElementById("chessBoard");if(!el)return;drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
-function resumeChess(){const a=game.chess.active;if(!a||!window.Chess)return;oppName=a.opponent;cg=new Chess();(a.moves||[]).forEach(m=>cg.move(m));ct=Math.max(1,Number(a.remaining)||600);selectedSq=null;document.body.classList.add("chess-active");drawChess();if(ctimer)clearInterval(ctimer);ctimer=setInterval(()=>{ct--;if(game.chess.active)game.chess.active.remaining=ct;const clock=document.getElementById("chess-clock");if(clock)clock.textContent=Math.floor(ct/60)+":"+String(ct%60).padStart(2,"0");if(ct%5===0)save();if(ct<=0)finishChess("loss")},1000)}
-function chessPieceSvg(type,color){
- const white=color==="w",fill=white?"#ffffff":"#111111",stroke=white?"#111111":"none",sw=white?4:0;
- const shapes={
-  k:'<path d="M50 8V27 M40 17H60" fill="none" stroke-width="4.5" stroke-linecap="round"/><path d="M45 28 Q50 24 55 28 L59 37 Q78 42 82 58 Q85 72 73 80 L70 89 H30 L27 80 Q15 72 18 58 Q22 42 41 37Z"/><path d="M25 88H75 L81 98H19Z M17 100H83V108H17Z"/>',
-  q:'<path d="M14 24 L28 38 L34 19 L50 34 L66 19 L72 38 L86 24 L79 56 Q76 69 67 76 L68 88H32L33 76Q24 69 21 56Z"/><path d="M29 87H71L78 98H22Z M17 100H83V108H17Z"/>',
-  r:'<path d="M20 18H34V30H43V18H57V30H66V18H80V50H20Z"/><path d="M26 51H74L70 79Q68 87 75 91H25Q32 87 30 79Z"/><path d="M20 90H80L85 100H15Z M13 102H87V109H13Z"/>',
-  b:'<path d="M50 14 C39 14 35 25 39 35 C28 43 27 57 36 67 Q43 74 50 75 Q57 74 64 67 C73 57 72 43 61 35 C65 25 61 14 50 14Z"/><path d="M47 22L56 39" fill="none" stroke-width="4.5" stroke-linecap="round"/><path d="M36 76H64L70 87H30Z M25 90H75L81 100H19Z M16 102H84V109H16Z"/>',
-  n:'<path d="M25 88 Q17 75 22 57 Q27 39 42 25 L48 12 L58 22 Q73 22 80 39 Q86 55 79 74 L73 88Z"/><circle cx="64" cy="43" r="4.5"/><path d="M42 28L50 38 M56 31L60 35" fill="none" stroke-width="4" stroke-linecap="round"/><path d="M26 88H74L80 98H20Z M16 101H84V109H16Z"/>',
-  p:'<circle cx="50" cy="23" r="15"/><path d="M40 40H60 L57 49 Q57 65 68 86H32Q43 65 43 49Z"/><path d="M35 86H65L73 97H27Z M19 100H81V109H19Z"/>'
- };
- return '<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round">'+shapes[type]+'</g></svg>';
-}
-function drawChess(){
- const el=document.getElementById("chessBoard");if(!el||!cg)return;
- const board=cg.board(),symbols={p:"♟",n:"♞",b:"♝",r:"♜",q:"♛",k:"♚"};
- const targets=selectedSq?cg.moves({square:selectedSq,verbose:true}):[];
- const targetMap=new Map(targets.map(m=>[m.to,m]));
- let s='<p>Playing '+oppName+' • <b id="chess-clock">10:00</b></p><div id="chessGrid" role="group" aria-label="Chess board">';
- for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-  const p=board[r][c],sq="abcdefgh"[c]+(8-r),target=targetMap.get(sq),selected=selectedSq===sq;
-  const piece=p?'<span class="piece '+(p.color==="w"?"white":"black")+'">'+chessPieceSvg(p.type,p.color)+'</span>':"";
-  s+='<button type="button" data-sq="'+sq+'" aria-label="'+sq+(p?', '+(p.color==="w"?"white":"black")+' '+p.type:"")+(target?", legal move destination":"")+'" class="chess-square '+((r+c)%2?"dark":"light")+(selected?" selected":"")+'">'+piece+(target?(target.captured||target.flags.includes("e")?'<span class="capture-ring"></span>':'<span class="move-dot"></span>'):"")+'</button>';
- }
- el.innerHTML=s+'</div><p id="chess-status">White to move • Select a piece then a highlighted destination</p><div class="chess-active-banner"><span>You are in full-screen Chess mode. Leaving forfeits this game.</span><button data-chess-resign>LEAVE GAME • FORFEIT</button></div>';
- el.querySelectorAll("[data-sq]").forEach(b=>b.onclick=()=>chessSquare(b.dataset.sq));
- el.querySelector("[data-chess-resign]").onclick=()=>{if(confirm("Forfeit this game and lose ELO?"))finishChess("loss")};
-}
-function chessBotMove(){
- if(!cg)return null;
- const elo=({"Benjamin Fraser":100,"Max Rolfe":125,"Dexter Chadwick":170,"Lil Mumps":220,"Vittorio Petruzzelli":260,"Henry James Worsell":310,"Oscar Robert Harper":500}[oppName]||100);
- const depth=elo>=500?5:elo>=260?3:elo>=170?2:1;
- const nodeLimit=elo>=500?45000:elo>=260?3600:elo>=170?1400:180;
- let nodes=0;
- const values={p:100,n:320,b:335,r:500,q:900,k:20000};
- function evaluate(pos){
-  if(pos.in_checkmate())return pos.turn()==="b"?-100000:100000;
-  if(pos.game_over())return 0;
-  const board=pos.board();let score=0,minorDevelopment=0,center=0;
-  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-   const p=board[r][c];if(!p)continue;
-   const sign=p.color==="b"?1:-1;
-   score+=sign*values[p.type];
-   const advance=p.color==="b"?r:7-r;
-   if(p.type==="p")score+=sign*(advance*5+(c>=2&&c<=5?8:0));
-   if((p.type==="n"||p.type==="b")&&advance>0)minorDevelopment+=sign*7;
-   if(["d4","e4","d5","e5"].includes("abcdefgh"[c]+(8-r)))center+=sign*9;
-  }
-  return score+minorDevelopment+center;
- }
- function ordered(moves){
-  return moves.sort((a,b)=>{
-   const score=m=>((m.captured?values[m.captured]*10-values[m.piece]:0)+(m.promotion?values[m.promotion]:0)+(m.san&&m.san.includes("+")?35:0));
-   return score(b)-score(a);
-  });
- }
- function search(pos,ply,alpha,beta){
-  if(++nodes>=nodeLimit||ply===0||pos.game_over())return evaluate(pos);
-  const moves=ordered(pos.moves({verbose:true}));
-  if(!moves.length)return evaluate(pos);
-  const maximizing=pos.turn()==="b";let best=maximizing?-Infinity:Infinity;
-  for(const m of moves){
-   if(nodes>=nodeLimit)break;
-   const child=new Chess(pos.fen());
-   child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});
-   const score=search(child,ply-1,alpha,beta);
-   if(maximizing){best=Math.max(best,score);alpha=Math.max(alpha,best)}
-   else{best=Math.min(best,score);beta=Math.min(beta,best)}
-   if(beta<=alpha)break;
-  }
-  return best===-Infinity||best===Infinity?evaluate(pos):best;
- }
- const moves=cg.moves({verbose:true});if(!moves.length)return null;
- if(depth===1&&elo<170)return moves[Math.floor(Math.random()*moves.length)];
- let best=[],bestScore=-Infinity;
- for(const m of ordered(moves)){
-  if(nodes>=nodeLimit)break;
-  const child=new Chess(cg.fen());
-  child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});
-  const score=search(child,depth-1,-Infinity,Infinity);
-  if(score>bestScore){bestScore=score;best=[m]}
-  else if(score===bestScore)best.push(m);
- }
- return (best.length?best:moves)[Math.floor(Math.random()*(best.length?best.length:moves.length))];
-}
-function chessSquare(sq){if(!cg||cg.game_over())return;if(!selectedSq){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}const m=cg.move({from:selectedSq,to:sq,promotion:"q"});selectedSq=null;if(!m){const p=cg.get(sq);if(p&&p.color==="w")selectedSq=sq;drawChess();return}game.chess.active.moves.push(m.san);if(cg.game_over())return finishChess(cg.in_checkmate()?"win":"draw");setTimeout(()=>{if(!cg||!game.chess.active)return;const chosen=chessBotMove();if(!chosen)return finishChess("draw");const ai=cg.move({from:chosen.from,to:chosen.to,promotion:chosen.promotion||"q"});if(!ai)return finishChess("draw");game.chess.active.moves.push(ai.san);save();if(cg.game_over())finishChess(cg.in_checkmate()?"loss":"draw");else drawChess()},350);drawChess()}
-function finishChess(result){if(ctimer)clearInterval(ctimer);document.body.classList.remove("chess-active");const elo={"Benjamin Fraser":100,"Max Rolfe":125,"Dexter Chadwick":170,"Lil Mumps":220,"Vittorio Petruzzelli":260,"Henry James Worsell":310,"Oscar Robert Harper":500}[oppName]||100;const delta=result==="win"?Math.max(8,Math.round((elo-game.chess.elo)/35)+16):result==="loss"?(game.chess.elo<=100?0:-Math.max(4,Math.round((game.chess.elo-elo)/45)+8)):2;game.chess.elo=Math.max(100,game.chess.elo+delta);if(result==="win"){game.chess.wins++;if(!game.chess.beaten.includes(oppName))game.chess.beaten.push(oppName);}else if(result==="loss")game.chess.losses++;else game.chess.draws++;game.chess.history=game.chess.history||[];game.chess.history.push({opponent:oppName,result,delta,date:Date.now()});game.chess.active=null;cg=null;selectedSq=null;save();toast("Chess "+result+" • ELO "+(delta>=0?"+":"")+delta);render()}
 window.daBoizWinterPack={cards:winter,pick:pickWinterCard,snowLiam:snowLiam};
 })();
 
@@ -1610,17 +1434,6 @@ function claimGallery(r){
  if(r==="Mythical")game.owned["gallery_mythical_jacky"]=(game.owned["gallery_mythical_jacky"]||0)+1;
  save();render();toast(r+" Gallery reward claimed!");
 }
-function claimChessQuest(id){
- const quests={"first-game":{done:()=>game.chess.history.length>=1,reward:10},"first-win":{done:()=>game.chess.wins>=1,reward:15},"bot-collector":{done:()=>game.chess.beaten.length>=3,reward:25}};
- const q=quests[id];if(!q||!q.done())return;
- game.chess.questClaims=game.chess.questClaims||{};if(game.chess.questClaims[id])return;
- game.chess.questClaims[id]=true;game.tokens+=q.reward;save();render();toast("Chess quest complete! +"+q.reward+" tokens");
-}
-function claimChessReward(n){
- if(game.chess.claimed[n]||game.chess.elo<n)return;
- game.chess.claimed[n]=true;game.tokens+=n===250?25:45;save();render();toast("Chess reward claimed!");
-}
-
 const previousRender=render, previousOpenPack=openPack, previousBindButtons=bindButtons;
 mythical.forEach(c=>{if(c.rating>=96){c.rarity="Aura";c.aura=true}});
 allCards.forEach(c=>{if(mythical.some(m=>m.id===c.id)&&c.rating>=96){c.rarity="Aura";c.aura=true}});
@@ -1752,9 +1565,7 @@ renderAlbum=function(){
  }).join("");
  return `<section><div class="sectionhero"><h2>📚 THE GALLERY</h2><p>Every card is shown in its rarity set. Discover cards to reveal them and track your collection.</p></div>${groups}</section>`;
 };
-document.querySelectorAll('nav button[data-tab="sbcs"]').forEach(b=>b.textContent="♟️ Chess");
-const originalSetTab=setTab;
-setTab=function(tab){if(isOpening&&tab!=="sbcs")return;if(game.chess&&game.chess.active&&tab!=="sbcs"){toast("Finish or forfeit your chess game before leaving Chess.");return}activeTab=tab;document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
+setTab=function(tab){if(isOpening)return;activeTab=tab;document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));render()};
 setShopTab=function(tab){if(isOpening)return;activeShopTab=["packs","luck","tokenshop"].includes(tab)?tab:"packs";activeTab="shops";render()};
 render=function(){
  const app=document.getElementById("app");
@@ -1791,15 +1602,12 @@ render=function(){
    shopContent='<section class="panel"><h2>Shop loading error</h2><p>This shop screen hit an error. Other shop screens remain available.</p></section>';
   }
   app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopContent;
- }else if(activeTab==="sbcs"){
-  app.innerHTML=chessRewardHTML();
  }else{
   previousRender();
  }
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
  bindButtons();
  updateMatchHUD();
- const elo=document.getElementById("chessElo");if(elo&&game.chess)elo.textContent=game.chess.elo;
 };
 bindButtons=function(){
  try{previousBindButtons()}catch(err){console.error("Legacy button binding failed:",err)}
@@ -1817,32 +1625,13 @@ bindButtons=function(){
  document.querySelectorAll("[data-openpack]").forEach(b=>b.onclick=()=>openPack(b.dataset.openpack));
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
- document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));document.querySelectorAll("[data-chess-quest]").forEach(b=>b.onclick=()=>claimChessQuest(b.dataset.chessQuest));
- document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>loadChessForOpponent(b.dataset.chessOpponent));
- document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
- document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="sbcs"){activeTab="sbcs";render();return}setTab(b.dataset.tab)});
+  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 };
 const legacyStorage=document.getElementById("revealStorageStatus");if(legacyStorage)legacyStorage.textContent="";
 
 // Token purchases are bound directly in bindButtons() after each render.
 
-// Minigames navigation and Chess entry point.
-function showChessMenu(){
- const app=document.getElementById("app");
- try{
-  app.innerHTML=chessRewardHTML();
-  document.querySelectorAll("[data-chess-reward]").forEach(b=>b.onclick=()=>claimChessReward(Number(b.dataset.chessReward)));
-  document.querySelectorAll("[data-chess-quest]").forEach(b=>b.onclick=()=>claimChessQuest(b.dataset.chessQuest));
-  document.querySelectorAll("[data-chess-opponent]").forEach(b=>b.onclick=()=>beginChess(b.dataset.chessOpponent));
-  document.querySelectorAll("[data-chess-resume]").forEach(b=>b.onclick=()=>{if(window.Chess)resumeChess();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js";sc.onload=resumeChess;sc.onerror=()=>toast("Could not load chess rules library.");document.head.appendChild(sc)}});
- }catch(chessError){console.error("Chess menu failed to render:",chessError);toast("Could not open the chess menu. Please try again.");}
-}
-document.addEventListener("click",function(event){
- const navButton=event.target&&event.target.closest?event.target.closest('nav button[data-tab="minigames"]'):null;
- if(navButton){event.preventDefault();event.stopImmediatePropagation();activeTab="minigames";document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b===navButton));render();return;}
- const chessButton=event.target&&event.target.closest?event.target.closest("[data-open-minigame-chess]"):null;
- if(chessButton){event.preventDefault();event.stopImmediatePropagation();showChessMenu();}
-},true);
+
 
 
 
