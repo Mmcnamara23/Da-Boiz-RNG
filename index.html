@@ -845,7 +845,7 @@ game.potion=game.potion||null;
 game.settings=game.settings||{};
 game.settings.walkouts=game.settings.walkouts||{};
 game.match=game.match&&typeof game.match==="object"?game.match:null;
-game.lastMatch=game.lastMatch||null;
+game.lastMatch=game.lastMatch||null;
 ["Rare","Epic","Legendary","Icon","Mythical"].forEach(r=>{
 if(typeof game.settings.walkouts[r]!=="boolean")game.settings.walkouts[r]=true;
 });
@@ -856,7 +856,7 @@ let activeTeamTab="team";let isOpening=false;
 let pickState=null;
 let toastTimer,animationTimer,openingRun=0;
 let matchInterval=null;
-let celebratedGoals=new Set();
+let celebratedGoals=new Set();
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(game));return true}catch(e){console.error("Save failed:",e);return false}}
 setInterval(save,2000);
 window.addEventListener("pagehide",save);
@@ -1585,6 +1585,13 @@ render=function(){
    shopContent='<section class="panel"><h2>Shop loading error</h2><p>This shop screen hit an error. Other shop screens remain available.</p></section>';
   }
   app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="'+(activeShopTab==="packs"?"active":"")+'">🎁 Pack Shop</button><button data-shop-tab="luck" class="'+(activeShopTab==="luck"?"active":"")+'">🍀 Luck Shop</button><button data-shop-tab="tokenshop" class="'+(activeShopTab==="tokenshop"?"active":"")+'">🪙 Token Shop</button></div>'+shopContent;
+ }else if(activeTab==="teamhub"){
+  const tabs={team:renderTeam,objectives:renderObjectives,album:renderAlbum};
+  if(!Object.prototype.hasOwnProperty.call(tabs,activeTeamTab))activeTeamTab="team";
+  let teamContent="";
+  try{teamContent=tabs[activeTeamTab]();if(typeof teamContent!=="string"||!teamContent.trim())throw new Error("The selected team screen returned no content.");}
+  catch(err){console.error("Da Boiz team screen render error ("+activeTeamTab+"):",err);teamContent='<section class="panel"><h2>Screen loading error</h2><p>This screen hit an error. Try another tab, then return to Gallery.</p></section>';}
+  app.innerHTML='<div class="subnav"><button data-team-tab="team" class="'+(activeTeamTab==="team"?"active":"")+'">⚽ Squad</button><button data-team-tab="objectives" class="'+(activeTeamTab==="objectives"?"active":"")+'">🏆 Team Objectives</button><button data-team-tab="album" class="'+(activeTeamTab==="album"?"active":"")+'">📚 Gallery</button></div>'+teamContent;
  }else{
   previousRender();
  }
