@@ -1400,7 +1400,7 @@ const snowLiam={id:"liam_snowtherland",name:"Liam Snowtherland",emoji:"🎅",rar
 const excludeIds=new Set(["nose_breather_lil_mumps",ben.id,...winter.map(c=>c.id),mythJacky.id,snowLiam.id,hackClubOG.id]);
 randomRewardCards.splice(0,randomRewardCards.length,...allCards.filter(c=>!excludeIds.has(c.id)));
 packDefs.splice(0,packDefs.length,
-{id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:80,Uncommon:13,Rare:5.5,Epic:1.4,Legendary:.1},tokenChance:.10,tokenAmount:2,description:"Free pack • 5 players",className:"low"},
+{id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:{Common:31.265,Uncommon:27.791,Rare:20.843,Epic:8.337,Legendary:.9,Icon:.5},tokenChance:.10,tokenAmount:2,description:"Free pack • 5 players",className:"low"},
 {id:"high",name:"HIGH T PACK",icon:"💜",price:7500,pulls:5,odds:{Common:40,Uncommon:30,Rare:18,Epic:10,Legendary:1.8,Icon:.2},tokenChance:.08,tokenAmount:4,description:"5 players • Top-tier odds",className:"high"},
 {id:"mega",name:"DA BOIZ MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,odds:{Mythical:100},description:"Guaranteed Mythical player",className:"mega"});
 normalPick=function(pack){
@@ -1644,7 +1644,7 @@ normalPick=function(pack){
  if(pack.id==="high"){
   const odds={Common:31.265,Uncommon:27.791,Rare:20.843,Epic:8.337,Legendary:.9,Icon:.5};
   const total=Object.values(odds).reduce((sum,value)=>sum+value,0);
-  if(Math.random()*100>=total)return null; // Remaining 11.895% awards 1 token instead of a player.
+  if(Math.random()*100>=total)return null; // Remaining 10.364% awards 1 token instead of a player.
   const rarity=weightedRarity(odds);
   const pool=cards.filter(c=>c.rarity===rarity&&!c.promo&&!c.exclusive);
   if(!pool.length)throw new Error("No LOW T players configured for rarity: "+rarity);
