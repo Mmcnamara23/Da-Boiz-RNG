@@ -1827,7 +1827,7 @@ startMatchTimer();
   aura:{name:"AURA PACK",icon:"💫",className:"aura",odds:{Common:20,Uncommon:15,Rare:20,Epic:25,Legendary:1.1,Icon:.8,Mythical:6,"Winter Wildcards":1.4,Aura:.6},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Winter Wildcards","Aura"],tokens:true}
  };
  const upgrades={
-  foundation:{to:"lowt",coins:0,tokens:10},
+  foundation:{to:"lowt",coins:0,tokens:5},
   lowt:{to:"mid",coins:10000,tokens:0},
   mid:{to:"cool",coins:0,tokens:25},
   cool:{to:"high",coins:24000,tokens:0},
@@ -1856,7 +1856,7 @@ startMatchTimer();
   return null;
  };
  packDefs.splice(0,packDefs.length,
-  ...tierOrder.map(id=>({id,name:tierDefs[id].name,icon:tierDefs[id].icon,price:0,pulls:5,odds:tierDefs[id].odds,tokenChance:Math.max(0,100-Object.values(tierDefs[id].odds).reduce((a,b)=>a+b,0)),description:"Free pack • 5 rewards",className:tierDefs[id].className})),
+  {id:currentTier(),name:tierDefs[currentTier()].name,icon:tierDefs[currentTier()].icon,price:0,pulls:5,odds:tierDefs[currentTier()].odds,tokenChance:Math.max(0,100-Object.values(tierDefs[currentTier()].odds).reduce((a,b)=>a+b,0)),description:"Free pack • 5 rewards",className:tierDefs[currentTier()].className},
   promoMega,promoWinter
  );
  const packStyle=document.createElement("style");
@@ -1948,6 +1948,7 @@ startMatchTimer();
  // Remove the old random bonus-token roll; token returns now come only from the stated pack odds.
  awardPackTokens=function(){return 0};
  save();
+ render(); // Apply the single evolving main-pack layout immediately on page load.
 })();
 
 </script>
