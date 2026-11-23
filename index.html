@@ -989,7 +989,7 @@ return `<section><div class="sectionhero"><h2>📚 PLAYER ALBUM</h2><p>Discover 
 }
 
 function renderSettings(){
-return `<section><div class="sectionhero"><h2>⚙️ SETTINGS</h2><p>Choose which rarities trigger the special card flip reveal. Your progress saves automatically in this browser.</p></div><div class="grid">${["Rare","Epic","Legendary","Icon","Mythical"].map(r=>`<div class="setting"><div><b>${r} Walkout</b><div class="small">Special reveal for ${r} players</div></div><input type="checkbox" data-walkout="${r}" ${game.settings.walkouts[r]?"checked":""}></div>`).join("")}</div></section>`;
+return `<section><div class="sectionhero"><h2>⚙️ SETTINGS</h2><p>Choose which rarities trigger the special card flip reveal. Progress lasts only while this page stays open.</p></div><div class="grid">${["Rare","Epic","Legendary","Icon","Mythical"].map(r=>`<div class="setting"><div><b>${r} Walkout</b><div class="small">Special reveal for ${r} players</div></div><input type="checkbox" data-walkout="${r}" ${game.settings.walkouts[r]?"checked":""}></div>`).join("")}</div></section>`;
 }
 
 /* MATCH FUNCTIONS */
