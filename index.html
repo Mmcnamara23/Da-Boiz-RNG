@@ -738,7 +738,7 @@ transition-duration:.01ms!important;
 
 <script>
 // v8 intentionally starts every tester with a clean launch save. Keep this key unchanged for future updates to preserve progress.
-const SAVE_KEY="daBoizRNG_full_v8";
+// No persistent save key: game state exists only for this page session.
 const positionNames=["GK","CB","CB","CM","ST"];
 
 const baseCards=[
@@ -769,7 +769,7 @@ const baseCards=[
 ].map(x=>({id:x[0],name:x[1],emoji:x[2],rarity:x[3],rating:x[4],price:x[5]}));
 
 const cards=baseCards.map(c=>({...c}));
-const noseBreatherCard={id:"nose_breather_lil_mumps",name:"Nose Breather Lil Mumps",emoji:"👃",rarity:"Icon",rating:94,price:10000};
+const noseBreatherRewardCard={id:"nose_breather_lil_mumps",name:"Nose Breather Lil Mumps",emoji:"👃",rarity:"Icon",rating:98,price:10000,exclusive:true};
 
 const mythical=[
 ["myth_dexter","Mythical Dexter Chadwick","83"],
@@ -790,9 +790,8 @@ const mythical=[
 ["myth_brody","Mythical Brody Doel","82"]
 ].map(x=>({id:x[0],name:x[1],emoji:"🌌",rarity:"Mythical",rating:Number(x[2]),price:5000}));
 
-const allCards=[...cards,noseBreatherCard,...mythical];
-
-const randomRewardCards=allCards.filter(c=>c.id!=="nose_breather_lil_mumps");
+const allCards=[...cards,...mythical];
+const randomRewardCards=allCards.slice();
 
 const tokenRewardWeights={
 Common:1,
@@ -829,12 +828,7 @@ const opponentTeams=[
 {name:"BRONZE XI",emoji:"🥉",scorers:["Yaya Sithole","Diogo Dalot","Darwin Núñez"]}
 ];
 
-let game;
-try{game=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
-if(!game||typeof game!=="object")game={};
-delete game.chess;
-try{localStorage.setItem(SAVE_KEY,JSON.stringify(game))}catch(e){}
-
+let game={};
 game.coins=Number(game.coins??0);
 game.tokens=Number(game.tokens??0);
 game.owned=game.owned||{};
@@ -860,20 +854,7 @@ let pickState=null;
 let toastTimer,animationTimer,openingRun=0;
 let matchInterval=null;
 let celebratedGoals=new Set();
-function save(){
- try{
-  game.saveVersion=1;
-  localStorage.setItem(SAVE_KEY,JSON.stringify(game));
-  return true;
- }catch(e){
-  console.error("Could not save Da Boiz RNG progress:",e);
-  return false;
- }
-}
-// Save the complete game object regularly and whenever the page is backgrounded or closed.
-setInterval(save,2000);
-window.addEventListener("pagehide",save);
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")save()});
+function save(){return true;}
 function ownedCount(){return Object.values(game.owned).reduce((a,b)=>a+b,0)}
 function getCard(id){return allCards.find(c=>c.id===id)}
 function getOwned(){return Object.keys(game.owned).filter(id=>game.owned[id]>0).map(getCard).filter(Boolean)}
@@ -1409,10 +1390,6 @@ const endPromo=new Date("2027-01-01T00:00:00Z").getTime();
 function openWinter(){if(Date.now()>=endPromo)return toast("Winter Wildcards has expired.");if(game.coins<12000)return toast("Not enough coins.");game.coins-=12000;const a=winter[Math.floor(Math.random()*winter.length)],b=winter.filter(x=>x.id!==a.id)[Math.floor(Math.random()*(winter.length-1))],dups=[award(a),award(b)];if(winter.every(x=>(game.owned[x.id]||0)>0))game.owned[snowLiam.id]=Math.max(1,game.owned[snowLiam.id]||0);isOpening=true;save();showReveal({title:"❄️ WINTER WILDCARDS",subtitle:"Two promo players",results:[a,b],duplicateFlags:dups,walkouts:true})}
 const oldPacks=renderPacks;
 renderPacks=function(){const left=Math.max(0,endPromo-Date.now()),timer=Math.floor(left/86400000)+"d "+Math.floor(left%86400000/3600000)+"h "+Math.floor(left%3600000/60000)+"m";return oldPacks()+(Date.now()<endPromo?`<div class="panel" style="margin-top:16px;border:2px solid #176b3a;background:#0c2b19"><h2>❄️ WINTER WILDCARDS</h2><p>2 players • 12,000 coins • Expires in ${timer}</p><button data-winter>OPEN WINTER WILDCARDS</button></div>`:"")};
-const oldRenderSettings=renderSettings;
-renderSettings=function(){return oldRenderSettings()+`<div class="panel"><h3>Save management</h3><button data-save-export>EXPORT SAVE</button> <button data-save-import>IMPORT SAVE</button> <button data-save-clear>CLEAR SAVE</button><input id="save-file" type="file" accept="application/json" hidden></div>`};
-const bindSettings=bindButtons;
-bindButtons=function(){bindSettings();const ex=document.querySelector("[data-save-export]");if(ex)ex.onclick=()=>{const a=document.createElement("a"),u=URL.createObjectURL(new Blob([JSON.stringify(game,null,2)],{type:"application/json"}));a.href=u;a.download="da-boiz-rng-save.json";a.click();URL.revokeObjectURL(u)};const im=document.querySelector("[data-save-import]");if(im)im.onclick=()=>document.getElementById("save-file").click();const fi=document.getElementById("save-file");if(fi)fi.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem(SAVE_KEY,JSON.stringify(d));location.reload()}catch(e){toast("Invalid save file")}};if(fi.files[0])r.readAsText(fi.files[0])};const cl=document.querySelector("[data-save-clear]");if(cl)cl.onclick=()=>{if(confirm("Clear all game progress?")){localStorage.removeItem(SAVE_KEY);location.reload()}}};
 const createMatchOriginal=createMatch;
 createMatch=function(){if(!game.team.every(Boolean)){toast("Fill all seven squad positions first.");return}return createMatchOriginal()};
 claimObjective=function(target){const o=objectives.find(x=>x.rating===target);if(!o||game.claimed[target]||teamRating()<target||!teamCards().every(Boolean))return;game.claimed[target]=true;game.coins+=o.coins;game.tokens+=o.tokens;save();render();toast("Objective claimed!")};
@@ -1765,6 +1742,49 @@ renderTokenShop=function(){
  '<div class="shopitem"><div class="packicon">⚽</div><h3>2 of 5 Player Pick</h3><div class="price">75 Tokens</div><p>Five players rated 79+. Select exactly two.</p><button type="button" data-tokenbuy="pick79" '+(balance<75?'disabled':'')+'>START PICK</button></div>'+
  '<div class="shopitem"><div class="packicon">🎁</div><h3>84+ x2 Pack</h3><div class="price">100 Tokens</div><p>Two guaranteed players rated 84 or higher.</p><button type="button" data-tokenbuy="x2" '+(balance<100?'disabled':'')+'>OPEN REWARD</button></div>'+
  '</div></section>';
+};
+
+
+const originalGetCardForExclusiveReward=getCard;
+getCard=function(id){return id===noseBreatherRewardCard.id?noseBreatherRewardCard:originalGetCardForExclusiveReward(id)};
+renderAlbum=function(){
+ const sets=[
+  {rarity:"Common",cards:allCards.filter(c=>c.rarity==="Common"),need:null,reward:"2,000 coins"},
+  {rarity:"Uncommon",cards:allCards.filter(c=>c.rarity==="Uncommon"),need:null,reward:"6,000 coins"},
+  {rarity:"Rare",cards:allCards.filter(c=>c.rarity==="Rare"),need:null,reward:"8,000 coins"},
+  {rarity:"Epic",cards:allCards.filter(c=>c.rarity==="Epic"),need:null,reward:"10,000 coins"},
+  {rarity:"Legendary",cards:allCards.filter(c=>c.rarity==="Legendary"),need:null,reward:"10 tokens"},
+  {rarity:"Icon",cards:allCards.filter(c=>c.rarity==="Icon"),need:4,reward:"Nose Breather Lil Mumps (98)"},
+  {rarity:"Mythical",cards:allCards.filter(c=>c.rarity==="Mythical"),need:9,reward:"50 tokens + 25,000 coins"},
+  {rarity:"Aura",cards:auraCards,need:3,reward:"HACK CLUB OG Liam Sutherland (100)"},
+  {rarity:"Winter Wildcards",cards:winter,need:null,reward:"Collect all 13 to unlock Liam Snowtherland (99)"}
+ ];
+ const groups=sets.map(set=>{
+  if(!set.cards.length)return "";
+  const found=set.cards.filter(c=>(game.owned[c.id]||0)>0).length;
+  const need=set.need??set.cards.length,pct=Math.round(found/set.cards.length*100);
+  const canClaim=found>=need&&!game.galleryClaims[set.rarity]&&set.rarity!=="Winter Wildcards";
+  const cardsHtml=set.cards.map(c=>{const count=game.owned[c.id]||0;return count?cardHTML(c,`<div class="small">Collected • Copies: ${count}</div>`):`<div class="card ${c.rarity}" style="opacity:.48;filter:grayscale(.85)"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">${c.rarity}</div></div>`}).join("");
+  return `<div class="panel gallery-set"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>${set.rarity} Set</h2><b>${found}/${set.cards.length} • ${pct}%</b></div><p>Set reward: <b>${set.reward}</b></p><p class="small">${need} of ${set.cards.length} required</p><div class="bar"><span style="width:${pct}%"></span></div>${canClaim?`<button data-gallery-claim="${set.rarity}">CLAIM SET REWARD</button>`:""}<div class="grid" style="margin-top:14px">${cardsHtml}</div></div>`;
+ }).join("");
+ return `<section><div class="sectionhero"><h2>📚 THE GALLERY</h2><p>Collect players to unlock set rewards. Duplicate copies count once.</p></div>${groups}</section>`;
+};
+claimGallery=function(r){
+ if(game.galleryClaims[r])return;
+ const setCards=r==="Aura"?auraCards:allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive&&c.id!=="gallery_mythical_jacky");
+ const thresholds={Icon:4,Mythical:9,Aura:3},need=thresholds[r]??setCards.length;
+ const found=setCards.filter(c=>(game.owned[c.id]||0)>0).length;
+ if(!setCards.length||found<need){toast("Discover "+need+" "+r+" players first.");return}
+ game.galleryClaims[r]=true;
+ if(r==="Common")game.coins+=2000;
+ if(r==="Uncommon")game.coins+=6000;
+ if(r==="Rare")game.coins+=8000;
+ if(r==="Epic")game.coins+=10000;
+ if(r==="Legendary")game.tokens+=10;
+ if(r==="Icon")game.owned[noseBreatherRewardCard.id]=1;
+ if(r==="Mythical"){game.tokens+=50;game.coins+=25000}
+ if(r==="Aura")game.owned["gallery_aura_liam_og"]=(game.owned["gallery_aura_liam_og"]||0)+1;
+ save();render();toast(r+" Gallery reward claimed!");
 };
 
 startMatchTimer();
