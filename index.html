@@ -828,7 +828,10 @@ const opponentTeams=[
 {name:"BRONZE XI",emoji:"🥉",scorers:["Yaya Sithole","Diogo Dalot","Darwin Núñez"]}
 ];
 
-let game={};
+const SAVE_KEY="daBoizRNG_refresh_v1";
+let game;
+try{game=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){game=null}
+if(!game||typeof game!=="object")game={};
 game.coins=Number(game.coins??0);
 game.tokens=Number(game.tokens??0);
 game.owned=game.owned||{};
@@ -854,7 +857,10 @@ let pickState=null;
 let toastTimer,animationTimer,openingRun=0;
 let matchInterval=null;
 let celebratedGoals=new Set();
-function save(){return true;}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(game));return true}catch(e){console.error("Save failed:",e);return false}}
+setInterval(save,2000);
+window.addEventListener("pagehide",save);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")save()});
 function ownedCount(){return Object.values(game.owned).reduce((a,b)=>a+b,0)}
 function getCard(id){return allCards.find(c=>c.id===id)}
 function getOwned(){return Object.keys(game.owned).filter(id=>game.owned[id]>0).map(getCard).filter(Boolean)}
@@ -1599,6 +1605,7 @@ bindButtons=function(){
   };
  });
  document.querySelectorAll("[data-shop-tab]").forEach(b=>b.onclick=()=>setShopTab(b.dataset.shopTab));
+ document.querySelectorAll("[data-team-tab]").forEach(b=>b.onclick=()=>{activeTeamTab=b.dataset.teamTab;render()});
  document.querySelectorAll("[data-openpack]").forEach(b=>b.onclick=()=>openPack(b.dataset.openpack));
  document.querySelectorAll("[data-winter]").forEach(b=>b.onclick=openWinter);
  document.querySelectorAll("[data-gallery-claim]").forEach(b=>b.onclick=()=>claimGallery(b.dataset.galleryClaim));
