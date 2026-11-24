@@ -1160,8 +1160,7 @@ document.getElementById("pickHint").textContent="";document.getElementById("reve
 grid.innerHTML="";overlay.classList.add("show");document.getElementById("closeReveal").disabled=true;
 const entries=data.results.map((card,index)=>({card,index}));
 let walkoutEntry=null;
-if(data.forceWalkout&&entries.length&&game.settings.walkouts["Winter Wildcards"])walkoutEntry=entries[0];
-else if(data.walkouts)walkoutEntry=entries.filter(entry=>revealEffect(entry.card)).sort((a,b)=>(rarityRank[b.card.rarity]-rarityRank[a.card.rarity])||((Number(b.card.rating)||0)-(Number(a.card.rating)||0)))[0]||null;
+if(data.walkouts)walkoutEntry=entries.filter(entry=>revealEffect(entry.card)).sort((a,b)=>((Number(b.card.rating)||0)-(Number(a.card.rating)||0))||(rarityRank[b.card.rarity]-rarityRank[a.card.rarity]))[0]||null;
 const restEntries=walkoutEntry?entries.filter(entry=>entry.index!==walkoutEntry.index):entries.slice();
 function finish(){
 if(run!==openingRun)return;
@@ -1177,7 +1176,7 @@ grid.appendChild(el);
 function showRest(){
 if(run!==openingRun)return;
 overlay.classList.remove("walkout-mode");document.getElementById("walkoutBanner").innerHTML="";document.getElementById("pickHint").textContent="";grid.innerHTML="";
-const allEntries=walkoutEntry?[walkoutEntry,...restEntries]:restEntries;
+const allEntries=(walkoutEntry?[walkoutEntry,...restEntries]:restEntries).sort((a,b)=>((Number(b.card.rating)||0)-(Number(a.card.rating)||0))||(rarityRank[b.card.rarity]-rarityRank[a.card.rarity]));
 if(allEntries.length){
 document.getElementById("revealSubtitle").textContent="THE WHOLE PACK REVEALED";
 let title=document.createElement("div");title.className="pack-rest-title";title.style.gridColumn="1/-1";title.textContent="📦 THE WHOLE PACK";grid.appendChild(title);
@@ -1499,6 +1498,10 @@ function awardPackCard(c){
 }
 revealCardElement=function(c,isDuplicate=false,index=0){
  const wrap=document.createElement("div");wrap.className="revealcard card-revealed";
+ const status=document.createElement("div");
+ status.className="card-status "+(isDuplicate?"dupe":"new");
+ status.textContent=isDuplicate?"DUPLICATE":"NEW";
+ wrap.appendChild(status);
  const card=document.createElement("div");card.innerHTML=cardHTML(c);wrap.appendChild(card.firstElementChild);
  return wrap;
 };
@@ -1943,6 +1946,7 @@ startMatchTimer();
  .pack.showdown .packname,.pack.showdown .price,.pack.showdown .packdesc,.pack.showdown .packstats{color:#171717}
  .card.Italian.Brainrot{background:linear-gradient(145deg,#ffb347,#f97316 58%,#c2410c)!important;border:2px solid #fb923c!important;color:#241006!important;box-shadow:0 0 18px #f9731666!important}
  .card.Italian.Brainrot .rating,.card.Italian.Brainrot .rarity{color:#431407!important}
+ #revealGrid .card-status{display:block!important}
  .pack.italian-brainrot{background:linear-gradient(145deg,#ffb347,#ea580c 72%,#9a3412);border:2px solid #fb923c;color:#271006}
  .pack.italian-brainrot .packname,.pack.italian-brainrot .price,.pack.italian-brainrot .packdesc,.pack.italian-brainrot .packstats{color:#271006}
  @media(max-width:900px){.pack-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
