@@ -1829,143 +1829,79 @@ claimGallery=function(r){
 
 startMatchTimer();
 
-/* Pack progression update: permanent tier upgrades, free openings, promo packs kept separate. */
+/* Classic pack shop restored: LOW T plus the two guaranteed promo packs. */
 (function(){
- const tierOrder=["foundation","lowt","mid","cool","high","mega","aura"];
- const tierDefs={
-  foundation:{name:"FOUNDATION PACK",icon:"🧱",className:"foundation",odds:{Common:60,Uncommon:25,Rare:10},rarities:["Common","Uncommon","Rare"],tokens:true},
-  lowt:{name:"LOW T PACK",icon:"📦",className:"low",odds:{Common:50,Uncommon:20,Rare:13,Epic:6},rarities:["Common","Uncommon","Rare","Epic"],tokens:true},
-  mid:{name:"MID TIER PACK",icon:"🎁",className:"mid",odds:{Common:39,Uncommon:17,Rare:16,Epic:11,Legendary:.1},rarities:["Common","Uncommon","Rare","Epic","Legendary"],tokens:true},
-  cool:{name:"COOL KIDS PACK",icon:"😎",className:"cool",odds:{Common:35,Uncommon:20,Rare:22,Epic:16,Legendary:.4,Icon:.05},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon"],tokens:true},
-  high:{name:"HIGH T PACK",icon:"💜",className:"high",odds:{Common:28,Uncommon:17,Rare:25,Epic:22,Legendary:.6,Icon:.4,Mythical:1},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical"],tokens:true},
-  mega:{name:"MEGA PACK",icon:"🚀",className:"mega",odds:{Common:16,Uncommon:16,Rare:29,Epic:26,Legendary:.9,Icon:.5,Mythical:2,"Winter Wildcards":.9},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Winter Wildcards"],tokens:true},
-  aura:{name:"AURA PACK",icon:"💫",className:"aura",odds:{Common:20,Uncommon:15,Rare:20,Epic:25,Legendary:1.1,Icon:.8,Mythical:6,"Winter Wildcards":1.4,Aura:.6},rarities:["Common","Uncommon","Rare","Epic","Legendary","Icon","Mythical","Winter Wildcards","Aura"],tokens:true}
- };
- const upgrades={
-  foundation:{to:"lowt",coins:0,tokens:5},
-  lowt:{to:"mid",coins:6000,tokens:0},
-  mid:{to:"cool",coins:0,tokens:25},
-  cool:{to:"high",coins:40000,tokens:0},
-  high:{to:"mega",coins:52000,tokens:20},
-  mega:{to:"aura",coins:0,tokens:100}
- };
+ const lowOdds={Common:40,Uncommon:25,Rare:13,Epic:9,Legendary:0.5,Icon:0.1};
+ const tokenChance=100-Object.values(lowOdds).reduce((sum,n)=>sum+n,0);
  const promoMega={id:"promo-mythical",name:"GUARANTEED MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,className:"mega"};
  const promoWinter={id:"promo-winter",name:"GUARANTEED WINTER WILDCARD PACK",icon:"❄️",price:40000,pulls:2,className:"winter"};
- if(!game||typeof game!=="object")throw new Error("Game save is unavailable");
- if(!tierOrder.includes(game.packTier))game.packTier="foundation";
- const currentTier=()=>tierOrder.includes(game.packTier)?game.packTier:"foundation";
- const fmt=n=>money(Number(n)||0);
- const eligible=c=>c&&!c.promo&&!c.exclusive&&!c.auraReward&&c.id!=="nose_breather_lil_mumps"&&c.id!=="gallery_mythical_jacky"&&c.id!=="gallery_aura_liam_og"&&c.id!=="liam_snowtherland"&&c.id!=="hack_club_og_liam";
- const pickFromRarity=r=>{
-  let pool=allCards.filter(c=>eligible(c)&&c.rarity===r);
-  if(r==="Winter Wildcards")pool=allCards.filter(c=>c.rarity==="Winter Wildcards"&&!c.exclusive&&!c.promo);
-  if(r==="Aura")pool=allCards.filter(c=>c.rarity==="Aura"&&!c.exclusive&&!c.promo&&c.id!=="gallery_aura_liam_og");
-  if(!pool.length)return null;
-  return pool[Math.floor(Math.random()*pool.length)];
- };
- const weightedPick=odds=>{
-  const entries=Object.entries(odds),used=entries.reduce((n,x)=>n+x[1],0);
-  const tokenChance=Math.max(0,100-used);
-  let roll=Math.random()*100;
-  for(const [rarity,chance] of entries){roll-=chance;if(roll<0)return pickFromRarity(rarity)||null}
-  return null;
- };
  packDefs.splice(0,packDefs.length,
-  {id:currentTier(),name:tierDefs[currentTier()].name,icon:tierDefs[currentTier()].icon,price:0,pulls:5,odds:tierDefs[currentTier()].odds,tokenChance:Math.max(0,100-Object.values(tierDefs[currentTier()].odds).reduce((a,b)=>a+b,0)),description:"Free pack • 5 rewards",className:tierDefs[currentTier()].className},
+  {id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:lowOdds,description:"Free pack • 5 rewards",className:"low"},
   promoMega,promoWinter
  );
- const packStyle=document.createElement("style");
- packStyle.textContent=`
- .pack-progression{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,1fr);gap:16px;align-items:stretch;margin:18px 0}
- .main-pack-card{min-height:310px;padding:24px;border:2px solid #8b5cf6;border-radius:18px;background:linear-gradient(145deg,#171a36,#101827 70%);box-shadow:0 10px 30px #0005;display:flex;flex-direction:column;justify-content:center;text-align:center}
- .main-pack-card .packicon{font-size:64px}.main-pack-card .packname{font-size:clamp(25px,4vw,38px);font-weight:1000;letter-spacing:1px}
- .main-pack-card .packdesc{font-size:16px;margin:12px auto;max-width:560px}.main-pack-card .packstats{justify-content:center;margin:10px}
- .upgrade-panel{padding:20px;border:1px solid #475569;border-radius:18px;background:linear-gradient(145deg,#1b2435,#111827);display:flex;flex-direction:column;justify-content:center}
- .upgrade-panel h3{font-size:22px;margin:0 0 12px}.upgrade-arrow{text-align:center;font-size:25px;margin:8px}
- .upgrade-cost{padding:12px;border-radius:10px;background:#0b1220;margin:12px 0;font-weight:800}
- .upgrade-panel button{width:100%;margin-top:auto}.main-pack-card-dominant{min-height:440px;padding:38px 28px;border-width:3px;box-shadow:0 18px 48px #0008,0 0 35px #8b5cf633}.main-pack-card-dominant .packicon{font-size:88px}.main-pack-card-dominant .packname{font-size:clamp(34px,6vw,54px)}.current-pack-label,.upgrade-kicker{font-size:12px;font-weight:1000;letter-spacing:2px;color:#c4b5fd}.open-main-pack{font-size:18px;padding:18px 24px;max-width:520px;width:100%;margin:12px auto 0}.upgrade-panel-prominent{margin:14px auto;padding:14px 18px;border:1px solid #a78bfa;border-radius:14px;background:linear-gradient(120deg,#211b40,#111827);text-align:center;width:min(100%,620px);min-height:0}.upgrade-panel-prominent h2{margin:5px 0;font-size:18px}.upgrade-panel-prominent p{max-width:720px;margin:7px auto}.upgrade-panel-prominent .upgrade-cost{font-size:16px;display:inline-block;padding:7px 14px;border:1px solid #475569;margin:6px}.upgrade-action{display:inline-block;max-width:520px;margin:6px auto;font-size:16px;padding:12px 18px}.upgrade-hint{font-size:13px}.pack-rarity-list{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:12px 0}
- .pack-rarity-list span{padding:6px 10px;border-radius:20px;background:#25314a;border:1px solid #52627c;font-weight:800;font-size:12px}
- .promo-pack-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
- .promo-pack-row .pack{margin:0}.player-sell-button{font-size:11px;padding:8px 10px;white-space:nowrap}.reset-game-button{width:100%;background:linear-gradient(135deg,#b91c1c,#7f1d1d);border-color:#ef4444}.pack.foundation{border-color:#b08a55;background:linear-gradient(145deg,#302515,#151923)}
- .pack.cool{border-color:#38bdf8}.pack.aura{border-color:#ec65d7;background:linear-gradient(145deg,#451447,#17152c)}
- @media(max-width:700px){.pack-progression{grid-template-columns:1fr}.promo-pack-row{grid-template-columns:1fr}.main-pack-card{min-height:260px}}
+ const style=document.createElement("style");
+ style.textContent=`
+ .pack-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .pack-grid .pack{height:100%;min-height:310px}
+ @media(max-width:700px){.pack-grid{grid-template-columns:1fr}.pack-grid .pack{min-height:285px}}
  `;
- document.head.appendChild(packStyle);
- const originalRenderForPackProgression=render;
- render=function(){
-  if(activeTab!=="shops"||activeShopTab!=="packs"){originalRenderForPackProgression();return}
-  const tier=currentTier(),def=tierDefs[tier],upgrade=upgrades[tier],next=upgrade?tierDefs[upgrade.to]:null;
-  const balance=Number(game.coins)||0,tokens=Number(game.tokens)||0;
-  const rarityHtml=def.rarities.concat("Tokens").map(r=>'<span>'+r+'</span>').join("");
-  const canUpgrade=!!upgrade&&balance>=upgrade.coins&&tokens>=upgrade.tokens;
-  const upgradeCost=upgrade?((upgrade.coins?'🪙 '+fmt(upgrade.coins)+' coins':'')+(upgrade.coins&&upgrade.tokens?' + ':'')+(upgrade.tokens?'🪙 '+upgrade.tokens+' tokens':'')):"MAX TIER";
-  const upgradeHtml=upgrade?
-   '<div class="upgrade-panel upgrade-panel-prominent"><div class="upgrade-kicker">PERMANENT PROGRESSION</div><h2>⬆️ NEXT UPGRADE: '+next.name+'</h2><div class="upgrade-cost">'+upgradeCost+'</div><button type="button" class="upgrade-action" data-pack-upgrade="'+tier+'" '+(canUpgrade?'':'disabled')+'>UPGRADE PACK →</button><p class="upgrade-hint">'+(canUpgrade?'Ready to upgrade permanently.':'You need '+(balance<upgrade.coins?fmt(upgrade.coins-balance)+' more coins':'')+(balance<upgrade.coins&&tokens<upgrade.tokens?' and ':'')+(tokens<upgrade.tokens?(upgrade.tokens-tokens)+' more tokens':'')+'.')+'</p></div>':
-   '<div class="upgrade-panel upgrade-panel-prominent"><div class="upgrade-kicker">MAXIMUM PROGRESSION</div><h2>🏆 AURA PACK UNLOCKED</h2><p>You have reached the final pack tier. There are no further upgrades.</p></div>';
-  const main='<section class="main-pack-card main-pack-card-dominant"><div class="current-pack-label">YOUR CURRENT PACK</div><div class="packicon">'+def.icon+'</div><div class="packname">'+def.name+'</div><div class="price">FREE • ALWAYS</div><p class="packdesc">This is your one main pack. Upgrade it to replace its rarity chances with the next tier.</p><div class="pack-rarity-list">'+rarityHtml+'</div>'+upgradeHtml+'<button type="button" class="open-main-pack" data-openpack="'+tier+'">OPEN '+def.name+' • 5 REWARDS →</button></section>';
-  const promo=(p,description)=>'<div class="pack '+p.className+'"><div class="packicon">'+p.icon+'</div><div class="packname">'+p.name+'</div><div class="price">🪙 '+fmt(p.price)+'</div><div class="packdesc">'+description+'</div><div class="packstats"><span>🃏 '+p.pulls+' guaranteed player'+(p.pulls===1?'':'s')+'</span></div><div class="packfoot"><button type="button" data-openpack="'+p.id+'" '+(balance<p.price?'disabled':'')+'>OPEN PACK →</button></div></div>';
-  const app=document.getElementById("app");
-  const coins=document.getElementById("coins"),tokenCounter=document.getElementById("tokens");
-  if(coins)coins.textContent=fmt(balance);if(tokenCounter)tokenCounter.textContent=fmt(tokens);
-  app.innerHTML='<div class="subnav"><button data-shop-tab="packs" class="active">🎁 Pack Shop</button><button data-shop-tab="luck">🍀 Luck Shop</button><button data-shop-tab="tokenshop">🪙 Token Shop</button></div><section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>One main pack that permanently evolves as you upgrade it. No separate LOW T pack sitting beside Foundation.</p><span class="badge">🪙 '+fmt(balance)+' COINS • 🪙 '+fmt(tokens)+' TOKENS</span></div>'+main+'<h2>🎟️ PROMO PACKS</h2><div class="promo-pack-row">'+promo(promoMega,"One guaranteed Mythical player.")+promo(promoWinter,"Two guaranteed Winter Wildcards players.")+'</div></section>';
-  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
-  bindButtons();updateMatchHUD();
+ document.head.appendChild(style);
+ renderPacks=function(){
+  const balance=Number(game.coins)||0;
+  const packHtml=(p,description)=>'<div class="pack '+p.className+'"><div class="packicon">'+p.icon+'</div><div class="packname">'+p.name+'</div><div class="price">'+(p.price===0?'FREE':'🪙 '+money(p.price))+'</div><div class="packdesc">'+description+'</div><div class="packstats"><span>🃏 '+p.pulls+' guaranteed player'+(p.pulls===1?'':'s')+'</span></div><div class="packfoot"><button type="button" data-openpack="'+p.id+'" '+(balance<p.price?'disabled':'')+'>'+(balance<p.price?'NOT ENOUGH COINS':'OPEN PACK →')+'</button></div></div>';
+  return '<section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>Open the Low T Pack or choose one of the guaranteed promo packs.</p><span class="badge">🪙 '+money(balance)+' COINS AVAILABLE</span></div><div class="grid pack-grid">'+
+   packHtml(packDefs[0],'Free pack • 5 rewards. Rarity chances: Common 40%, Uncommon 25%, Rare 13%, Epic 9%, Legendary 0.5%, Icon 0.1%, Tokens 12.4%.')+
+   packHtml(promoMega,'One guaranteed Mythical player.')+
+   packHtml(promoWinter,'Two guaranteed Winter Wildcards players.')+
+   '</div></section>';
  };
- const originalBindForPackProgression=bindButtons;
- bindButtons=function(){
-  originalBindForPackProgression();
-  document.querySelectorAll("[data-pack-upgrade]").forEach(b=>b.onclick=()=>{
-   const from=currentTier(),cost=upgrades[from];
-   if(!cost||b.dataset.packUpgrade!==from)return;
-   if((Number(game.coins)||0)<cost.coins||(Number(game.tokens)||0)<cost.tokens){toast("Not enough coins or tokens to upgrade.");return}
-   game.coins-=cost.coins;game.tokens-=cost.tokens;game.packTier=cost.to;
-   save();render();toast("Upgraded permanently to "+tierDefs[cost.to].name+"!");
-  });
+ normalPick=function(pack){
+  if(pack.id==="promo-mythical"){
+   const pool=mythical.filter(c=>c.rarity==="Mythical");
+   if(!pool.length)throw new Error("No Mythical players are available.");
+   return pool[Math.floor(Math.random()*pool.length)];
+  }
+  if(pack.id==="promo-winter"){
+   const picker=window.daBoizWinterPack;
+   if(!picker||typeof picker.pick!=="function")throw new Error("Winter Wildcards promo pool unavailable.");
+   return picker.pick();
+  }
+  const rarity=weightedRarity(lowOdds);
+  const pool=cards.filter(c=>c.rarity===rarity&&!c.promo&&!c.exclusive&&c.id!=="nose_breather_lil_mumps");
+  if(!pool.length)throw new Error("No eligible "+rarity+" players are available in the Low T Pack.");
+  return pool[Math.floor(Math.random()*pool.length)];
  };
  openPack=function(id){
   if(isOpening)return;
-  const tier=currentTier(),isPromo=id==="promo-mythical"||id==="promo-winter";
-  if(!isPromo&&id!==tier){toast("You can only open your current pack tier.");return}
-  const p=isPromo?(id==="promo-mythical"?promoMega:promoWinter):{id:tier,name:tierDefs[tier].name,price:0,pulls:5};
+  const p=packDefs.find(x=>x.id===id);
+  if(!p)return;
   const cost=Number(p.price)||0;
   if((Number(game.coins)||0)<cost){toast("Not enough coins.");return}
   const oldCoins=Number(game.coins)||0,oldTokens=Number(game.tokens)||0,oldOwned={...(game.owned||{})};
   try{
    let results=[],tokenPulls=0;
-   if(id==="promo-mythical"){
-    const pool=allCards.filter(c=>c.rarity==="Mythical"&&!c.promo&&!c.exclusive&&c.id!=="gallery_mythical_jacky");
-    if(!pool.length)throw new Error("No eligible Mythical players are available.");
-    results=[pool[Math.floor(Math.random()*pool.length)]];
-   }else if(id==="promo-winter"){
-    const picker=window.daBoizWinterPack;
-    if(!picker||typeof picker.pick!=="function")throw new Error("Winter Wildcards promo pool unavailable.");
-    results=[picker.pick(),picker.pick()];
-    if(results.some(c=>!c||c.exclusive))throw new Error("Winter Wildcards promo pool invalid.");
-   }else{
-    const odds=tierDefs[tier].odds;
+   if(id==="low"){
     for(let i=0;i<5;i++){
-     const c=weightedPick(odds);
-     if(c)results.push(c);else tokenPulls++;
+     if(Math.random()*100>=100-tokenChance){tokenPulls++;continue}
+     results.push(normalPick(p));
     }
+   }else{
+    for(let i=0;i<p.pulls;i++)results.push(normalPick(p));
    }
    game.coins=oldCoins-cost;
    game.tokens=oldTokens+tokenPulls;
    const duplicateFlags=results.map(c=>award(c));
-   const tokenCards=Array.from({length:tokenPulls},(_,i)=>({id:"pack-token-"+i+"-"+Date.now(),name:"1 TOKEN",emoji:"🪙",rating:"+1",rarity:"Token"}));
+   const tokenCards=Array.from({length:tokenPulls},(_,i)=>({id:"low-pack-token-"+i+"-"+Date.now(),name:"1 TOKEN",emoji:"🪙",rating:"+1",rarity:"Token"}));
    const revealResults=results.concat(tokenCards),flags=duplicateFlags.concat(tokenCards.map(()=>false));
    isOpening=true;save();
-   showReveal({title:p.name,subtitle:revealResults.length+" rewards • "+tokenPulls+" token"+(tokenPulls===1?"":"s")+" from pack odds",results:revealResults,duplicateFlags:flags,walkouts:true,forceWalkout:id==="promo-winter"});
+   showReveal({title:p.name,subtitle:"5 rewards • "+tokenPulls+" token"+(tokenPulls===1?"":"s")+" from the remaining 12.4% chance",results:revealResults,duplicateFlags:flags,walkouts:true,forceWalkout:id==="promo-winter"});
   }catch(err){
    game.coins=oldCoins;game.tokens=oldTokens;game.owned=oldOwned;isOpening=false;save();
-   console.error("Pack opening error:",err);toast("Pack opening failed safely. No currency was lost.");render();
+   console.error("Pack opening failed:",err);toast("Pack opening failed safely. No currency was lost.");render();
   }
  };
- // Remove the old random bonus-token roll; token returns now come only from the stated pack odds.
- awardPackTokens=function(){return 0};
- save();
- render(); // Apply the single evolving main-pack layout immediately on page load.
+ render();
 })();
-
 </script>
 </body>
 </html>
