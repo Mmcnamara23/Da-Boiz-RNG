@@ -1185,7 +1185,7 @@ allEntries.forEach((entry,i)=>addRevealCard(entry,i));
 finish();
 }
 if(!walkoutEntry){
-entries.forEach((entry,i)=>addRevealCard(entry,i));
+entries.slice().sort((a,b)=>((Number(b.card.rating)||0)-(Number(a.card.rating)||0))||(rarityRank[b.card.rarity]-rarityRank[a.card.rarity])).forEach((entry,i)=>addRevealCard(entry,i));
 finish();return;
 }
 const walkout=walkoutEntry.card;
