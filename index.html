@@ -1656,6 +1656,7 @@ claimGallery=function(r){
  if(r==="Icon"){game.tokens+=10;game.coins+=5000}
  if(r==="Mythical"){game.tokens+=20;game.coins+=10000}
  if(r==="Aura")game.owned["gallery_aura_liam_og"]=(game.owned["gallery_aura_liam_og"]||0)+1;
+ if(r==="Footballer Showdown")game.owned[jakeShowdownReward.id]=1;
  save();render();toast(r+" Gallery reward claimed!");
 };
 render();
@@ -1791,6 +1792,7 @@ renderAlbum=function(){
     {rarity:"Icon",cards:allCards.filter(c=>c.rarity==="Icon"),need:4,reward:"Nose Breather Lil Mumps (98)"},
     {rarity:"Mythical",cards:allCards.filter(c=>c.rarity==="Mythical"&&!c.promo&&!c.exclusive&&c.id!=="gallery_mythical_jacky"),need:null,reward:"50 tokens + 25,000 coins"},
     {rarity:"Aura",cards:allCards.filter(c=>c.rarity==="Aura"),need:null,reward:"HACK CLUB OG Liam Sutherland (100)"},
+    {rarity:"Footballer Showdown",cards:footballerShowdownCards,need:null,reward:"Jake Xhelodowski (97)"},
     {rarity:"Winter Wildcards",cards:allCards.filter(c=>c.rarity==="Winter Wildcards"&&c.id!=="liam_snowtherland"),need:null,reward:"Collect all 13 players to unlock Liam Snowtherland (99)"}
    ];
    const groups=sets.map(set=>{
@@ -1813,7 +1815,7 @@ renderAlbum=function(){
  };
 claimGallery=function(r){
  if(game.galleryClaims[r])return;
- const setCards=r==="Aura"?allCards.filter(c=>c.rarity==="Aura"):r==="Winter Wildcards"?allCards.filter(c=>c.rarity==="Winter Wildcards"&&c.id!=="liam_snowtherland"):allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive&&(r!=="Mythical"||c.id!=="gallery_mythical_jacky"));
+ const setCards=r==="Footballer Showdown"?footballerShowdownCards:r==="Aura"?allCards.filter(c=>c.rarity==="Aura"):r==="Winter Wildcards"?allCards.filter(c=>c.rarity==="Winter Wildcards"&&c.id!=="liam_snowtherland"):allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive&&(r!=="Mythical"||c.id!=="gallery_mythical_jacky"));
  const need=setCards.length;
  const found=setCards.filter(c=>(game.owned[c.id]||0)>0).length;
  if(!setCards.length||found<need){toast("Discover "+need+" "+r+" players first.");return}
@@ -1833,18 +1835,37 @@ startMatchTimer();
 
 /* Classic pack shop restored: LOW T plus the two guaranteed promo packs. */
 (function(){
+ const footballerShowdownCards=[
+  {id:"showdown_brody_doelzinho",name:"Brody Doelzinho",emoji:"🐺",rarity:"Footballer Showdown",rating:86,price:0},
+  {id:"showdown_dexter_chadwickham",name:"Dexter Chadwickham",emoji:"🧢",rarity:"Footballer Showdown",rating:91,price:0},
+  {id:"showdown_matthew_bardellona",name:"Matthew Bardellona",emoji:"😎",rarity:"Footballer Showdown",rating:86,price:0},
+  {id:"showdown_freddie_fifoden",name:"Freddie Fifoden",emoji:"⚽",rarity:"Footballer Showdown",rating:86,price:0},
+  {id:"showdown_max_rolfenaldo",name:"Max Rolfe-naldo",emoji:"🔥",rarity:"Footballer Showdown",rating:87,price:0},
+  {id:"showdown_oscar_harpertelli",name:"Oscar Harpertelli",emoji:"👑",rarity:"Footballer Showdown",rating:87,price:0},
+  {id:"showdown_henry_worsellotti",name:"Henry James Worsellotti",emoji:"⚡",rarity:"Footballer Showdown",rating:90,price:0},
+  {id:"showdown_lil_mumpappe",name:"Lil Mumpappé",emoji:"🎤",rarity:"Footballer Showdown",rating:88,price:0},
+  {id:"showdown_ollie_dixiniesta",name:"Ollie Dixiniesta",emoji:"⚡",rarity:"Footballer Showdown",rating:94,price:0}
+ ];
+ const jakeShowdownReward={id:"jake_xhelodowski_showdown",name:"Jake Xhelodowski",emoji:"🐍",rarity:"Footballer Showdown",rating:97,price:0,exclusive:true};
+ allCards.push(...footballerShowdownCards,jakeShowdownReward);
  const lowOdds={Common:40,Uncommon:25,Rare:13,Epic:9,Legendary:0.5,Icon:0.1};
  const tokenChance=100-Object.values(lowOdds).reduce((sum,n)=>sum+n,0);
  const promoMega={id:"promo-mythical",name:"GUARANTEED MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,className:"mega"};
  const promoWinter={id:"promo-winter",name:"GUARANTEED WINTER WILDCARD PACK",icon:"❄️",price:40000,pulls:2,className:"winter"};
+ const showdownPack={id:"footballer-showdown",name:"GUARANTEED FOOTBALLER SHOWDOWN PACK",icon:"⚽",price:33000,pulls:2,className:"showdown"};
  packDefs.splice(0,packDefs.length,
   {id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:lowOdds,description:"Free pack • 5 rewards",className:"low"},
-  promoMega,promoWinter
+  promoMega,promoWinter,showdownPack
  );
  const style=document.createElement("style");
  style.textContent=`
- .pack-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pack-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
  .pack-grid .pack{height:100%;min-height:310px}
+ .card.Footballer.Showdown{background:linear-gradient(145deg,#fff,#e8e8e8 58%,#fff)!important;border:2px solid #fff!important;color:#171717!important;box-shadow:0 0 16px #ffffff55!important}
+ .card.Footballer.Showdown .rating,.card.Footballer.Showdown .rarity{color:#171717!important}
+ .pack.showdown{background:linear-gradient(145deg,#fff,#d9d9d9);border:2px solid #fff;color:#171717}
+ .pack.showdown .packname,.pack.showdown .price,.pack.showdown .packdesc,.pack.showdown .packstats{color:#171717}
+ @media(max-width:900px){.pack-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
  @media(max-width:700px){.pack-grid{grid-template-columns:1fr}.pack-grid .pack{min-height:285px}}
  `;
  document.head.appendChild(style);
@@ -1855,9 +1876,16 @@ startMatchTimer();
    packHtml(packDefs[0],'Free pack • 5 rewards. Rarity chances: Common 40%, Uncommon 25%, Rare 13%, Epic 9%, Legendary 0.5%, Icon 0.1%, Tokens 12.4%.')+
    packHtml(promoMega,'One guaranteed Mythical player.')+
    packHtml(promoWinter,'Two guaranteed Winter Wildcards players.')+
+   packHtml(showdownPack,'Two Footballer Showdown players. Henry, Dexter and Ollie each have a 2% chance; the other six share the remaining 94%.')+
    '</div></section>';
  };
  normalPick=function(pack){
+  if(pack.id==="footballer-showdown"){
+   const weighted=footballerShowdownCards.map(c=>({card:c,weight:["showdown_henry_worsellotti","showdown_ollie_dixiniesta","showdown_dexter_chadwickham"].includes(c.id)?2:94/6}));
+   const roll=Math.random()*100;let total=0;
+   for(const entry of weighted){total+=entry.weight;if(roll<total)return entry.card}
+   return weighted[weighted.length-1].card;
+  }
   if(pack.id==="promo-mythical"){
    const pool=mythical.filter(c=>c.rarity==="Mythical");
    if(!pool.length)throw new Error("No Mythical players are available.");
@@ -1896,7 +1924,8 @@ startMatchTimer();
    const tokenCards=Array.from({length:tokenPulls},(_,i)=>({id:"low-pack-token-"+i+"-"+Date.now(),name:"1 TOKEN",emoji:"🪙",rating:"+1",rarity:"Token"}));
    const revealResults=results.concat(tokenCards),flags=duplicateFlags.concat(tokenCards.map(()=>false));
    isOpening=true;save();
-   showReveal({title:p.name,subtitle:"5 rewards • "+tokenPulls+" token"+(tokenPulls===1?"":"s")+" from the remaining 12.4% chance",results:revealResults,duplicateFlags:flags,walkouts:true,forceWalkout:id==="promo-winter"});
+   const subtitle=id==="footballer-showdown"?"Two guaranteed Footballer Showdown players":id==="promo-winter"?"Two guaranteed Winter Wildcards players":"5 rewards • "+tokenPulls+" token"+(tokenPulls===1?"":"s")+" from the remaining 12.4% chance";
+   showReveal({title:p.name,subtitle,results:revealResults,duplicateFlags:flags,walkouts:true,forceWalkout:id==="promo-winter"});
   }catch(err){
    game.coins=oldCoins;game.tokens=oldTokens;game.owned=oldOwned;isOpening=false;save();
    console.error("Pack opening failed:",err);toast("Pack opening failed safely. No currency was lost.");render();
