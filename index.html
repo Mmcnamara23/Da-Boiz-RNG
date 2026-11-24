@@ -860,7 +860,8 @@ let pickState=null;
 let toastTimer,animationTimer,openingRun=0;
 let matchInterval=null;
 let celebratedGoals=new Set();
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(game));return true}catch(e){console.error("Save failed:",e);return false}}
+let isResetting=false;
+function save(){if(isResetting)return false;try{localStorage.setItem(SAVE_KEY,JSON.stringify(game));return true}catch(e){console.error("Save failed:",e);return false}}
 setInterval(save,2000);
 window.addEventListener("pagehide",save);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")save()});
@@ -1093,8 +1094,18 @@ document.querySelectorAll("[data-walkout]").forEach(b=>b.onchange=()=>{
 game.settings.walkouts[b.dataset.walkout]=b.checked;save();toast(b.dataset.walkout+" walkout "+(b.checked?"enabled":"disabled"));
 });
 document.querySelectorAll("[data-reset-game]").forEach(b=>b.onclick=()=>{
-if(!confirm("Are you sure? This permanently resets all Da Boiz RNG progress on this device."))return;
-localStorage.removeItem(SAVE_KEY);
+if(!confirm("Are you sure? This permanently resets ALL Da Boiz RNG progress on this device, including cards, gallery, team, rewards, currency, rating, settings and redeemed codes."))return;
+// Prevent the autosave/page-exit handlers from writing the old progress back.
+isResetting=true;
+try{
+ localStorage.removeItem(SAVE_KEY);
+ localStorage.removeItem("daBoizRNG_redeemed_codes_v1");
+}catch(e){
+ isResetting=false;
+ toast("Reset failed: browser storage could not be cleared.");
+ console.error("Full reset failed:",e);
+ return;
+}
 window.location.reload();
 });
 document.querySelectorAll("[data-sell-player]").forEach(b=>b.onclick=()=>sellPlayer(b.dataset.sellPlayer));
