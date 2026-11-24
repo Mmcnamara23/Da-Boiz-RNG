@@ -1796,16 +1796,16 @@ renderAlbum=function(){
    const groups=sets.map(set=>{
     if(!set.cards.length)return "";
     const found=set.cards.filter(c=>Number(game.owned[c.id])>0).length;
-    const need=set.need===null?set.cards.length:set.need;
+    const need=set.cards.length;
     const pct=Math.round(found/Math.max(1,set.cards.length)*100);
-    const canClaim=found>=need&&!game.galleryClaims[set.rarity]&&set.rarity!=="Winter Wildcards";
+    const canClaim=found===set.cards.length&&!game.galleryClaims[set.rarity]&&set.rarity!=="Winter Wildcards";
     const cardsHtml=set.cards.map(c=>{
      const count=Number(game.owned[c.id])||0;
      return count?'<div class="card '+c.rarity+'"><div class="emoji">'+c.emoji+'</div><div class="rating">'+c.rating+'</div><div class="name">'+c.name+'</div><div class="rarity">'+c.rarity+'</div><div class="small">Collected • Copies: '+count+'</div></div>':'<div class="card '+c.rarity+'" style="opacity:.48;filter:grayscale(.85)"><div class="emoji">❔</div><div class="rating">?</div><div class="name">Undiscovered</div><div class="rarity">'+c.rarity+'</div></div>';
     }).join("");
     return '<div class="panel gallery-set"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>'+set.rarity+' Set</h2><b>'+found+'/'+set.cards.length+' • '+pct+'%</b></div><p>Set reward: <b>'+set.reward+'</b></p><p class="small">'+need+' of '+set.cards.length+' required</p><div class="bar"><span style="width:'+pct+'%"></span></div>'+(canClaim?'<button data-gallery-claim="'+set.rarity+'">CLAIM SET REWARD</button>':'')+'<div class="grid" style="margin-top:14px">'+cardsHtml+'</div></div>';
    }).join("");
-   return '<section><div class="sectionhero"><h2>📚 THE GALLERY</h2><p>Collect players to unlock set rewards. Duplicate copies count once.</p></div>'+groups+'</section>';
+   return '<section><div class="sectionhero"><h2>📚 THE GALLERY</h2><p>Collect every player in a set to unlock its reward. Duplicate copies count once.</p></div>'+groups+'</section>';
   }catch(err){
    console.error("Gallery renderer failed:",err);
    return '<section class="panel"><h2>Gallery error details</h2><p>'+String(err&&err.message||err)+'</p></section>';
@@ -1814,7 +1814,7 @@ renderAlbum=function(){
 claimGallery=function(r){
  if(game.galleryClaims[r])return;
  const setCards=r==="Aura"?allCards.filter(c=>c.rarity==="Aura"):allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive);
- const thresholds={Icon:4,Mythical:9,Aura:3},need=thresholds[r]??setCards.length;
+ const need=setCards.length;
  const found=setCards.filter(c=>(game.owned[c.id]||0)>0).length;
  if(!setCards.length||found<need){toast("Discover "+need+" "+r+" players first.");return}
  game.galleryClaims[r]=true;
