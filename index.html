@@ -1914,13 +1914,17 @@ startMatchTimer();
  allCards.push(...footballerShowdownCards,jakeShowdownReward,...italianBrainrotCards);
  const lowOdds={Common:40,Uncommon:25,Rare:13,Epic:9,Legendary:0.5,Icon:0.1};
  const tokenChance=100-Object.values(lowOdds).reduce((sum,n)=>sum+n,0);
+ const pack79x2={id:"79x2",name:"79+ x2 PACK",icon:"⭐",price:5000,pulls:2,className:"low"};
+ const pack80x5={id:"80x5",name:"80+ x5 PACK",icon:"💎",price:14000,pulls:5,className:"mid"};
+ const pack80x10={id:"80x10",name:"80+ x10 PACK",icon:"🔥",price:27000,pulls:10,className:"high"};
+ const promoPack={id:"promo-pack",name:"PROMO PACK",icon:"🎟️",price:30000,pulls:7,className:"mega"};
  const promoMega={id:"promo-mythical",name:"GUARANTEED MYTHICAL PACK",icon:"🌌",price:35000,pulls:1,className:"mega"};
  const promoWinter={id:"promo-winter",name:"GUARANTEED WINTER WILDCARD PACK",icon:"❄️",price:40000,pulls:2,className:"winter"};
  const showdownPack={id:"footballer-showdown",name:"GUARANTEED FOOTBALLER SHOWDOWN PACK",icon:"⚽",price:33000,pulls:2,className:"showdown"};
  const italianBrainrotPack={id:"italian-brainrot",name:"ITALIAN BRAINROT PACK",icon:"🍝",price:15000,pulls:2,className:"italian-brainrot"};
  packDefs.splice(0,packDefs.length,
   {id:"low",name:"LOW T PACK",icon:"📦",price:0,pulls:5,odds:lowOdds,description:"Free pack • 5 rewards",className:"low"},
-  promoMega,promoWinter,showdownPack,italianBrainrotPack
+  pack79x2,pack80x5,pack80x10,promoPack,promoMega,promoWinter,showdownPack,italianBrainrotPack
  );
  const style=document.createElement("style");
  style.textContent=`
@@ -1950,13 +1954,42 @@ startMatchTimer();
   const packHtml=(p,description)=>'<div class="pack '+p.className+'"><div class="packicon">'+p.icon+'</div><div class="packname">'+p.name+'</div><div class="price">'+(p.price===0?'FREE':'🪙 '+money(p.price))+'</div><div class="packdesc">'+description+'</div><div class="packstats"><span>🃏 '+p.pulls+' guaranteed player'+(p.pulls===1?'':'s')+'</span></div><div class="packfoot"><button type="button" data-openpack="'+p.id+'" '+(balance<p.price?'disabled':'')+'>'+(balance<p.price?'NOT ENOUGH COINS':'OPEN PACK →')+'</button></div></div>';
   return '<section><div class="sectionhero"><h2>🎁 THE PACK STORE</h2><p>Open the Low T Pack or choose one of the guaranteed promo packs.</p><span class="badge">🪙 '+money(balance)+' COINS AVAILABLE</span></div><div class="grid pack-grid">'+
    packHtml(packDefs[0],'Free pack • 5 rewards. Rarity chances: Common 40%, Uncommon 25%, Rare 13%, Epic 9%, Legendary 0.5%, Icon 0.1%, Tokens 12.4%.')+
+   packHtml(pack79x2,'Two players rated 79+. Rare 35%, Epic 20%, Italian Brainrot 25%, Legendary 5%, Icon 1%, Footballer Showdown 9%, Winter Wildcards 4.9%, Aura 0.1%.')+
+   packHtml(pack80x5,'Five players rated 80+. Epic 45%, Legendary 20%, Mythical 15%, Footballer Showdown 9%, Icon 2%, Aura 0.3%, Italian Brainrot 8.7%.')+
+   packHtml(pack80x10,'Ten players rated 80+. Epic 46.2%, Legendary 20%, Mythical 15%, Footballer Showdown 9%, Icon 1%, Aura 0.1%, Italian Brainrot 8.7%.')+
+   packHtml(promoPack,'Seven players. Italian Brainrot 20%, Mythical 20%, Footballer Showdown 30%, Winter Wildcards 29.8%, Aura 0.2%.')+
    packHtml(promoMega,'One guaranteed Mythical player.')+
    packHtml(promoWinter,'Two guaranteed Winter Wildcards players.')+
    packHtml(showdownPack,'Two Footballer Showdown players. Henry, Dexter and Ollie each have a 2% chance; the other six share the remaining 94%.')+
    packHtml(italianBrainrotPack,'Two Italian Brainrot players. Every one of the 19 cards has an equal chance.')+
    '</div></section>';
  };
+ const specialPackOdds={
+  "79x2":{Rare:35,Epic:20,"Italian Brainrot":25,Legendary:5,Icon:1,"Footballer Showdown":9,"Winter Wildcards":4.9,Aura:0.1},
+  "80x5":{Epic:45,Legendary:20,Mythical:15,"Footballer Showdown":9,Icon:2,Aura:0.3,"Italian Brainrot":8.7},
+  "80x10":{Epic:46.2,Legendary:20,Mythical:15,"Footballer Showdown":9,Icon:1,Aura:0.1,"Italian Brainrot":8.7},
+  "promo-pack":{"Italian Brainrot":20,Mythical:20,"Footballer Showdown":30,"Winter Wildcards":29.8,Aura:0.2}
+ };
+ const pickSpecialPackCard=function(packId){
+  const odds=specialPackOdds[packId];
+  let roll=Math.random()*100,chosen=null;
+  for(const [rarity,chance] of Object.entries(odds)){roll-=chance;if(roll<0){chosen=rarity;break}}
+  if(!chosen)throw new Error("Invalid odds for "+packId);
+  let pool=[];
+  if(chosen==="Italian Brainrot")pool=italianBrainrotCards;
+  else if(chosen==="Footballer Showdown")pool=footballerShowdownCards;
+  else if(chosen==="Winter Wildcards"){
+   const winter=window.daBoizWinterPack;
+   if(!winter||typeof winter.pick!=="function")throw new Error("Winter Wildcards pool unavailable.");
+   return winter.pick();
+  }else if(chosen==="Mythical")pool=mythical.filter(c=>c.rarity==="Mythical"&&!c.promo&&!c.exclusive);
+  else if(chosen==="Aura")pool=allCards.filter(c=>c.rarity==="Aura"&&!c.promo&&!c.exclusive);
+  else pool=allCards.filter(c=>c.rarity===chosen&&!c.promo&&!c.exclusive&&c.id!=="nose_breather_lil_mumps"&&(packId!=="79x2"||chosen!=="Rare"||Number(c.rating)>=79));
+  if(!pool.length)throw new Error("No eligible "+chosen+" players are available for this pack.");
+  return pool[Math.floor(Math.random()*pool.length)];
+ };
  normalPick=function(pack){
+  if(specialPackOdds[pack.id])return pickSpecialPackCard(pack.id);
   if(pack.id==="italian-brainrot")return italianBrainrotCards[Math.floor(Math.random()*italianBrainrotCards.length)];
   if(pack.id==="footballer-showdown"){
    const weighted=footballerShowdownCards.map(c=>({card:c,weight:["showdown_henry_worsellotti","showdown_ollie_dixiniesta","showdown_dexter_chadwickham"].includes(c.id)?2:94/6}));
@@ -2002,7 +2035,7 @@ startMatchTimer();
    const tokenCards=Array.from({length:tokenPulls},(_,i)=>({id:"low-pack-token-"+i+"-"+Date.now(),name:"1 TOKEN",emoji:"🪙",rating:"+1",rarity:"Token"}));
    const revealResults=results.concat(tokenCards),flags=duplicateFlags.concat(tokenCards.map(()=>false));
    isOpening=true;save();
-   const subtitle=id==="italian-brainrot"?"Two Italian Brainrot players • all 19 cards have equal chances":id==="footballer-showdown"?"Two guaranteed Footballer Showdown players":id==="promo-winter"?"Two guaranteed Winter Wildcards players":"5 rewards • "+tokenPulls+" token"+(tokenPulls===1?"":"s")+" from the remaining 12.4% chance";
+   const subtitle=id==="italian-brainrot"?"Two Italian Brainrot players • all 19 cards have equal chances":id==="footballer-showdown"?"Two guaranteed Footballer Showdown players":id==="promo-winter"?"Two guaranteed Winter Wildcards players":id==="79x2"?"Two players rated 79+ • special rarity odds":id==="80x5"?"Five players rated 80+ • special rarity odds":id==="80x10"?"Ten players rated 80+ • special rarity odds":id==="promo-pack"?"Seven special promo players":"5 rewards • "+tokenPulls+" token"+(tokenPulls===1?"":"s")+" from the remaining 12.4% chance";
    showReveal({title:p.name,subtitle,results:revealResults,duplicateFlags:flags,walkouts:true,forceWalkout:id==="promo-winter"});
   }catch(err){
    game.coins=oldCoins;game.tokens=oldTokens;game.owned=oldOwned;isOpening=false;save();
