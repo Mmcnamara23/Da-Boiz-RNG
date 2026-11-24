@@ -1656,7 +1656,7 @@ claimGallery=function(r){
  if(r==="Icon"){game.tokens+=10;game.coins+=5000}
  if(r==="Mythical"){game.tokens+=20;game.coins+=10000}
  if(r==="Aura")game.owned["gallery_aura_liam_og"]=(game.owned["gallery_aura_liam_og"]||0)+1;
- if(r==="Footballer Showdown")game.owned[jakeShowdownReward.id]=1;
+ if(r==="Footballer Showdown")game.owned[window.daBoizJakeShowdownReward.id]=1;
  save();render();toast(r+" Gallery reward claimed!");
 };
 render();
@@ -1792,7 +1792,7 @@ renderAlbum=function(){
     {rarity:"Icon",cards:allCards.filter(c=>c.rarity==="Icon"),need:4,reward:"Nose Breather Lil Mumps (98)"},
     {rarity:"Mythical",cards:allCards.filter(c=>c.rarity==="Mythical"&&!c.promo&&!c.exclusive&&c.id!=="gallery_mythical_jacky"),need:null,reward:"50 tokens + 25,000 coins"},
     {rarity:"Aura",cards:allCards.filter(c=>c.rarity==="Aura"),need:null,reward:"HACK CLUB OG Liam Sutherland (100)"},
-    {rarity:"Footballer Showdown",cards:footballerShowdownCards,need:null,reward:"Jake Xhelodowski (97)"},
+    {rarity:"Footballer Showdown",cards:window.daBoizFootballerShowdownCards,need:null,reward:"Jake Xhelodowski (97)"},
     {rarity:"Winter Wildcards",cards:allCards.filter(c=>c.rarity==="Winter Wildcards"&&c.id!=="liam_snowtherland"),need:null,reward:"Collect all 13 players to unlock Liam Snowtherland (99)"}
    ];
    const groups=sets.map(set=>{
@@ -1815,7 +1815,7 @@ renderAlbum=function(){
  };
 claimGallery=function(r){
  if(game.galleryClaims[r])return;
- const setCards=r==="Footballer Showdown"?footballerShowdownCards:r==="Aura"?allCards.filter(c=>c.rarity==="Aura"):r==="Winter Wildcards"?allCards.filter(c=>c.rarity==="Winter Wildcards"&&c.id!=="liam_snowtherland"):allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive&&(r!=="Mythical"||c.id!=="gallery_mythical_jacky"));
+ const setCards=r==="Footballer Showdown"?window.daBoizFootballerShowdownCards:r==="Aura"?allCards.filter(c=>c.rarity==="Aura"):r==="Winter Wildcards"?allCards.filter(c=>c.rarity==="Winter Wildcards"&&c.id!=="liam_snowtherland"):allCards.filter(c=>c.rarity===r&&!c.promo&&!c.exclusive&&(r!=="Mythical"||c.id!=="gallery_mythical_jacky"));
  const need=setCards.length;
  const found=setCards.filter(c=>(game.owned[c.id]||0)>0).length;
  if(!setCards.length||found<need){toast("Discover "+need+" "+r+" players first.");return}
@@ -1847,6 +1847,8 @@ startMatchTimer();
   {id:"showdown_ollie_dixiniesta",name:"Ollie Dixiniesta",emoji:"⚡",rarity:"Footballer Showdown",rating:94,price:0}
  ];
  const jakeShowdownReward={id:"jake_xhelodowski_showdown",name:"Jake Xhelodowski",emoji:"🐍",rarity:"Footballer Showdown",rating:97,price:0,exclusive:true};
+ window.daBoizFootballerShowdownCards=footballerShowdownCards;
+ window.daBoizJakeShowdownReward=jakeShowdownReward;
  allCards.push(...footballerShowdownCards,jakeShowdownReward);
  const lowOdds={Common:40,Uncommon:25,Rare:13,Epic:9,Legendary:0.5,Icon:0.1};
  const tokenChance=100-Object.values(lowOdds).reduce((sum,n)=>sum+n,0);
