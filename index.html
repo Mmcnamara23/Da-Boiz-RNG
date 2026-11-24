@@ -1160,7 +1160,7 @@ document.getElementById("pickHint").textContent="";document.getElementById("reve
 grid.innerHTML="";overlay.classList.add("show");document.getElementById("closeReveal").disabled=true;
 const entries=data.results.map((card,index)=>({card,index}));
 let walkoutEntry=null;
-if(data.forceWalkout&&entries.length)walkoutEntry=entries[0];
+if(data.forceWalkout&&entries.length&&game.settings.walkouts["Winter Wildcards"])walkoutEntry=entries[0];
 else if(data.walkouts)walkoutEntry=entries.filter(entry=>revealEffect(entry.card)).sort((a,b)=>(rarityRank[b.card.rarity]-rarityRank[a.card.rarity])||((Number(b.card.rating)||0)-(Number(a.card.rating)||0)))[0]||null;
 const restEntries=walkoutEntry?entries.filter(entry=>entry.index!==walkoutEntry.index):entries.slice();
 function finish(){
