@@ -1993,7 +1993,8 @@ function initSadTires(){
    }}
    const riderX=world+W*.22+90,ob=obstacleAt(riderX);
    // Check the visible bicycle wheel positions against the actual drawn gap.
-   const bodyFootprint=[-49,-42,-35,-28,-21,-14,-7,0,7,14,21,28,35,42,49,55];\n   const wholeBodyOverGap=bodyFootprint.every(offset=>gapAt(riderX+offset));
+   const bodyFootprint=[-49,-42,-35,-28,-21,-14,-7,0,7,14,21,28,35,42,49,55];;
+   const wholeBodyOverGap=bodyFootprint.every(offset=>gapAt(riderX+offset));
    // Hills are scenery only. A wipeout can only come from a clearly drawn obstacle or gap.
    if(!crashed&&ob&&airY<30&&Math.abs(ob.x-riderX)<34)startCrash("obstacle");
    if(!crashed&&wholeBodyOverGap&&airY<12)startCrash("gap");
