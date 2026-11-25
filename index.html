@@ -1744,7 +1744,7 @@ function initSadTires(){
   ctx.fillStyle=theme.hill;ctx.beginPath();ctx.moveTo(0,330);for(let x=0;x<=W;x+=20)ctx.lineTo(x,315+Math.sin((x+world*.25)/115)*19);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
   // Continuous ground, with occasional safe-to-see gaps
   for(let sx=0;sx<W;sx+=5){
-   const wx=world+sx+W*.22,gy=terrain(wx);
+   const wx=world+sx,gy=terrain(wx);
    if(!gapAt(wx)){ctx.fillStyle=theme.grass;ctx.fillRect(sx,gy,6,H-gy);ctx.fillStyle=theme.dirt;ctx.fillRect(sx,gy+13,6,H-gy-13)}
   }
   // Course spacing tightens and gaps widen with each 600m biome.
@@ -1753,7 +1753,7 @@ function initSadTires(){
    // Make every lethal feature obvious: marked gap edges and high-contrast obstacles.
    const gapLeft=wx+cfg.gapStart,gapRight=gapLeft+cfg.gapWidth;
    [gapLeft,gapRight].forEach((edge,i)=>{
-    const x=edge-world-W*.22,y=terrain(edge);
+    const x=edge-world,y=terrain(edge);
     if(x>-35&&x<W+35){
      ctx.strokeStyle="#7f1d1d";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x,y-3);ctx.lineTo(x,y-54);ctx.stroke();
      ctx.fillStyle="#ef4444";ctx.beginPath();ctx.moveTo(x,y-54);ctx.lineTo(x+(i?25:-25),y-46);ctx.lineTo(x,y-37);ctx.closePath();ctx.fill();
@@ -1761,7 +1761,7 @@ function initSadTires(){
     }
    });
    const ob1=obstacleAt(wx+cfg.obstacleA),ob2=obstacleAt(wx+cfg.obstacleB);
-   [ob1,ob2].forEach(o=>{if(!o)return;const x=o.x-world-W*.22,y=terrain(o.x);
+   [ob1,ob2].forEach(o=>{if(!o)return;const x=o.x-world,y=terrain(o.x);
     ctx.save();ctx.shadowColor="#ffea00";ctx.shadowBlur=15;
     if(o.type==="cone"){ctx.fillStyle=theme.accent;ctx.beginPath();ctx.moveTo(x,y-34);ctx.lineTo(x-17,y);ctx.lineTo(x+17,y);ctx.closePath();ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#fff";ctx.fillRect(x-10,y-12,20,5)}
     else{ctx.fillStyle="#9a6238";ctx.fillRect(x-19,y-32,38,32);ctx.strokeStyle="#fff1a8";ctx.lineWidth=4;ctx.strokeRect(x-19,y-32,38,32);ctx.beginPath();ctx.moveTo(x-17,y-28);ctx.lineTo(x+17,y-4);ctx.stroke()}
