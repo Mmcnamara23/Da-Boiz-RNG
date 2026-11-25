@@ -1613,6 +1613,7 @@ function redeemCode(){
 }
 
 let sadTiresOpen=false,flyingDuckOpen=false,choosOpen=false;
+let choosSelectedLevel=null;
 function renderMinigameSelect(){
  return '<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🚲</div><h2>SAD TIRES</h2><p class="small">Ride your bike through an endless course of obstacles. How far can you get?</p><button type="button" id="playSadTires">▶ PLAY SAD TIRES</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🦆</div><h2>FLYING DUCK</h2><p class="small">Flap through the pipes and see how high your score can get. An endless challenge!</p><button type="button" id="playFlyingDuck">▶ PLAY FLYING DUCK</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">♟️</div><h2>CHOOS!</h2><p class="small">Play a full game of chess against one of four bots, from beginner to expert.</p><button type="button" id="playChoos">▶ PLAY CHOOS!</button></div></div></section>';
 }
@@ -1691,19 +1692,35 @@ function initFlyingDuck(){
  reset();window.__flyingDuckRAF=requestAnimationFrame(frame);
 }
 function renderChoos(){
+ const choices='<div class="ch-head"><h2>♟ CHOOS!</h2><p>Choose your opponent before starting. You cannot change bots during a game.</p></div>'+
+ '<div class="ch-pick-grid">'+
+ '<button type="button" data-ch-pick="1"><b>BOT 1 · BEGINNER</b><span>Random legal moves</span></button>'+
+ '<button type="button" data-ch-pick="2"><b>BOT 2 · EASY</b><span>Basic piece strategy</span></button>'+
+ '<button type="button" data-ch-pick="3"><b>BOT 3 · HARD</b><span>Thinks ahead</span></button>'+
+ '<button type="button" data-ch-pick="4"><b>BOT 4 · EXPERT</b><span>Deeper search</span></button></div>'+
+ '<div class="ch-controls"><button type="button" id="chBackSelect" class="secondary">← ALL GAMES</button></div>';
+ if(choosSelectedLevel===null)return '<style>'+
+ '#choos{max-width:920px;margin:0 auto}'+
+ '#choos .ch-head{text-align:center;margin:8px 0 18px}'+
+ '#choos .ch-head h2{font-size:clamp(27px,5vw,38px);margin:0 0 5px;color:#f4d35e;letter-spacing:2px}'+
+ '#choos .ch-pick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:650px;margin:0 auto}'+
+ '#choos .ch-pick-grid button{display:flex;flex-direction:column;gap:7px;align-items:center;justify-content:center;min-height:105px;padding:16px;border:1px solid #59657a;border-radius:12px;background:#172033;color:#fff;font-size:16px}'+
+ '#choos .ch-pick-grid button b{color:#f4d35e}#choos .ch-pick-grid button span{font-size:13px;color:#cbd5e1}'+
+ '#choos .ch-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:16px 0}'+
+ '@media(max-width:480px){#choos .ch-pick-grid{grid-template-columns:1fr}}'+
+ '</style><section id="choos">'+choices+'</section>';
  return '<style>'+
  '#choos{max-width:920px;margin:0 auto}'+
  '#choos .ch-head{text-align:center;margin:8px 0 14px}'+
  '#choos .ch-head h2{font-size:clamp(27px,5vw,38px);margin:0 0 5px;color:#f4d35e;letter-spacing:2px}'+
  '#choos .ch-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0}'+
  '#choos .ch-controls button{padding:9px 13px}'+
- '#choos .ch-controls button.chosen{outline:2px solid #f4d35e;outline-offset:2px}'+
- '#choos .ch-layout{display:grid;grid-template-columns:minmax(0,560px) minmax(190px,1fr);gap:16px;align-items:start}'+
+ '#choos .ch-layout{display:grid;grid-template-columns:minmax(0,700px) minmax(190px,1fr);gap:16px;align-items:start}'+
  '#choos .ch-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1;border:5px solid #40372d;border-radius:8px;overflow:hidden;box-shadow:0 12px 30px #0006}'+
  '#choos .ch-square{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;aspect-ratio:1;border:0;border-radius:0;padding:0;box-shadow:none;transform:none!important;color:#171717}'+
  '#choos .ch-square.light{background:#f0d9b5}#choos .ch-square.dark{background:#b58863}'+
  '#choos .ch-square.ch-selected{background:#e8cf43}#choos .ch-square.ch-last{box-shadow:inset 0 0 0 999px #facc1540}'+
- '#choos .ch-piece{font-family:"Segoe UI Symbol","DejaVu Sans",Georgia,serif;font-size:clamp(25px,6.2vw,60px);line-height:1;pointer-events:none;filter:drop-shadow(0 1px 1px #0007)}'+
+ '#choos .ch-piece{font-family:"Segoe UI Symbol","DejaVu Sans",Georgia,serif;font-size:clamp(50px,12.4vw,120px);line-height:1;pointer-events:none;filter:drop-shadow(0 1px 1px #0007)}'+
  '#choos .ch-white{color:#fffdf4;text-shadow:-1px -1px 0 #39332c,1px -1px 0 #39332c,-1px 1px 0 #39332c,1px 1px 0 #39332c}'+
  '#choos .ch-black{color:#171717;text-shadow:0 1px 0 #eee8dc}'+
  '#choos .ch-dot{position:absolute;width:24%;height:24%;border-radius:50%;background:#176b3a99;pointer-events:none}'+
@@ -1715,18 +1732,17 @@ function renderChoos(){
  '#choos .ch-promo{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}'+
  '#choos .ch-promo button{padding:8px 11px}'+
  '#choos .ch-note{font-size:12px;color:var(--muted,#aaa);text-align:center;margin:10px 0}'+
- '@media(max-width:700px){#choos .ch-layout{grid-template-columns:1fr}#choos .ch-side{width:100%}#choos .ch-history{max-height:130px}}'+
- '</style><section id="choos"><div class="ch-head"><h2>♟ CHOOS!</h2><p>White vs the bot · Standard chess rules</p></div>'+
- '<div class="ch-controls" id="chLevels"><button type="button" data-ch-level="1">BOT 1 · BEGINNER</button><button type="button" data-ch-level="2">BOT 2 · EASY</button><button type="button" data-ch-level="3">BOT 3 · HARD</button><button type="button" data-ch-level="4">BOT 4 · EXPERT</button></div>'+
- '<div class="ch-layout"><div><div class="ch-board" id="choosBoard" aria-label="Chess board"></div><div class="ch-controls"><button type="button" id="chRestart">↻ NEW GAME</button><button type="button" id="chBack" class="secondary">← ALL GAMES</button></div></div>'+
- '<aside class="ch-side"><div class="ch-status" id="chStatus">Your move — White</div><div class="small">Opponent: <b id="chBotName">Beginner Bot</b></div><p class="small">Tap one of your pieces to see every legal square it can move to. Tap a highlighted square to move.</p><div id="chPromotion"></div><hr style="border-color:#34415b;margin:12px 0"><b>MOVE HISTORY</b><div class="ch-history" id="chHistory">Game started.</div></aside></div>'+
+ '@media(max-width:700px){#choos .ch-layout{grid-template-columns:1fr}#choos .ch-side{width:100%}#choos .ch-history{max-height:130px}#choos .ch-piece{font-size:clamp(34px,12.4vw,76px)}}'+
+ '</style><section id="choos"><div class="ch-head"><h2>♟ CHOOS!</h2><p>White vs '+["","Beginner Bot","Easy Bot","Hard Bot","Expert Bot"][choosSelectedLevel]+' · Standard chess rules</p></div>'+
+ '<div class="ch-layout"><div><div class="ch-board" id="choosBoard" aria-label="Chess board"></div><div class="ch-controls"><button type="button" id="chRestart">↻ NEW GAME</button><button type="button" id="chBack" class="secondary">← CHANGE GAME / BOT</button></div></div>'+
+ '<aside class="ch-side"><div class="ch-status" id="chStatus">Your move — White</div><div class="small">Opponent: <b id="chBotName">'+["","Beginner Bot","Easy Bot","Hard Bot","Expert Bot"][choosSelectedLevel]+'</b></div><p class="small">Tap one of your pieces to see every legal square it can move to. Tap a highlighted square to move.</p><div id="chPromotion"></div><hr style="border-color:#34415b;margin:12px 0"><b>MOVE HISTORY</b><div class="ch-history" id="chHistory">Game started.</div></aside></div>'+
  '<p class="ch-note">Includes legal moves, check, checkmate, castling, en passant, promotion and draws.</p></section>';
 }
 function initChoos(){
  const boardEl=document.getElementById("choosBoard");if(!boardEl)return;
  if(typeof Chess!=="function"){document.getElementById("chStatus").textContent="Chess rules are still loading. Check your connection and reopen Choos!.";return}
  if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);
- const game=new Chess();let level=1,selected=null,targets=[],pendingPromotion=null,thinking=false,lastMove=null;
+ const game=new Chess();let level=choosSelectedLevel||1,selected=null,targets=[],pendingPromotion=null,thinking=false,lastMove=null;
  const glyph={wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♙",bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟︎"};
  const names=["","Beginner Bot","Easy Bot","Hard Bot","Expert Bot"];
  const values={p:100,n:320,b:335,r:500,q:900,k:20000};
@@ -1809,9 +1825,9 @@ function initChoos(){
   },level===4?450:300);
  }
  function restart(){if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);game.reset();selected=null;targets=[];pendingPromotion=null;thinking=false;lastMove=null;render()}
- document.querySelectorAll("[data-ch-level]").forEach(b=>b.onclick=()=>{level=Number(b.dataset.chLevel);restart()});
+ 
  document.getElementById("chRestart").onclick=restart;
- document.getElementById("chBack").onclick=()=>{if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);choosOpen=false;render()};
+ document.getElementById("chBack").onclick=()=>{if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);choosSelectedLevel=null;render()};
  render();
 }
 let sadTiresState=null;
@@ -2049,7 +2065,7 @@ render=function(){
   if(duck)duck.onclick=()=>{flyingDuckOpen=true;sadTiresOpen=false;choosOpen=false;render()};
   const chess=document.getElementById("playChoos");
   if(chess)chess.onclick=()=>{choosOpen=true;sadTiresOpen=false;flyingDuckOpen=false;render()};
-  if(choosOpen)initChoos();else if(flyingDuckOpen)initFlyingDuck();else if(sadTiresOpen)initSadTires();
+  if(choosOpen){if(choosSelectedLevel===null){document.querySelectorAll("[data-ch-pick]").forEach(b=>b.onclick=()=>{choosSelectedLevel=Number(b.dataset.chPick);render()});const back=document.getElementById("chBackSelect");if(back)back.onclick=()=>{choosOpen=false;choosSelectedLevel=null;render()}}else initChoos()}else if(flyingDuckOpen)initFlyingDuck();else if(sadTiresOpen)initSadTires();
  }
  updateMatchHUD();
 };
