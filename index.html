@@ -1658,9 +1658,9 @@ function initSadTires(){
  ];
  const keys={jump:false,back:false,front:false};
  function course(){
-  const level=Math.min(mapThemes.length-1,Math.floor(world/6000));
-  const period=Math.max(900,1300-level*100);
-  return {level,period,gapStart:period*.66,gapWidth:110+level*18,obstacleA:period*.40,obstacleB:period*.87};
+  const level=Math.floor(world/6000),difficulty=Math.min(8,level);
+  const period=Math.max(780,1300-difficulty*65);
+  return {level,difficulty,period,gapStart:period*.62,gapWidth:90+difficulty*12,obstacleA:period*.40,obstacleB:period*.92};
  }
  const distanceEl=document.getElementById("stDistance"),bestEl=document.getElementById("stBest"),statusEl=document.getElementById("stStatus");
  if(bestEl)bestEl.textContent=Math.floor(best)+" m";
@@ -1737,7 +1737,7 @@ function initSadTires(){
  document.addEventListener("keyup",keyUp);
  function draw(){
   ctx.clearRect(0,0,W,H);
-  const theme=mapThemes[course().level];
+  const theme=mapThemes[course().level%mapThemes.length];
   const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,theme.sky1);sky.addColorStop(1,theme.sky2);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
   ctx.fillStyle="#fff9";for(let i=0;i<5;i++){let x=((i*245-world*.12)%(W+140)+W+140)%(W+140)-60;ctx.beginPath();ctx.arc(x,95+i%2*52,25,0,Math.PI*2);ctx.arc(x+27,96+i%2*52,33,0,Math.PI*2);ctx.arc(x+58,100+i%2*52,22,0,Math.PI*2);ctx.fill()}
   // Distant rolling hills
@@ -1753,7 +1753,7 @@ function initSadTires(){
    const ob1=obstacleAt(wx+cfg.obstacleA),ob2=obstacleAt(wx+cfg.obstacleB);
    [ob1,ob2].forEach(o=>{if(!o)return;const x=o.x-world-W*.22,y=terrain(o.x);if(o.type==="cone"){ctx.fillStyle=theme.accent;ctx.beginPath();ctx.moveTo(x,y-34);ctx.lineTo(x-17,y);ctx.lineTo(x+17,y);ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x-10,y-12,20,5)}else{ctx.fillStyle="#9a6238";ctx.fillRect(x-19,y-32,38,32);ctx.strokeStyle="#e4bd8b";ctx.lineWidth=4;ctx.strokeRect(x-19,y-32,38,32);ctx.beginPath();ctx.moveTo(x-17,y-28);ctx.lineTo(x+17,y-4);ctx.stroke()}})
   }
-  ctx.fillStyle="#ffffffdd";ctx.font="900 18px system-ui";ctx.textAlign="right";ctx.fillText(theme.name+" • "+(course().level+1)+"/5",W-22,35);
+  ctx.fillStyle="#ffffffdd";ctx.font="900 18px system-ui";ctx.textAlign="right";ctx.fillText(theme.name+" • MAP "+(course().level+1),W-22,35);
   // Rider and bicycle
   const bx=W*.22+90,by=terrain(world+W*.22+90)-42-airY+crashDrop;
   ctx.save();ctx.translate(bx,by);ctx.rotate(lean*.38+airRotation+crashAngle);
