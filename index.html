@@ -1671,7 +1671,7 @@ function initSadTires(){
   if(statusEl)statusEl.textContent="RIDE ON!";
   if(distanceEl)distanceEl.textContent="0 m";
  }
- function jump(){if(!crashed&&airY<=1){vy=-490;airY=2}}
+ function jump(){if(!crashed){vy=-620;airY=Math.max(airY,2)}}
  function setAction(name,on){
   if(name==="jump"&&on)jump();
   if(name==="leanBack")keys.back=on;
@@ -1686,31 +1686,24 @@ function initSadTires(){
    lean=a==="leanBack"?-0.85:0.85;
    keys.back=false;keys.front=false;
   }
-  // Explicit touch events support mobile browsers where synthesized clicks or
-  // pointer events can be swallowed by the game canvas / page gesture handling.
-  b.addEventListener("touchstart",e=>{
-   e.preventDefault();lastTouchAction=Date.now();
+  // Use Pointer Events for touch, pen and mouse so every control follows
+  // the same reliable path on mobile and desktop.
+  b.onpointerdown=e=>{
+   e.preventDefault();
+   lastTouchAction=Date.now();
    if(a==="restart")restart();
    else if(a==="jump")jump();
    else setAction(a,true);
-  },{passive:false});
-  b.addEventListener("touchend",e=>{
-   e.preventDefault();
+  };
+  b.onpointerup=b.onpointercancel=b.onpointerleave=()=>{
    if(a==="leanBack"||a==="leanFront")setAction(a,false);
-  },{passive:false});
-  b.addEventListener("touchcancel",()=>{
-   if(a==="leanBack"||a==="leanFront")setAction(a,false);
-  });
-  // Keep mouse, keyboard activation and desktop click support.
+  };
+  // Keyboard activation and browsers without Pointer Events retain click support.
   b.onclick=e=>{
    e.preventDefault();
    if(Date.now()-lastTouchAction<800)return;
    activate();
   };
-  if(a==="leanBack"||a==="leanFront"){
-   b.onpointerdown=e=>{if(e.pointerType!=="touch"){e.preventDefault();setAction(a,true)}};
-   b.onpointerup=b.onpointercancel=b.onpointerleave=()=>{keys.back=false;keys.front=false};
-  }
  });
  function keyDown(e){
   if(!document.getElementById("stCanvas")||activeTab!=="minigames")return;
@@ -1747,7 +1740,7 @@ function initSadTires(){
   }
   // Rider and bicycle
   const bx=W*.22+90,by=terrain(world+W*.22+90)-42-airY;
-  ctx.save();ctx.translate(bx,by);ctx.rotate(lean*.13);
+  ctx.save();ctx.translate(bx,by);ctx.rotate(lean*.38);
   ctx.strokeStyle="#202733";ctx.lineWidth=5;ctx.lineCap="round";
   ctx.beginPath();ctx.arc(-29,25,20,0,Math.PI*2);ctx.arc(35,25,20,0,Math.PI*2);ctx.stroke();
   ctx.strokeStyle="#e94f37";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(-29,25);ctx.lineTo(-5,-1);ctx.lineTo(12,25);ctx.lineTo(-29,25);ctx.moveTo(-5,-1);ctx.lineTo(35,25);ctx.moveTo(12,25);ctx.lineTo(35,25);ctx.stroke();
@@ -1766,7 +1759,7 @@ function initSadTires(){
   const dt=Math.min(.035,(t-last)/1000||0);last=t;
   if(running&&!crashed){
    elapsed+=dt;world+=speed*dt;
-   if(keys.back)lean=Math.max(-1,lean-dt*2.7);else if(keys.front)lean=Math.min(1,lean+dt*2.7);else lean*=Math.max(0,1-dt*3);
+   if(keys.back)lean=Math.max(-1,lean-dt*8);else if(keys.front)lean=Math.min(1,lean+dt*8);else lean*=Math.max(0,1-dt*3);
    if(airY>0||vy<0){airY+=vy*dt;vy+=1050*dt;if(airY<=0){airY=0;vy=0}}
    const riderX=world+W*.22+90,ob=obstacleAt(riderX+22);
    const overGap=gapAt(riderX);
