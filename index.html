@@ -1717,11 +1717,11 @@ function renderChoos(){
  '#choos .ch-controls button{padding:9px 13px}'+
  '#choos .ch-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}'+
  '#choos .ch-layout>div:first-child{min-width:0;width:100%;max-width:700px;margin:0 auto}'+
- '#choos .ch-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1;border:5px solid #40372d;border-radius:8px;overflow:hidden;box-shadow:0 12px 30px #0006}'+
- '#choos .ch-square{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;aspect-ratio:1;border:0;border-radius:0;padding:0;box-shadow:none;transform:none!important;color:#171717}'+
+ '#choos .ch-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));grid-auto-flow:row;width:min(100%,min(70vh,700px));height:auto;aspect-ratio:1;margin:0 auto;border:5px solid #40372d;border-radius:8px;overflow:hidden;box-sizing:border-box;box-shadow:0 12px 30px #0006}'+
+ '#choos .ch-square{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;min-height:0;aspect-ratio:1;border:0;border-radius:0;padding:0;margin:0;box-shadow:none;transform:none!important;color:#171717;overflow:hidden}'+
  '#choos .ch-square.light{background:#f0d9b5}#choos .ch-square.dark{background:#b58863}'+
  '#choos .ch-square.ch-selected{background:#e8cf43}#choos .ch-square.ch-last{box-shadow:inset 0 0 0 999px #facc1540}'+
- '#choos .ch-piece{font-family:"Segoe UI Symbol","DejaVu Sans",Georgia,serif;font-size:clamp(50px,12.4vw,120px);line-height:1;pointer-events:none;filter:drop-shadow(0 1px 1px #0007)}'+
+ '#choos .ch-piece{display:block;font-family:"Segoe UI Symbol","DejaVu Sans",Georgia,serif;font-size:clamp(38px,8.8vw,88px);line-height:1;pointer-events:none;filter:drop-shadow(0 1px 1px #0007);white-space:nowrap}'+
  '#choos .ch-white{color:#fffdf4;text-shadow:-1px -1px 0 #39332c,1px -1px 0 #39332c,-1px 1px 0 #39332c,1px 1px 0 #39332c}'+
  '#choos .ch-black{color:#171717;text-shadow:0 1px 0 #eee8dc}'+
  '#choos .ch-dot{position:absolute;width:24%;height:24%;border-radius:50%;background:#176b3a99;pointer-events:none}'+
@@ -1733,7 +1733,8 @@ function renderChoos(){
  '#choos .ch-promo{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}'+
  '#choos .ch-promo button{padding:8px 11px}'+
  '#choos .ch-note{font-size:12px;color:var(--muted,#aaa);text-align:center;margin:10px 0}'+
- '@media(max-width:700px){#choos .ch-layout{grid-template-columns:1fr}#choos .ch-side{width:100%}#choos .ch-history{max-height:130px}#choos .ch-piece{font-size:clamp(34px,12.4vw,76px)}}'+
+ '@media(min-width:701px){#choos .ch-layout{grid-template-columns:minmax(0,700px) minmax(190px,1fr);gap:18px}#choos .ch-layout>div:first-child{max-width:700px}#choos .ch-board{width:100%;height:auto}}'+
+ '@media(max-width:700px){#choos .ch-layout{grid-template-columns:1fr}#choos .ch-side{width:100%}#choos .ch-history{max-height:130px}#choos .ch-board{width:min(100%,min(88vw,620px));height:auto}#choos .ch-piece{font-size:clamp(30px,9.5vw,68px)}}'+
  '</style><section id="choos"><div class="ch-head"><h2>♟ CHOOS!</h2><p>White vs '+["","Beginner Bot","Easy Bot","Hard Bot","Expert Bot"][choosSelectedLevel]+' · Standard chess rules</p></div>'+
  '<div class="ch-layout"><div><div class="ch-board" id="choosBoard" aria-label="Chess board"></div><div class="ch-controls"><button type="button" id="chRestart">↻ NEW GAME</button><button type="button" id="chBack" class="secondary">← CHANGE GAME / BOT</button></div></div>'+
  '<aside class="ch-side"><div class="ch-status" id="chStatus">Your move — White</div><div class="small">Opponent: <b id="chBotName">'+["","Beginner Bot","Easy Bot","Hard Bot","Expert Bot"][choosSelectedLevel]+'</b></div><p class="small">Tap one of your pieces to see every legal square it can move to. Tap a highlighted square to move.</p><div id="chPromotion"></div><hr style="border-color:#34415b;margin:12px 0"><b>MOVE HISTORY</b><div class="ch-history" id="chHistory">Game started.</div></aside></div>'+
@@ -1992,7 +1993,7 @@ function initSadTires(){
    }}
    const riderX=world+W*.22+90,ob=obstacleAt(riderX);
    // Check the visible bicycle wheel positions against the actual drawn gap.
-   const wholeBodyOverGap=gapAt(riderX-49)&&gapAt(riderX-24)&&gapAt(riderX)&&gapAt(riderX+28)&&gapAt(riderX+55);
+   const bodyFootprint=[-49,-42,-35,-28,-21,-14,-7,0,7,14,21,28,35,42,49,55];\n   const wholeBodyOverGap=bodyFootprint.every(offset=>gapAt(riderX+offset));
    // Hills are scenery only. A wipeout can only come from a clearly drawn obstacle or gap.
    if(!crashed&&ob&&airY<30&&Math.abs(ob.x-riderX)<34)startCrash("obstacle");
    if(!crashed&&wholeBodyOverGap&&airY<12)startCrash("gap");
@@ -2063,7 +2064,7 @@ render=function(){
   if(sadTiresOpen||flyingDuckOpen||choosOpen){
    app.insertAdjacentHTML("afterbegin",'<div style="display:flex;justify-content:center;margin:0 auto 12px"><button type="button" id="minigameExit" class="secondary">← ALL MINIGAMES</button></div>');
    const exit=document.getElementById("minigameExit");
-   if(exit)exit.onclick=()=>{if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);if(window.__flyingDuckCleanup)window.__flyingDuckCleanup();if(window.__flyingDuckRAF)cancelAnimationFrame(window.__flyingDuckRAF);if(window.__sadTiresRAF)cancelAnimationFrame(window.__sadTiresRAF);choosOpen=false;choosSelectedLevel=null;flyingDuckOpen=false;sadTiresOpen=false;render()};
+   if(exit)exit.onclick=()=>{if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);window.__choosBotTimer=null;if(window.__flyingDuckCleanup)window.__flyingDuckCleanup();if(window.__flyingDuckRAF)cancelAnimationFrame(window.__flyingDuckRAF);window.__flyingDuckRAF=null;if(window.__sadTiresRAF)cancelAnimationFrame(window.__sadTiresRAF);window.__sadTiresRAF=null;if(window.__sadTiresKeyDown)document.removeEventListener("keydown",window.__sadTiresKeyDown);if(window.__sadTiresKeyUp)document.removeEventListener("keyup",window.__sadTiresKeyUp);window.__sadTiresKeyDown=null;window.__sadTiresKeyUp=null;choosOpen=false;choosSelectedLevel=null;flyingDuckOpen=false;sadTiresOpen=false;render()};
   }
   const play=document.getElementById("playSadTires");
   if(play)play.onclick=()=>{sadTiresOpen=true;flyingDuckOpen=false;choosOpen=false;render()};
