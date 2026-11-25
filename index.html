@@ -737,7 +737,7 @@ transition-duration:.01ms!important;
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>\n<script>
 // v8 intentionally starts every tester with a clean launch save. Keep this key unchanged for future updates to preserve progress.
 // No persistent save key: game state exists only for this page session.
 const positionNames=["GK","CB","CB","CM","ST"];
@@ -1612,9 +1612,9 @@ function redeemCode(){
  toast("Code redeemed! You received "+reward.label+".");
 }
 
-let sadTiresOpen=false,flyingDuckOpen=false;
+let sadTiresOpen=false,flyingDuckOpen=false,choosOpen=false;
 function renderMinigameSelect(){
- return '<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🚲</div><h2>SAD TIRES</h2><p class="small">Ride your bike through an endless course of obstacles. How far can you get?</p><button type="button" id="playSadTires">▶ PLAY SAD TIRES</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🦆</div><h2>FLYING DUCK</h2><p class="small">Flap through the pipes and see how high your score can get. An endless challenge!</p><button type="button" id="playFlyingDuck">▶ PLAY FLYING DUCK</button></div></div></section>';
+ return '<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🚲</div><h2>SAD TIRES</h2><p class="small">Ride your bike through an endless course of obstacles. How far can you get?</p><button type="button" id="playSadTires">▶ PLAY SAD TIRES</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🦆</div><h2>FLYING DUCK</h2><p class="small">Flap through the pipes and see how high your score can get. An endless challenge!</p><button type="button" id="playFlyingDuck">▶ PLAY FLYING DUCK</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">♟️</div><h2>CHOOS!</h2><p class="small">Play a full game of chess against one of four bots, from beginner to expert.</p><button type="button" id="playChoos">▶ PLAY CHOOS!</button></div></div></section>';
 }
 function renderSadTires(){
  return '<style>'+
@@ -1689,6 +1689,130 @@ function initFlyingDuck(){
  canvas.addEventListener("pointerdown",flap);document.getElementById("fdFlap").onclick=flap;
  document.getElementById("fdRestart").onclick=reset;document.getElementById("fdBack").onclick=()=>{cleanup();if(window.__flyingDuckRAF)cancelAnimationFrame(window.__flyingDuckRAF);window.__flyingDuckRAF=null;flyingDuckOpen=false;render()};
  reset();window.__flyingDuckRAF=requestAnimationFrame(frame);
+}
+function renderChoos(){
+ return '<style>'+
+ '#choos{max-width:920px;margin:0 auto}'+
+ '#choos .ch-head{text-align:center;margin:8px 0 14px}'+
+ '#choos .ch-head h2{font-size:clamp(27px,5vw,38px);margin:0 0 5px;color:#f4d35e;letter-spacing:2px}'+
+ '#choos .ch-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0}'+
+ '#choos .ch-controls button{padding:9px 13px}'+
+ '#choos .ch-controls button.chosen{outline:2px solid #f4d35e;outline-offset:2px}'+
+ '#choos .ch-layout{display:grid;grid-template-columns:minmax(0, min( min(100%, 560px), 1fr)) minmax(190px,1fr);gap:16px;align-items:start}'+
+ '#choos .ch-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1;border:5px solid #40372d;border-radius:8px;overflow:hidden;box-shadow:0 12px 30px #0006}'+
+ '#choos .ch-square{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;aspect-ratio:1;border:0;border-radius:0;padding:0;box-shadow:none;transform:none!important;color:#171717}'+
+ '#choos .ch-square.light{background:#f0d9b5}#choos .ch-square.dark{background:#b58863}'+
+ '#choos .ch-square.ch-selected{background:#e8cf43}#choos .ch-square.ch-last{box-shadow:inset 0 0 0 999px #facc1540}'+
+ '#choos .ch-piece{font-family:"Segoe UI Symbol","DejaVu Sans",Georgia,serif;font-size:clamp(25px,6.2vw,60px);line-height:1;pointer-events:none;filter:drop-shadow(0 1px 1px #0007)}'+
+ '#choos .ch-white{color:#fffdf4;text-shadow:-1px -1px 0 #39332c,1px -1px 0 #39332c,-1px 1px 0 #39332c,1px 1px 0 #39332c}'+
+ '#choos .ch-black{color:#171717;text-shadow:0 1px 0 #eee8dc}'+
+ '#choos .ch-dot{position:absolute;width:24%;height:24%;border-radius:50%;background:#176b3a99;pointer-events:none}'+
+ '#choos .ch-capture{position:absolute;inset:4%;border:4px solid #176b3a99;border-radius:50%;pointer-events:none}'+
+ '#choos .ch-coord{position:absolute;left:3px;bottom:1px;font-size:10px;font-weight:900;opacity:.7;pointer-events:none}'+
+ '#choos .ch-side{background:#111827;border:1px solid #34415b;border-radius:13px;padding:13px;min-width:0}'+
+ '#choos .ch-status{font-weight:900;margin-bottom:9px;color:#f4d35e}'+
+ '#choos .ch-history{max-height:260px;overflow:auto;font:13px/1.8 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}'+
+ '#choos .ch-promo{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}'+
+ '#choos .ch-promo button{padding:8px 11px}'+
+ '#choos .ch-note{font-size:12px;color:var(--muted,#aaa);text-align:center;margin:10px 0}'+
+ '@media(max-width:700px){#choos .ch-layout{grid-template-columns:1fr}#choos .ch-side{width:100%}#choos .ch-history{max-height:130px}}'+
+ '</style><section id="choos"><div class="ch-head"><h2>♟ CHOOS!</h2><p>White vs the bot · Standard chess rules</p></div>'+
+ '<div class="ch-controls" id="chLevels"><button type="button" data-ch-level="1">BOT 1 · BEGINNER</button><button type="button" data-ch-level="2">BOT 2 · EASY</button><button type="button" data-ch-level="3">BOT 3 · HARD</button><button type="button" data-ch-level="4">BOT 4 · EXPERT</button></div>'+
+ '<div class="ch-layout"><div><div class="ch-board" id="choosBoard" aria-label="Chess board"></div><div class="ch-controls"><button type="button" id="chRestart">↻ NEW GAME</button><button type="button" id="chBack" class="secondary">← ALL GAMES</button></div></div>'+
+ '<aside class="ch-side"><div class="ch-status" id="chStatus">Your move — White</div><div class="small">Opponent: <b id="chBotName">Beginner Bot</b></div><p class="small">Tap one of your pieces to see every legal square it can move to. Tap a highlighted square to move.</p><div id="chPromotion"></div><hr style="border-color:#34415b;margin:12px 0"><b>MOVE HISTORY</b><div class="ch-history" id="chHistory">Game started.</div></aside></div>'+
+ '<p class="ch-note">Includes legal moves, check, checkmate, castling, en passant, promotion and draws.</p></section>';
+}
+function initChoos(){
+ const boardEl=document.getElementById("choosBoard");if(!boardEl)return;
+ if(typeof Chess!=="function"){document.getElementById("chStatus").textContent="Chess rules are still loading. Check your connection and reopen Choos!.";return}
+ if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);
+ const game=new Chess();let level=1,selected=null,targets=[],pendingPromotion=null,thinking=false,lastMove=null;
+ const glyph={wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♙",bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟︎"};
+ const names=["","Beginner Bot","Easy Bot","Hard Bot","Expert Bot"];
+ const values={p:100,n:320,b:335,r:500,q:900,k:20000};
+ const statusEl=document.getElementById("chStatus"),historyEl=document.getElementById("chHistory"),promotionEl=document.getElementById("chPromotion");
+ const allSquares=()=>{const a=[];for(let r=0;r<8;r++)for(let f=0;f<8;f++)a.push("abcdefgh"[f]+(8-r));return a};
+ function status(){
+  if(game.in_checkmate())return game.turn()==="w"?"Checkmate — the bot wins.":"Checkmate — you win!";
+  if(game.in_stalemate())return "Draw — stalemate.";
+  if(game.in_draw())return "Draw — game drawn.";
+  if(thinking)return names[level]+" is thinking…";
+  if(game.in_check())return (game.turn()==="w"?"Your move":"Bot to move")+" — CHECK!";
+  return game.turn()==="w"?"Your move — White":"Bot to move — Black";
+ }
+ function render(){
+  const moves=selected?game.moves({square:selected,verbose:true}):[];
+  targets=moves.map(m=>m.to);
+  const board=game.board(),squares=allSquares();
+  boardEl.innerHTML=squares.map((sq,i)=>{
+   const r=Math.floor(i/8),f=i%8,p=board[r][f],isTarget=targets.includes(sq),isSelected=selected===sq,isLast=lastMove&&(lastMove.from===sq||lastMove.to===sq);
+   const color=(r+f)%2?"dark":"light";
+   return '<button type="button" class="ch-square '+color+(isSelected?" ch-selected":"")+(isLast?" ch-last":"")+'" data-square="'+sq+'" aria-label="'+sq+(p?" "+(p.color==="w"?"white ":"black ")+p.type:" empty square")+'">'+
+    (p?'<span class="ch-piece '+(p.color==="w"?"ch-white":"ch-black")+'">'+glyph[p.color+p.type]+'</span>':'')+
+    (isTarget?(p?'<span class="ch-capture"></span>':'<span class="ch-dot"></span>'):'')+
+    (f===0?'<span class="ch-coord">'+(8-r)+'</span>':'')+(r===7?'<span class="ch-coord" style="left:auto;right:3px">'+ "abcdefgh"[f]+'</span>':'')+'</button>';
+  }).join("");
+  statusEl.textContent=status();
+  document.getElementById("chBotName").textContent=names[level];
+  historyEl.textContent=game.history().length?game.history().reduce((out,m,i)=>out+(i%2===0?Math.floor(i/2+1)+". ":"")+m+(i%2===1?"\n":" "), ""):"Game started.";
+  document.querySelectorAll("[data-ch-level]").forEach(b=>b.classList.toggle("chosen",Number(b.dataset.chLevel)===level));
+  promotionEl.innerHTML=pendingPromotion?'<b>Promote pawn to:</b><div class="ch-promo">'+["q","r","b","n"].map(p=>'<button type="button" data-ch-promo="'+p+'">'+({q:"♕ Queen",r:"♖ Rook",b:"♗ Bishop",n:"♘ Knight"})[p]+'</button>').join("")+'</div>':"";
+  promotionEl.querySelectorAll("[data-ch-promo]").forEach(b=>b.onclick=()=>finishPromotion(b.dataset.chPromo));
+  boardEl.querySelectorAll("[data-square]").forEach(b=>b.onclick=()=>clickSquare(b.dataset.square));
+ }
+ function finishPromotion(piece){if(!pendingPromotion)return;game.move({from:pendingPromotion.from,to:pendingPromotion.to,promotion:piece});pendingPromotion=null;selected=null;lastMove=game.history({verbose:true}).slice(-1)[0];afterHumanMove()}
+ function clickSquare(sq){
+  if(thinking||game.game_over()||game.turn()!=="w"||pendingPromotion)return;
+  const piece=game.get(sq);
+  if(selected&&targets.includes(sq)){
+   const options=game.moves({square:selected,verbose:true}).filter(m=>m.to===sq);
+   if(options.some(m=>m.flags.includes("p"))){pendingPromotion={from:selected,to:sq};render();return}
+   const move=game.move({from:selected,to:sq,promotion:"q"});if(move){lastMove=move;selected=null;afterHumanMove();return}
+  }
+  if(piece&&piece.color==="w"){selected=selected===sq?null:sq;render();return}
+  selected=null;render();
+ }
+ function afterHumanMove(){selected=null;render();if(!game.game_over())scheduleBot()}
+ function evaluate(g){
+  if(g.in_checkmate())return g.turn()==="w"?-100000:100000;
+  if(g.in_draw())return 0;
+  let score=0;const b=g.board();
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){const p=b[r][f];if(!p)continue;let v=values[p.type];const center=3.5-(Math.abs(3.5-f)+Math.abs(3.5-r))/2; if(p.type==="n"||p.type==="b")v+=center*7;if(p.type==="p")v+=(p.color==="w"?(6-r):(r-1))*3;score+=(p.color==="w"?v:-v)}
+  return score;
+ }
+ function ordered(g){return g.moves({verbose:true}).sort((a,b)=>((b.captured?values[b.captured]:0)+(b.promotion?800:0))-((a.captured?values[a.captured]:0)+(a.promotion?800:0)))}
+ function search(g,depth,alpha,beta){
+  if(depth===0||g.game_over())return evaluate(g);
+  const maximizing=g.turn()==="w";let best=maximizing?-Infinity:Infinity;
+  for(const m of ordered(g)){const child=new Chess(g.fen());child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});const score=search(child,depth-1,alpha,beta);
+   if(maximizing){best=Math.max(best,score);alpha=Math.max(alpha,best)}else{best=Math.min(best,score);beta=Math.min(beta,best)}
+   if(beta<=alpha)break;
+  }
+  return best;
+ }
+ function chooseBotMove(){
+  const moves=ordered(game);if(!moves.length)return null;
+  if(level===1)return moves[Math.floor(Math.random()*moves.length)];
+  if(level===2){
+   let best=-Infinity,pool=[];for(const m of moves){const child=new Chess(game.fen());child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});const val=evaluate(child)+(m.captured?values[m.captured]*.7:0)+(m.promotion?650:0);if(val>best){best=val;pool=[m]}else if(val===best)pool.push(m)}return pool[Math.floor(Math.random()*pool.length)];
+  }
+  const depth=level===3?2:3;let best=-Infinity,pool=[];
+  for(const m of moves){const child=new Chess(game.fen());child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});const val=search(child,depth-1,-Infinity,Infinity);if(val>best){best=val;pool=[m]}else if(val===best)pool.push(m)}
+  return pool[Math.floor(Math.random()*pool.length)];
+ }
+ function scheduleBot(){
+  thinking=true;render();
+  window.__choosBotTimer=setTimeout(()=>{
+   if(!document.getElementById("choosBoard")||game.turn()!=="b"||game.game_over())return;
+   const m=chooseBotMove();if(m){const done=game.move({from:m.from,to:m.to,promotion:m.promotion||"q"});lastMove=done}
+   thinking=false;selected=null;render();
+  },level===4?450:300);
+ }
+ function restart(){if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);game.reset();selected=null;targets=[];pendingPromotion=null;thinking=false;lastMove=null;render()}
+ document.querySelectorAll("[data-ch-level]").forEach(b=>b.onclick=()=>{level=Number(b.dataset.chLevel);restart()});
+ document.getElementById("chRestart").onclick=restart;
+ document.getElementById("chBack").onclick=()=>{if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);choosOpen=false;render()};
+ render();
 }
 let sadTiresState=null;
 function initSadTires(){
@@ -1912,7 +2036,7 @@ render=function(){
   catch(err){console.error("Da Boiz team screen render error ("+activeTeamTab+"):",err);teamContent='<section class="panel"><h2>Screen loading error</h2><p>This screen hit an error. Try another tab, then return to Gallery.</p></section>';}
   app.innerHTML='<div class="subnav"><button data-team-tab="team" class="'+(activeTeamTab==="team"?"active":"")+'">⚽ Squad</button><button data-team-tab="objectives" class="'+(activeTeamTab==="objectives"?"active":"")+'">🏆 Team Objectives</button><button data-team-tab="album" class="'+(activeTeamTab==="album"?"active":"")+'">📚 Gallery</button></div>'+teamContent;
  }else if(activeTab==="minigames"){
-  app.innerHTML=flyingDuckOpen?renderFlyingDuck():(sadTiresOpen?renderSadTires():renderMinigameSelect());
+  app.innerHTML=choosOpen?renderChoos():(flyingDuckOpen?renderFlyingDuck():(sadTiresOpen?renderSadTires():renderMinigameSelect()));
  }else{
   previousRender();
  }
@@ -1920,10 +2044,12 @@ render=function(){
  bindButtons();
  if(activeTab==="minigames"){
   const play=document.getElementById("playSadTires");
-  if(play)play.onclick=()=>{sadTiresOpen=true;flyingDuckOpen=false;render()};
+  if(play)play.onclick=()=>{sadTiresOpen=true;flyingDuckOpen=false;choosOpen=false;render()};
   const duck=document.getElementById("playFlyingDuck");
-  if(duck)duck.onclick=()=>{flyingDuckOpen=true;sadTiresOpen=false;render()};
-  if(flyingDuckOpen)initFlyingDuck();else if(sadTiresOpen)initSadTires();
+  if(duck)duck.onclick=()=>{flyingDuckOpen=true;sadTiresOpen=false;choosOpen=false;render()};
+  const chess=document.getElementById("playChoos");
+  if(chess)chess.onclick=()=>{choosOpen=true;sadTiresOpen=false;flyingDuckOpen=false;render()};
+  if(choosOpen)initChoos();else if(flyingDuckOpen)initFlyingDuck();else if(sadTiresOpen)initSadTires();
  }
  updateMatchHUD();
 };
