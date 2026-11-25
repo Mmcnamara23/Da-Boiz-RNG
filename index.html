@@ -1691,6 +1691,9 @@ function initSadTires(){
   if(e.code==="ArrowLeft"||e.code==="KeyA")keys.back=false;
   if(e.code==="ArrowRight"||e.code==="KeyD")keys.front=false;
  }
+ if(window.__sadTiresKeyDown)document.removeEventListener("keydown",window.__sadTiresKeyDown);
+ if(window.__sadTiresKeyUp)document.removeEventListener("keyup",window.__sadTiresKeyUp);
+ window.__sadTiresKeyDown=keyDown;window.__sadTiresKeyUp=keyUp;
  document.addEventListener("keydown",keyDown);
  document.addEventListener("keyup",keyUp);
  function draw(){
