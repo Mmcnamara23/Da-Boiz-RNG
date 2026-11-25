@@ -2495,6 +2495,37 @@ startMatchTimer();
    console.error("Pack opening failed:",err);toast("Pack opening failed safely. No currency was lost.");render();
   }
  };
+
+ const oldAwardForSpecialObjectives=award;
+ award=function(c){
+  const duplicate=oldAwardForSpecialObjectives(c);
+  if(c&&c.id==="jayden")game.packCounts.jayden=(Number(game.packCounts.jayden)||0)+1;
+  if(c&&c.id==="henry")game.packCounts.henry=(Number(game.packCounts.henry)||0)+1;
+  return duplicate;
+ };
+ function claimSpecialObjective(key){
+  const config=key==="laFairs"?{count:"jayden",needed:45,claim:"laFairs",card:laFairsJayden}:{count:"henry",needed:40,claim:"creedMachine",card:hannahCreed};
+  if(game.exclusiveObjectiveClaims[config.claim])return toast("Reward already claimed.");
+  if((Number(game.packCounts[config.count])||0)<config.needed)return toast("Objective not complete yet.");
+  game.exclusiveObjectiveClaims[config.claim]=true;
+  game.owned[config.card.id]=Math.max(1,Number(game.owned[config.card.id])||0);
+  save();render();toast(config.card.name+" unlocked!");
+ }
+ const oldRenderObjectives=renderObjectives;
+ renderObjectives=function(){
+  const la=Math.min(45,Number(game.packCounts.jayden)||0),cr=Math.min(40,Number(game.packCounts.henry)||0);
+  const laDone=!!game.exclusiveObjectiveClaims.laFairs,crDone=!!game.exclusiveObjectiveClaims.creedMachine;
+  const extra='<section><div class="sectionhero"><h2>🖤 SPECIAL PLAYER OBJECTIVES</h2><p>Pack each player the required number of times to unlock their exclusive black card.</p></div><div class="grid">'+
+   '<div class="objective" style="background:linear-gradient(145deg,#151515,#050505);border:2px solid #777;color:#fff"><span class="badge">LA FAIRS</span><h3>La Fairs</h3><p>Pack Jayden Jobarteh 45 times.</p><div class="bar"><span style="width:'+ (la/45*100) +'%"></span></div><div class="small">'+la+' / 45 packed</div><p>Reward: 88-rated La Fairs Jayden</p><button data-special-objective="laFairs" '+(laDone||la<45?'disabled':'')+'>'+(laDone?'CLAIMED':la<45?'IN PROGRESS':'CLAIM REWARD')+'</button></div>'+
+   '<div class="objective" style="background:linear-gradient(145deg,#151515,#050505);border:2px solid #777;color:#fff"><span class="badge">CREED MACHINE</span><h3>Creed Machine</h3><p>Pack Henry James Worsell 40 times.</p><div class="bar"><span style="width:'+ (cr/40*100) +'%"></span></div><div class="small">'+cr+' / 40 packed</div><p>Reward: 90-rated Hannah Creed</p><button data-special-objective="creedMachine" '+(crDone||cr<40?'disabled':'')+'>'+(crDone?'CLAIMED':cr<40?'IN PROGRESS':'CLAIM REWARD')+'</button></div>'+
+   '</div></section>';
+  return oldRenderObjectives()+extra;
+ };
+ const oldBindSpecialObjectives=bindButtons;
+ bindButtons=function(){
+  oldBindSpecialObjectives();
+  document.querySelectorAll("[data-special-objective]").forEach(b=>b.onclick=()=>claimSpecialObjective(b.dataset.specialObjective));
+ };
  render();
 })();
 </script>
