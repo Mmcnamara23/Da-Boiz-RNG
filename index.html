@@ -2304,6 +2304,7 @@ claimGallery=function(r){
  if(r==="Icon")game.owned[noseBreatherRewardCard.id]=1;
  if(r==="Mythical"){game.tokens+=50;game.coins+=25000}
  if(r==="Aura")game.owned["gallery_aura_liam_og"]=(game.owned["gallery_aura_liam_og"]||0)+1;
+ if(r==="Footballer Showdown")game.owned[window.daBoizJakeShowdownReward.id]=1;
  save();render();toast(r+" Gallery reward claimed!");
 };
 
