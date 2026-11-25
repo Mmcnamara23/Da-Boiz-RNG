@@ -1612,27 +1612,10 @@ function redeemCode(){
  toast("Code redeemed! You received "+reward.label+".");
 }
 
-let sadTiresOpen=false,flyingDuckOpen=false,choosOpen=false,penaltyOpen=false;
-let penaltyCountry=null,penaltyMatch=null;
+let sadTiresOpen=false,flyingDuckOpen=false,choosOpen=false;
 let choosSelectedLevel=null;
 function renderMinigameSelect(){
- return '<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🚲</div><h2>SAD TIRES</h2><p class="small">Ride your bike through an endless course of obstacles. How far can you get?</p><button type="button" id="playSadTires">▶ PLAY SAD TIRES</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🦆</div><h2>FLYING DUCK</h2><p class="small">Flap through the pipes and see how high your score can get. An endless challenge!</p><button type="button" id="playFlyingDuck">▶ PLAY FLYING DUCK</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">♟️</div><h2>CHOOS!</h2><p class="small">Play a full game of chess against one of four bots, from beginner to expert.</p><button type="button" id="playChoos">▶ PLAY CHOOS!</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px">⚽</div><h2>PENALTY SHOOTOUT</h2><p class="small">Pick your country and play a random opponent as striker and goalie.</p><button type="button" id="playPenalty">▶ PLAY PENALTY SHOOTOUT</button></div></div></section>';
-}
-
-const penaltyCountries=[{name:"England",flag:"🏴"},{name:"Brazil",flag:"🇧🇷"},{name:"France",flag:"🇫🇷"},{name:"Argentina",flag:"🇦🇷"},{name:"Spain",flag:"🇪🇸"},{name:"Germany",flag:"🇩🇪"}];
-function renderPenaltyShootout(){
- const lanes=["LEFT","CENTRE","RIGHT"];
- if(!penaltyCountry)return '<section id="penaltyGame"><div class="sectionhero"><h2>⚽ PICK YOUR COUNTRY</h2><p>Choose one of six countries. Your opponent will be random.</p></div><div class="grid">'+penaltyCountries.map(c=>'<button data-country="'+c.name+'" style="min-height:95px;font-size:18px">'+c.flag+' '+c.name+'</button>').join("")+'</div></section>';
- const m=penaltyMatch,me=penaltyCountries.find(c=>c.name===penaltyCountry),op=penaltyCountries.find(c=>c.name===m.opponent);
- const actions=m.done?'<h2>'+(m.you>m.them?'🏆 YOU WIN!':m.you<m.them?'OPPONENT WINS!':'IT’S A DRAW!')+'</h2><button id="penaltyAgain">PLAY AGAIN</button>':m.phase==="shoot"?'<h3>Your turn to shoot — choose a direction</h3><div>'+lanes.map((x,i)=>'<button data-shot="'+i+'">⚽ SHOOT '+x+'</button>').join(" ")+'</div>':'<h3>Opponent shooting — choose your dive</h3><div>'+lanes.map((x,i)=>'<button data-dive="'+i+'">🧤 DIVE '+x+'</button>').join(" ")+'</div>';
- return '<section id="penaltyGame" style="text-align:center;max-width:850px;margin:auto"><div class="sectionhero"><h2>⚽ PENALTY SHOOTOUT</h2><p>Five penalties each. You shoot and play goalkeeper!</p></div><h2>'+me.flag+' '+me.name+' <span style="color:#f4d35e">'+m.you+' - '+m.them+'</span> '+op.flag+' '+op.name+'</h2><div style="background:linear-gradient(#329b56,#176b3a);border:5px solid white;border-radius:12px;padding:24px;color:white;margin:16px 0"><div style="max-width:460px;height:110px;border:8px solid white;border-bottom:0;margin:auto;display:grid;grid-template-columns:repeat(3,1fr)"><span>LEFT</span><span>CENTRE</span><span>RIGHT</span></div><div style="font-size:48px">🧤 ⚽</div><b>ROUND '+m.round+' / 5</b></div><h3 style="color:#f4d35e;min-height:28px">'+m.message+'</h3>'+actions+'</section>';
-}
-function initPenaltyShootout(){
- if(!penaltyCountry){document.querySelectorAll("[data-country]").forEach(b=>b.onclick=()=>{penaltyCountry=b.dataset.country;const p=penaltyCountries.filter(c=>c.name!==penaltyCountry);penaltyMatch={opponent:p[Math.floor(Math.random()*p.length)].name,you:0,them:0,round:1,phase:"shoot",done:false,message:"You're up first!"};render()});return}
- const m=penaltyMatch;if(!m)return;
- document.querySelectorAll("[data-shot]").forEach(b=>b.onclick=()=>{if(m.phase!=="shoot"||m.done)return;const shot=+b.dataset.shot,keeper=Math.floor(Math.random()*3);m.message=shot===keeper?"Saved by the keeper!":"GOAL! You scored!";if(shot!==keeper)m.you++;m.phase="save";render()});
- document.querySelectorAll("[data-dive]").forEach(b=>b.onclick=()=>{if(m.phase!=="save"||m.done)return;const dive=+b.dataset.dive,shot=Math.floor(Math.random()*3);if(dive===shot)m.message="WHAT A SAVE!";else{m.them++;m.message="They score!";}if(m.round===5){m.done=true;m.message+=" Final score: "+m.you+" - "+m.them}else{m.round++;m.phase="shoot";m.message+=" Your turn to shoot again."}render()});
- const again=document.getElementById("penaltyAgain");if(again)again.onclick=()=>{penaltyCountry=null;penaltyMatch=null;render()};
+ return '<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🚲</div><h2>SAD TIRES</h2><p class="small">Ride your bike through an endless course of obstacles. How far can you get?</p><button type="button" id="playSadTires">▶ PLAY SAD TIRES</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🦆</div><h2>FLYING DUCK</h2><p class="small">Flap through the pipes and see how high your score can get. An endless challenge!</p><button type="button" id="playFlyingDuck">▶ PLAY FLYING DUCK</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">♟️</div><h2>CHOOS!</h2><p class="small">Play a full game of chess against one of four bots, from beginner to expert.</p><button type="button" id="playChoos">▶ PLAY CHOOS!</button></div></div></section>';
 }
 function renderSadTires(){
  return '<style>'+
@@ -2072,27 +2055,25 @@ render=function(){
   catch(err){console.error("Da Boiz team screen render error ("+activeTeamTab+"):",err);teamContent='<section class="panel"><h2>Screen loading error</h2><p>This screen hit an error. Try another tab, then return to Gallery.</p></section>';}
   app.innerHTML='<div class="subnav"><button data-team-tab="team" class="'+(activeTeamTab==="team"?"active":"")+'">⚽ Squad</button><button data-team-tab="objectives" class="'+(activeTeamTab==="objectives"?"active":"")+'">🏆 Team Objectives</button><button data-team-tab="album" class="'+(activeTeamTab==="album"?"active":"")+'">📚 Gallery</button></div>'+teamContent;
  }else if(activeTab==="minigames"){
-  app.innerHTML=penaltyOpen?renderPenaltyShootout():(choosOpen?renderChoos():(flyingDuckOpen?renderFlyingDuck():(sadTiresOpen?renderSadTires():renderMinigameSelect())));
+  app.innerHTML=choosOpen?renderChoos():(flyingDuckOpen?renderFlyingDuck():(sadTiresOpen?renderSadTires():renderMinigameSelect()));
  }else{
   previousRender();
  }
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
  bindButtons();
  if(activeTab==="minigames"){
-  if(sadTiresOpen||flyingDuckOpen||choosOpen||penaltyOpen){
+  if(sadTiresOpen||flyingDuckOpen||choosOpen){
    app.insertAdjacentHTML("afterbegin",'<div style="display:flex;justify-content:center;margin:0 auto 12px"><button type="button" id="minigameExit" class="secondary">← ALL MINIGAMES</button></div>');
    const exit=document.getElementById("minigameExit");
-   if(exit)exit.onclick=()=>{if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);window.__choosBotTimer=null;if(window.__flyingDuckCleanup)window.__flyingDuckCleanup();if(window.__flyingDuckRAF)cancelAnimationFrame(window.__flyingDuckRAF);window.__flyingDuckRAF=null;if(window.__sadTiresRAF)cancelAnimationFrame(window.__sadTiresRAF);window.__sadTiresRAF=null;if(window.__sadTiresKeyDown)document.removeEventListener("keydown",window.__sadTiresKeyDown);if(window.__sadTiresKeyUp)document.removeEventListener("keyup",window.__sadTiresKeyUp);window.__sadTiresKeyDown=null;window.__sadTiresKeyUp=null;choosOpen=false;choosSelectedLevel=null;flyingDuckOpen=false;sadTiresOpen=false;penaltyOpen=false;penaltyCountry=null;penaltyMatch=null;render()};
+   if(exit)exit.onclick=()=>{if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);window.__choosBotTimer=null;if(window.__flyingDuckCleanup)window.__flyingDuckCleanup();if(window.__flyingDuckRAF)cancelAnimationFrame(window.__flyingDuckRAF);window.__flyingDuckRAF=null;if(window.__sadTiresRAF)cancelAnimationFrame(window.__sadTiresRAF);window.__sadTiresRAF=null;if(window.__sadTiresKeyDown)document.removeEventListener("keydown",window.__sadTiresKeyDown);if(window.__sadTiresKeyUp)document.removeEventListener("keyup",window.__sadTiresKeyUp);window.__sadTiresKeyDown=null;window.__sadTiresKeyUp=null;choosOpen=false;choosSelectedLevel=null;flyingDuckOpen=false;sadTiresOpen=false;render()};
   }
   const play=document.getElementById("playSadTires");
   if(play)play.onclick=()=>{sadTiresOpen=true;flyingDuckOpen=false;choosOpen=false;render()};
   const duck=document.getElementById("playFlyingDuck");
   if(duck)duck.onclick=()=>{flyingDuckOpen=true;sadTiresOpen=false;choosOpen=false;render()};
-  const penalty=document.getElementById("playPenalty");
-  if(penalty)penalty.onclick=()=>{penaltyOpen=true;penaltyCountry=null;penaltyMatch=null;sadTiresOpen=false;flyingDuckOpen=false;choosOpen=false;render()};
   const chess=document.getElementById("playChoos");
   if(chess)chess.onclick=()=>{choosOpen=true;sadTiresOpen=false;flyingDuckOpen=false;render()};
-  if(penaltyOpen)initPenaltyShootout();else if(choosOpen){if(choosSelectedLevel===null){document.querySelectorAll("[data-ch-pick]").forEach(b=>b.onclick=()=>{choosSelectedLevel=Number(b.dataset.chPick);render()});const back=document.getElementById("chBackSelect");if(back)back.onclick=()=>{choosOpen=false;choosSelectedLevel=null;render()}}else initChoos()}else if(flyingDuckOpen)initFlyingDuck();else if(sadTiresOpen)initSadTires();
+  if(choosOpen){if(choosSelectedLevel===null){document.querySelectorAll("[data-ch-pick]").forEach(b=>b.onclick=()=>{choosSelectedLevel=Number(b.dataset.chPick);render()});const back=document.getElementById("chBackSelect");if(back)back.onclick=()=>{choosOpen=false;choosSelectedLevel=null;render()}}else initChoos()}else if(flyingDuckOpen)initFlyingDuck();else if(sadTiresOpen)initSadTires();
  }
  updateMatchHUD();
 };
