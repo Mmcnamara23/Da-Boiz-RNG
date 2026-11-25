@@ -1677,21 +1677,39 @@ function initSadTires(){
   if(name==="leanBack")keys.back=on;
   if(name==="leanFront")keys.front=on;
  }
+ let lastTouchAction=0;
  document.querySelectorAll("#sadTires [data-st-action]").forEach(b=>{
   const a=b.dataset.stAction;
-  // Use click as the reliable fallback for taps, mouse clicks and keyboard activation.
-  b.onclick=e=>{
-   e.preventDefault();
+  function activate(){
    if(a==="restart"){restart();return}
    if(a==="jump"){jump();return}
    lean=a==="leanBack"?-0.85:0.85;
    keys.back=false;keys.front=false;
+  }
+  // Explicit touch events support mobile browsers where synthesized clicks or
+  // pointer events can be swallowed by the game canvas / page gesture handling.
+  b.addEventListener("touchstart",e=>{
+   e.preventDefault();lastTouchAction=Date.now();
+   if(a==="restart")restart();
+   else if(a==="jump")jump();
+   else setAction(a,true);
+  },{passive:false});
+  b.addEventListener("touchend",e=>{
+   e.preventDefault();
+   if(a==="leanBack"||a==="leanFront")setAction(a,false);
+  },{passive:false});
+  b.addEventListener("touchcancel",()=>{
+   if(a==="leanBack"||a==="leanFront")setAction(a,false);
+  });
+  // Keep mouse, keyboard activation and desktop click support.
+  b.onclick=e=>{
+   e.preventDefault();
+   if(Date.now()-lastTouchAction<800)return;
+   activate();
   };
-  // Holding a lean control continuously adjusts the rider; pointer handlers
-  // supplement (rather than replace) the click action for touch and mouse.
-  if(a!=="restart"&&a!=="jump"){
-   b.onpointerdown=e=>{e.preventDefault();setAction(a,true)};
-   b.onpointerup=b.onpointercancel=b.onpointerleave=()=>setAction(a,false);
+  if(a==="leanBack"||a==="leanFront"){
+   b.onpointerdown=e=>{if(e.pointerType!=="touch"){e.preventDefault();setAction(a,true)}};
+   b.onpointerup=b.onpointercancel=b.onpointerleave=()=>{keys.back=false;keys.front=false};
   }
  });
  function keyDown(e){
