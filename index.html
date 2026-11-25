@@ -831,6 +831,14 @@ const opponentTeams=[
 {name:"BRONZE XI",emoji:"🥉",scorers:["Yaya Sithole","Diogo Dalot","Darwin Núñez"]}
 ];
 
+// One-time global browser-progress reset. Runs once for each browser on its next visit.
+const GLOBAL_RESET_KEY="daBoizRNG_global_reset_v1";
+try{
+ if(localStorage.getItem(GLOBAL_RESET_KEY)!=="1"){
+  ["daBoizRNG_refresh_v1","daBoizRNG_redeemed_codes_v1","daBoiz_flyingduck_best_v1","daBoiz_sadtires_best_v1"].forEach(k=>localStorage.removeItem(k));
+  localStorage.setItem(GLOBAL_RESET_KEY,"1");
+ }
+}catch(e){console.error("Global progress reset could not be completed:",e)}
 const SAVE_KEY="daBoizRNG_refresh_v1";
 let game;
 try{game=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){game=null}
