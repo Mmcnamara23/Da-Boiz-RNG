@@ -1715,7 +1715,8 @@ function renderChoos(){
  '#choos .ch-head h2{font-size:clamp(27px,5vw,38px);margin:0 0 5px;color:#f4d35e;letter-spacing:2px}'+
  '#choos .ch-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0}'+
  '#choos .ch-controls button{padding:9px 13px}'+
- '#choos .ch-layout{display:grid;grid-template-columns:minmax(0,700px) minmax(190px,1fr);gap:16px;align-items:start}'+
+ '#choos .ch-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}'+
+ '#choos .ch-layout>div:first-child{min-width:0;width:100%;max-width:700px;margin:0 auto}'+
  '#choos .ch-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1;border:5px solid #40372d;border-radius:8px;overflow:hidden;box-shadow:0 12px 30px #0006}'+
  '#choos .ch-square{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;aspect-ratio:1;border:0;border-radius:0;padding:0;box-shadow:none;transform:none!important;color:#171717}'+
  '#choos .ch-square.light{background:#f0d9b5}#choos .ch-square.dark{background:#b58863}'+
@@ -1991,10 +1992,10 @@ function initSadTires(){
    }}
    const riderX=world+W*.22+90,ob=obstacleAt(riderX);
    // Check the visible bicycle wheel positions against the actual drawn gap.
-   const overGap=gapAt(riderX-29)||gapAt(riderX)||gapAt(riderX+35);
+   const wholeBodyOverGap=gapAt(riderX-49)&&gapAt(riderX-24)&&gapAt(riderX)&&gapAt(riderX+28)&&gapAt(riderX+55);
    // Hills are scenery only. A wipeout can only come from a clearly drawn obstacle or gap.
    if(!crashed&&ob&&airY<30&&Math.abs(ob.x-riderX)<34)startCrash("obstacle");
-   if(!crashed&&overGap&&airY<12)startCrash("gap");
+   if(!crashed&&wholeBodyOverGap&&airY<12)startCrash("gap");
    const d=Math.floor(world/10);if(distanceEl)distanceEl.textContent=d+" m";
    if(d>best){best=d;if(bestEl)bestEl.textContent=best+" m";try{localStorage.setItem("daBoiz_sadtires_best_v1",String(best))}catch(e){}}
   }else if(crashed&&crashTimer<=1.05){
@@ -2059,6 +2060,11 @@ render=function(){
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
  bindButtons();
  if(activeTab==="minigames"){
+  if(sadTiresOpen||flyingDuckOpen||choosOpen){
+   app.insertAdjacentHTML("afterbegin",'<div style="display:flex;justify-content:center;margin:0 auto 12px"><button type="button" id="minigameExit" class="secondary">← ALL MINIGAMES</button></div>');
+   const exit=document.getElementById("minigameExit");
+   if(exit)exit.onclick=()=>{if(window.__choosBotTimer)clearTimeout(window.__choosBotTimer);if(window.__flyingDuckCleanup)window.__flyingDuckCleanup();if(window.__flyingDuckRAF)cancelAnimationFrame(window.__flyingDuckRAF);if(window.__sadTiresRAF)cancelAnimationFrame(window.__sadTiresRAF);choosOpen=false;choosSelectedLevel=null;flyingDuckOpen=false;sadTiresOpen=false;render()};
+  }
   const play=document.getElementById("playSadTires");
   if(play)play.onclick=()=>{sadTiresOpen=true;flyingDuckOpen=false;choosOpen=false;render()};
   const duck=document.getElementById("playFlyingDuck");
