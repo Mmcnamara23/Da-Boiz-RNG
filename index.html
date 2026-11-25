@@ -1612,6 +1612,10 @@ function redeemCode(){
  toast("Code redeemed! You received "+reward.label+".");
 }
 
+let sadTiresOpen=false;
+function renderMinigameSelect(){
+ return '<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="panel" style="text-align:center;max-width:520px;margin:0 auto"><div style="font-size:54px;margin:8px">🚲</div><h2>SAD TIRES</h2><p class="small">Ride your bike through an endless course of obstacles. How far can you get?</p><button type="button" id="playSadTires">▶ PLAY SAD TIRES</button></div></div></section>';
+}
 function renderSadTires(){
  return '<style>'+
  '#sadTires{max-width:1000px;margin:0 auto}'+
@@ -1653,13 +1657,13 @@ function initSadTires(){
   return groundY+wave;
  }
  function gapAt(x){
-  const n=Math.floor(x/900),local=x-n*900;
-  return local>570&&local<690;
+  const n=Math.floor(x/1300),local=x-n*1300;
+  return local>820&&local<930;
  }
  function obstacleAt(x){
-  const n=Math.floor(x/900),local=x-n*900;
-  if(local>330&&local<380)return {x:n*900+355,type:"cone"};
-  if(local>755&&local<815)return {x:n*900+785,type:"crate"};
+  const n=Math.floor(x/1300),local=x-n*1300;
+  if(local>600&&local<640)return {x:n*1300+620,type:"cone"};
+  if(local>1060&&local<1100)return {x:n*1300+1080,type:"crate"};
   return null;
  }
  function restart(){
@@ -1708,8 +1712,8 @@ function initSadTires(){
    if(!gapAt(wx)){ctx.fillStyle="#4b9b55";ctx.fillRect(sx,gy,6,H-gy);ctx.fillStyle="#7b5837";ctx.fillRect(sx,gy+13,6,H-gy-13)}
   }
   // Obstacles are spaced along the endless course.
-  for(let wx=Math.floor((world-200)/900)*900;wx<world+W;wx+=900){
-   const ob1=obstacleAt(wx+355),ob2=obstacleAt(wx+785);
+  for(let wx=Math.floor((world-200)/1300)*1300;wx<world+W;wx+=1300){
+   const ob1=obstacleAt(wx+620),ob2=obstacleAt(wx+1080);
    [ob1,ob2].forEach(o=>{if(!o)return;const x=o.x-world-W*.22,y=terrain(o.x);if(o.type==="cone"){ctx.fillStyle="#ff8b32";ctx.beginPath();ctx.moveTo(x,y-34);ctx.lineTo(x-17,y);ctx.lineTo(x+17,y);ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x-10,y-12,20,5)}else{ctx.fillStyle="#9a6238";ctx.fillRect(x-19,y-32,38,32);ctx.strokeStyle="#e4bd8b";ctx.lineWidth=4;ctx.strokeRect(x-19,y-32,38,32);ctx.beginPath();ctx.moveTo(x-17,y-28);ctx.lineTo(x+17,y-4);ctx.stroke()}})
   }
   // Rider and bicycle
@@ -1738,7 +1742,7 @@ function initSadTires(){
    const riderX=world+W*.22+90,ob=obstacleAt(riderX+22);
    const overGap=gapAt(riderX);
    if(ob&&!airY&&Math.abs(ob.x-riderX)<27){crashed=true;running=false;if(statusEl)statusEl.textContent="WIPEOUT — RESTART"}
-   if(overGap&&airY<8&&Math.abs((riderX%900)-630)<30){crashed=true;running=false;if(statusEl)statusEl.textContent="WIPEOUT — RESTART"}
+   if(overGap&&airY<8&&(riderX%1300)>820&&(riderX%1300)<900){crashed=true;running=false;if(statusEl)statusEl.textContent="WIPEOUT — RESTART"}
    const d=Math.floor(world/10);if(distanceEl)distanceEl.textContent=d+" m";
    if(d>best){best=d;if(bestEl)bestEl.textContent=best+" m";try{localStorage.setItem("daBoiz_sadtires_best_v1",String(best))}catch(e){}}
   }
@@ -1792,13 +1796,17 @@ render=function(){
   catch(err){console.error("Da Boiz team screen render error ("+activeTeamTab+"):",err);teamContent='<section class="panel"><h2>Screen loading error</h2><p>This screen hit an error. Try another tab, then return to Gallery.</p></section>';}
   app.innerHTML='<div class="subnav"><button data-team-tab="team" class="'+(activeTeamTab==="team"?"active":"")+'">⚽ Squad</button><button data-team-tab="objectives" class="'+(activeTeamTab==="objectives"?"active":"")+'">🏆 Team Objectives</button><button data-team-tab="album" class="'+(activeTeamTab==="album"?"active":"")+'">📚 Gallery</button></div>'+teamContent;
  }else if(activeTab==="minigames"){
-  app.innerHTML=renderSadTires();
+  app.innerHTML=sadTiresOpen?renderSadTires():renderMinigameSelect();
  }else{
   previousRender();
  }
  document.querySelectorAll("nav button[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));
  bindButtons();
- if(activeTab==="minigames")initSadTires();
+ if(activeTab==="minigames"){
+  const play=document.getElementById("playSadTires");
+  if(play)play.onclick=()=>{sadTiresOpen=true;render()};
+  if(sadTiresOpen)initSadTires();
+ }
  updateMatchHUD();
 };
 bindButtons=function(){
