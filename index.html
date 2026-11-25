@@ -1612,9 +1612,9 @@ function redeemCode(){
  toast("Code redeemed! You received "+reward.label+".");
 }
 
-let sadTiresOpen=false;
+let sadTiresOpen=false,flyingDuckOpen=false;
 function renderMinigameSelect(){
- return '<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="panel" style="text-align:center;max-width:520px;margin:0 auto"><div style="font-size:54px;margin:8px">🚲</div><h2>SAD TIRES</h2><p class="small">Ride your bike through an endless course of obstacles. How far can you get?</p><button type="button" id="playSadTires">▶ PLAY SAD TIRES</button></div></div></section>';
+ return '<section><div class="sectionhero"><h2>🎮 MINIGAMES</h2><p>Choose a game to play.</p></div><div class="grid"><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🚲</div><h2>SAD TIRES</h2><p class="small">Ride your bike through an endless course of obstacles. How far can you get?</p><button type="button" id="playSadTires">▶ PLAY SAD TIRES</button></div><div class="panel" style="text-align:center;max-width:460px;margin:0 auto"><div style="font-size:54px;margin:8px">🦆</div><h2>FLYING DUCK</h2><p class="small">Flap through the pipes and see how high your score can get. An endless challenge!</p><button type="button" id="playFlyingDuck">▶ PLAY FLYING DUCK</button></div></div></section>';
 }
 function renderSadTires(){
  return '<style>'+
@@ -1637,6 +1637,58 @@ function renderSadTires(){
  '<div class="st-controls"><button type="button" data-st-action="jump">⬆ JUMP</button><button type="button" data-st-action="leanBack">↶ LEAN BACK</button><button type="button" data-st-action="leanFront">LEAN FORWARD ↷</button><button type="button" data-st-action="restart">↻ RESTART</button></div>'+
  '<p class="st-help">Keyboard: SPACE / ↑ to jump · A / D or ← / → to lean · R to restart. On mobile, use the buttons.</p>'+
  '<p class="small code-clue" style="text-align:center">Now check the token shop.</p></section>';
+}
+function renderFlyingDuck(){
+ return '<style>'+
+ '#flyingDuck{max-width:1000px;margin:0 auto}'+
+ '#flyingDuck .fd-head{text-align:center;margin:8px 0 14px}'+
+ '#flyingDuck .fd-head h2{font-size:clamp(25px,5vw,38px);margin:0 0 6px;color:#f4d35e;letter-spacing:2px}'+
+ '#flyingDuck .fd-head p{color:var(--muted,#aaa);margin:0}'+
+ '#flyingDuck .fd-hud{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:12px 0}'+
+ '#flyingDuck .fd-stat{background:#171b22;border:1px solid #343b47;border-radius:10px;padding:8px 14px;font-weight:800}'+
+ '#flyingDuck .fd-stat span{color:#f4d35e}'+
+ '#flyingDuck .fd-frame{border:2px solid #49515d;border-radius:14px;overflow:hidden;background:#83d8ee;box-shadow:0 12px 35px #0006}'+
+ '#flyingDuck canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;touch-action:manipulation}'+
+ '#flyingDuck .fd-controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:13px 0}'+
+ '#flyingDuck .fd-controls button{min-width:125px;padding:12px 17px;font-weight:900}'+
+ '#flyingDuck .fd-help{text-align:center;color:var(--muted,#aaa);font-size:13px;margin:8px 0 16px}'+
+ '</style><section id="flyingDuck"><div class="fd-head"><h2>🦆 FLYING DUCK</h2><p>Flap through the pipes. How many can you pass?</p></div>'+
+ '<div class="fd-hud"><div class="fd-stat">SCORE: <span id="fdScore">0</span></div><div class="fd-stat">BEST: <span id="fdBest">0</span></div><div class="fd-stat" id="fdStatus">READY TO FLY</div></div>'+
+ '<div class="fd-frame"><canvas id="fdCanvas" width="960" height="540" aria-label="Flying Duck endless flying game"></canvas></div>'+
+ '<div class="fd-controls"><button type="button" id="fdFlap">🪽 FLAP</button><button type="button" id="fdRestart">↻ RESTART</button><button type="button" id="fdBack" class="secondary">← ALL GAMES</button></div>'+
+ '<p class="fd-help">Tap the game or press SPACE / ↑ to flap. Avoid the pipes and the ground. On mobile, tap FLAP.</p></section>';
+}
+function initFlyingDuck(){
+ const canvas=document.getElementById("fdCanvas");if(!canvas)return;
+ if(window.__flyingDuckRAF)cancelAnimationFrame(window.__flyingDuckRAF);
+ if(window.__sadTiresRAF){cancelAnimationFrame(window.__sadTiresRAF);window.__sadTiresRAF=null}
+ const ctx=canvas.getContext("2d");if(!ctx)return;
+ const W=960,H=540,ground=492,duckX=245,gravity=1450,flapPower=-470;
+ let y=250,vy=0,score=0,best=0,started=false,dead=false,last=0,elapsed=0,pipes=[],spawn=0;
+ try{best=Number(localStorage.getItem("daBoiz_flyingduck_best_v1"))||0}catch(e){}
+ const scoreEl=document.getElementById("fdScore"),bestEl=document.getElementById("fdBest"),statusEl=document.getElementById("fdStatus");
+ if(bestEl)bestEl.textContent=best;
+ function reset(){y=250;vy=0;score=0;started=false;dead=false;last=0;elapsed=0;spawn=0;pipes=[{x:W+100,gapY:250,passed:false}];if(scoreEl)scoreEl.textContent="0";if(statusEl)statusEl.textContent="READY TO FLY";draw()}
+ function flap(){if(dead){reset();started=true;vy=flapPower;if(statusEl)statusEl.textContent="FLYING!";return}if(!started){started=true;if(statusEl)statusEl.textContent="FLYING!"}vy=flapPower}
+ function addPipe(){const gap=174,margin=95;const gapY=margin+Math.random()*(ground-margin-gap);pipes.push({x:W+35,gapY,passed:false})}
+ function draw(){
+  const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#69c9ed");sky.addColorStop(1,"#d5f5e9");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#ffffff55";for(let i=0;i<5;i++){const cx=((i*230-elapsed*18)%(W+180)+W+180)%(W+180)-80,cy=75+(i%3)*55;ctx.beginPath();ctx.arc(cx,cy,25,0,Math.PI*2);ctx.arc(cx+25,cy-8,30,0,Math.PI*2);ctx.arc(cx+55,cy,22,0,Math.PI*2);ctx.fill()}
+  ctx.fillStyle="#8acb72";ctx.beginPath();ctx.moveTo(0,ground);for(let x=0;x<=W;x+=20)ctx.lineTo(x,ground-22-Math.sin((x+elapsed*22)/95)*9);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+  pipes.forEach(p=>{const top=p.gapY-87,bottom=p.gapY+87;ctx.fillStyle="#278b48";ctx.strokeStyle="#145b36";ctx.lineWidth=7;ctx.fillRect(p.x,0,78,top);ctx.strokeRect(p.x,0,78,top);ctx.fillRect(p.x,bottom,78,ground-bottom);ctx.strokeRect(p.x,bottom,78,ground-bottom);ctx.fillStyle="#48b866";ctx.fillRect(p.x-8,top-22,94,22);ctx.fillRect(p.x-8,bottom,94,22);ctx.strokeRect(p.x-8,top-22,94,22);ctx.strokeRect(p.x-8,bottom,94,22)});
+  ctx.fillStyle="#d6a65b";ctx.fillRect(0,ground,W,H-ground);ctx.fillStyle="#f4d35e";for(let x=0;x<W;x+=42)ctx.fillRect(x,ground+13,24,7);
+  ctx.save();ctx.translate(duckX,y);ctx.rotate(Math.max(-.45,Math.min(.8,vy/750)));ctx.fillStyle="#ffd447";ctx.strokeStyle="#9a6b20";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,32,24,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(14,-12,10,0,Math.PI*2);ctx.fill();ctx.fillStyle="#222";ctx.beginPath();ctx.arc(18,-12,4,0,Math.PI*2);ctx.fill();ctx.fillStyle="#f28b32";ctx.beginPath();ctx.moveTo(28,0);ctx.lineTo(49,7);ctx.lineTo(28,12);ctx.closePath();ctx.fill();ctx.fillStyle="#f4b72e";ctx.beginPath();ctx.ellipse(-18,5,14,8,-.5+Math.sin(elapsed*14)*.18,0,Math.PI*2);ctx.fill();ctx.restore();
+  if(!started&&!dead){ctx.fillStyle="#17354a";ctx.textAlign="center";ctx.font="bold 34px system-ui";ctx.fillText("TAP OR PRESS SPACE TO FLY",W/2,145)}
+  if(dead){ctx.fillStyle="#10283dcc";ctx.fillRect(0,0,W,H);ctx.textAlign="center";ctx.fillStyle="#fff";ctx.font="900 54px system-ui";ctx.fillText("WIPEOUT!",W/2,220);ctx.font="bold 27px system-ui";ctx.fillText("Score: "+score+"  •  Tap to try again",W/2,270)}
+ }
+ function frame(t){if(!document.getElementById("fdCanvas"))return;const dt=Math.min(.032,(t-(last||t))/1000);last=t;if(started&&!dead){elapsed+=dt;vy+=gravity*dt;y+=vy*dt;spawn+=dt;if(spawn>2.05){spawn=0;addPipe()}pipes.forEach(p=>{p.x-=245*dt;if(!p.passed&&p.x+78<duckX){p.passed=true;score++;if(scoreEl)scoreEl.textContent=score;if(score>best){best=score;if(bestEl)bestEl.textContent=best;try{localStorage.setItem("daBoiz_flyingduck_best_v1",String(best))}catch(e){}}}});pipes=pipes.filter(p=>p.x>-110);if(y-19<0||y+19>ground||pipes.some(p=>duckX+24>p.x&&duckX-24<p.x+78&&(y-18<p.gapY-87||y+18>p.gapY+87))){dead=true;if(statusEl)statusEl.textContent="GAME OVER"}}
+ draw();window.__flyingDuckRAF=requestAnimationFrame(frame)}
+ function key(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();flap()}}
+ function cleanup(){window.removeEventListener("keydown",key)}
+ window.__flyingDuckCleanup=cleanup;window.addEventListener("keydown",key);
+ canvas.addEventListener("pointerdown",flap);document.getElementById("fdFlap").onclick=flap;
+ document.getElementById("fdRestart").onclick=reset;document.getElementById("fdBack").onclick=()=>{cleanup();if(window.__flyingDuckRAF)cancelAnimationFrame(window.__flyingDuckRAF);window.__flyingDuckRAF=null;flyingDuckOpen=false;render()};
+ reset();window.__flyingDuckRAF=requestAnimationFrame(frame);
 }
 let sadTiresState=null;
 function initSadTires(){
@@ -1860,7 +1912,7 @@ render=function(){
   catch(err){console.error("Da Boiz team screen render error ("+activeTeamTab+"):",err);teamContent='<section class="panel"><h2>Screen loading error</h2><p>This screen hit an error. Try another tab, then return to Gallery.</p></section>';}
   app.innerHTML='<div class="subnav"><button data-team-tab="team" class="'+(activeTeamTab==="team"?"active":"")+'">⚽ Squad</button><button data-team-tab="objectives" class="'+(activeTeamTab==="objectives"?"active":"")+'">🏆 Team Objectives</button><button data-team-tab="album" class="'+(activeTeamTab==="album"?"active":"")+'">📚 Gallery</button></div>'+teamContent;
  }else if(activeTab==="minigames"){
-  app.innerHTML=sadTiresOpen?renderSadTires():renderMinigameSelect();
+  app.innerHTML=flyingDuckOpen?renderFlyingDuck():(sadTiresOpen?renderSadTires():renderMinigameSelect());
  }else{
   previousRender();
  }
@@ -1868,8 +1920,10 @@ render=function(){
  bindButtons();
  if(activeTab==="minigames"){
   const play=document.getElementById("playSadTires");
-  if(play)play.onclick=()=>{sadTiresOpen=true;render()};
-  if(sadTiresOpen)initSadTires();
+  if(play)play.onclick=()=>{sadTiresOpen=true;flyingDuckOpen=false;render()};
+  const duck=document.getElementById("playFlyingDuck");
+  if(duck)duck.onclick=()=>{flyingDuckOpen=true;sadTiresOpen=false;render()};
+  if(flyingDuckOpen)initFlyingDuck();else if(sadTiresOpen)initSadTires();
  }
  updateMatchHUD();
 };
