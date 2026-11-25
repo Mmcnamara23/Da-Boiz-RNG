@@ -1671,7 +1671,7 @@ function initSadTires(){
   if(statusEl)statusEl.textContent="RIDE ON!";
   if(distanceEl)distanceEl.textContent="0 m";
  }
- function jump(){if(!crashed){vy=-620;airY=Math.max(airY,2)}}
+ function jump(){if(!crashed&&airY===0&&vy===0){vy=-900}}
  function setAction(name,on){
   if(name==="jump"&&on)jump();
   if(name==="leanBack")keys.back=on;
@@ -1760,7 +1760,7 @@ function initSadTires(){
   if(running&&!crashed){
    elapsed+=dt;world+=speed*dt;
    if(keys.back)lean=Math.max(-1,lean-dt*8);else if(keys.front)lean=Math.min(1,lean+dt*8);else lean*=Math.max(0,1-dt*3);
-   if(airY>0||vy<0){airY+=vy*dt;vy+=1050*dt;if(airY<=0){airY=0;vy=0}}
+   if(airY>0||vy<0){airY-=vy*dt;vy+=2200*dt;if(airY<=0&&vy>0){airY=0;vy=0}}
    const riderX=world+W*.22+90,ob=obstacleAt(riderX+22);
    const overGap=gapAt(riderX);
    if(ob&&!airY&&Math.abs(ob.x-riderX)<27){crashed=true;running=false;if(statusEl)statusEl.textContent="WIPEOUT — RESTART"}
