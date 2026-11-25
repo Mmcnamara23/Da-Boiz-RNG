@@ -1698,7 +1698,7 @@ function renderChoos(){
  '#choos .ch-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0}'+
  '#choos .ch-controls button{padding:9px 13px}'+
  '#choos .ch-controls button.chosen{outline:2px solid #f4d35e;outline-offset:2px}'+
- '#choos .ch-layout{display:grid;grid-template-columns:minmax(0, min( min(100%, 560px), 1fr)) minmax(190px,1fr);gap:16px;align-items:start}'+
+ '#choos .ch-layout{display:grid;grid-template-columns:minmax(0,560px) minmax(190px,1fr);gap:16px;align-items:start}'+
  '#choos .ch-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1;border:5px solid #40372d;border-radius:8px;overflow:hidden;box-shadow:0 12px 30px #0006}'+
  '#choos .ch-square{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;aspect-ratio:1;border:0;border-radius:0;padding:0;box-shadow:none;transform:none!important;color:#171717}'+
  '#choos .ch-square.light{background:#f0d9b5}#choos .ch-square.dark{background:#b58863}'+
@@ -1794,10 +1794,10 @@ function initChoos(){
   const moves=ordered(game);if(!moves.length)return null;
   if(level===1)return moves[Math.floor(Math.random()*moves.length)];
   if(level===2){
-   let best=-Infinity,pool=[];for(const m of moves){const child=new Chess(game.fen());child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});const val=evaluate(child)+(m.captured?values[m.captured]*.7:0)+(m.promotion?650:0);if(val>best){best=val;pool=[m]}else if(val===best)pool.push(m)}return pool[Math.floor(Math.random()*pool.length)];
+   let best=Infinity,pool=[];for(const m of moves){const child=new Chess(game.fen());child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});const val=evaluate(child)-(m.captured?values[m.captured]*.25:0);if(val<best){best=val;pool=[m]}else if(val===best)pool.push(m)}return pool[Math.floor(Math.random()*pool.length)];
   }
-  const depth=level===3?2:3;let best=-Infinity,pool=[];
-  for(const m of moves){const child=new Chess(game.fen());child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});const val=search(child,depth-1,-Infinity,Infinity);if(val>best){best=val;pool=[m]}else if(val===best)pool.push(m)}
+  const depth=level===3?2:3;let best=Infinity,pool=[];
+  for(const m of moves){const child=new Chess(game.fen());child.move({from:m.from,to:m.to,promotion:m.promotion||"q"});const val=search(child,depth-1,-Infinity,Infinity);if(val<best){best=val;pool=[m]}else if(val===best)pool.push(m)}
   return pool[Math.floor(Math.random()*pool.length)];
  }
  function scheduleBot(){
