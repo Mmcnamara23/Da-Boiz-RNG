@@ -1647,7 +1647,7 @@ function initSadTires(){
  if(!ctx)return;
  const W=960,H=540;
  let best=0;try{best=Number(localStorage.getItem("daBoiz_sadtires_best_v1"))||0}catch(e){}
- let running=true,last=0,world=0,airY=0,vy=0,lean=0,crashed=false,elapsed=0;
+ let running=true,last=0,world=0,airY=0,vy=0,lean=0,airRotation=0,crashed=false,crashType="",crashTimer=0,crashDrop=0,crashAngle=0,elapsed=0;
  const speed=235,groundY=405;
  const keys={jump:false,back:false,front:false};
  const distanceEl=document.getElementById("stDistance"),bestEl=document.getElementById("stBest"),statusEl=document.getElementById("stStatus");
@@ -1667,11 +1667,12 @@ function initSadTires(){
   return null;
  }
  function restart(){
-  world=0;airY=0;vy=0;lean=0;crashed=false;elapsed=0;running=true;last=0;
+  world=0;airY=0;vy=0;lean=0;airRotation=0;crashed=false;crashType="";crashTimer=0;crashDrop=0;crashAngle=0;elapsed=0;running=true;last=0;
   if(statusEl)statusEl.textContent="RIDE ON!";
   if(distanceEl)distanceEl.textContent="0 m";
  }
- function jump(){if(!crashed&&airY===0&&vy===0){vy=-900}}
+ function jump(){if(!crashed&&airY===0&&vy===0){vy=-900;airRotation=0}}
+ function startCrash(type){if(crashed)return;crashed=true;running=false;crashType=type;crashTimer=0;crashDrop=0;crashAngle=0;if(statusEl)statusEl.textContent="WIPEOUT — RESTART"}
  function setAction(name,on){
   if(name==="jump"&&on)jump();
   if(name==="leanBack")keys.back=on;
@@ -1739,8 +1740,8 @@ function initSadTires(){
    [ob1,ob2].forEach(o=>{if(!o)return;const x=o.x-world-W*.22,y=terrain(o.x);if(o.type==="cone"){ctx.fillStyle="#ff8b32";ctx.beginPath();ctx.moveTo(x,y-34);ctx.lineTo(x-17,y);ctx.lineTo(x+17,y);ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x-10,y-12,20,5)}else{ctx.fillStyle="#9a6238";ctx.fillRect(x-19,y-32,38,32);ctx.strokeStyle="#e4bd8b";ctx.lineWidth=4;ctx.strokeRect(x-19,y-32,38,32);ctx.beginPath();ctx.moveTo(x-17,y-28);ctx.lineTo(x+17,y-4);ctx.stroke()}})
   }
   // Rider and bicycle
-  const bx=W*.22+90,by=terrain(world+W*.22+90)-42-airY;
-  ctx.save();ctx.translate(bx,by);ctx.rotate(lean*.38);
+  const bx=W*.22+90,by=terrain(world+W*.22+90)-42-airY+crashDrop;
+  ctx.save();ctx.translate(bx,by);ctx.rotate(lean*.38+airRotation+crashAngle);
   ctx.strokeStyle="#202733";ctx.lineWidth=5;ctx.lineCap="round";
   ctx.beginPath();ctx.arc(-29,25,20,0,Math.PI*2);ctx.arc(35,25,20,0,Math.PI*2);ctx.stroke();
   ctx.strokeStyle="#e94f37";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(-29,25);ctx.lineTo(-5,-1);ctx.lineTo(12,25);ctx.lineTo(-29,25);ctx.moveTo(-5,-1);ctx.lineTo(35,25);ctx.moveTo(12,25);ctx.lineTo(35,25);ctx.stroke();
@@ -1751,7 +1752,7 @@ function initSadTires(){
   ctx.fillStyle="#f4d35e";ctx.beginPath();ctx.arc(1,-49,13,Math.PI,Math.PI*2);ctx.fill();
   ctx.strokeStyle="#263445";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(17,-15);ctx.lineTo(35,-3);ctx.stroke();
   ctx.restore();
-  if(crashed){ctx.fillStyle="#101820cc";ctx.fillRect(0,0,W,H);ctx.textAlign="center";ctx.fillStyle="#fff";ctx.font="900 48px system-ui";ctx.fillText("WIPEOUT!",W/2,H/2-15);ctx.font="bold 21px system-ui";ctx.fillText("You rode "+Math.floor(world/10)+" metres",W/2,H/2+25);ctx.fillText("Press R or RESTART to try again",W/2,H/2+62)}
+  if(crashed&&crashTimer>1.05){ctx.fillStyle="#101820cc";ctx.fillRect(0,0,W,H);ctx.textAlign="center";ctx.fillStyle="#fff";ctx.font="900 48px system-ui";ctx.fillText("WIPEOUT!",W/2,H/2-15);ctx.font="bold 21px system-ui";ctx.fillText("You rode "+Math.floor(world/10)+" metres",W/2,H/2+25);ctx.fillText("Press R or RESTART to try again",W/2,H/2+62)}
   else if(world<5){ctx.fillStyle="#18212b";ctx.font="bold 20px system-ui";ctx.fillText("GET READY!",W-145,45)}
  }
  function frame(t){
@@ -1759,14 +1760,23 @@ function initSadTires(){
   const dt=Math.min(.035,(t-last)/1000||0);last=t;
   if(running&&!crashed){
    elapsed+=dt;world+=speed*dt;
+   const airborne=airY>0||vy<0;
    if(keys.back)lean=Math.max(-1,lean-dt*8);else if(keys.front)lean=Math.min(1,lean+dt*8);else lean*=Math.max(0,1-dt*3);
-   if(airY>0||vy<0){airY-=vy*dt;vy+=2200*dt;if(airY<=0&&vy>0){airY=0;vy=0}}
+   if(airborne){const spinDirection=(keys.front?1:0)-(keys.back?1:0);airRotation+=spinDirection*8*dt}
+   if(airborne){airY-=vy*dt;vy+=2200*dt;if(airY<=0&&vy>0){airY=0;vy=0;
+    const landedAngle=((airRotation%(Math.PI*2))+(Math.PI*2))%(Math.PI*2);
+    if(landedAngle>Math.PI/2&&landedAngle<Math.PI*1.5)startCrash("landing");
+   }}
    const riderX=world+W*.22+90,ob=obstacleAt(riderX+22);
    const overGap=gapAt(riderX);
-   if(ob&&!airY&&Math.abs(ob.x-riderX)<27){crashed=true;running=false;if(statusEl)statusEl.textContent="WIPEOUT — RESTART"}
-   if(overGap&&airY<8&&(riderX%1300)>820&&(riderX%1300)<900){crashed=true;running=false;if(statusEl)statusEl.textContent="WIPEOUT — RESTART"}
+   if(!crashed&&ob&&!airY&&Math.abs(ob.x-riderX)<27)startCrash("obstacle");
+   if(!crashed&&overGap&&airY<8&&(riderX%1300)>820&&(riderX%1300)<900)startCrash("gap");
    const d=Math.floor(world/10);if(distanceEl)distanceEl.textContent=d+" m";
    if(d>best){best=d;if(bestEl)bestEl.textContent=best+" m";try{localStorage.setItem("daBoiz_sadtires_best_v1",String(best))}catch(e){}}
+  }else if(crashed&&crashTimer<=1.05){
+   crashTimer+=dt;
+   if(crashType==="gap")crashDrop+=430*dt;
+   else{crashAngle+=9*dt;crashDrop+=95*dt}
   }
   draw();window.__sadTiresRAF=requestAnimationFrame(frame);
  }
