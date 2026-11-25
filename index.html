@@ -1750,8 +1750,23 @@ function initSadTires(){
   // Course spacing tightens and gaps widen with each 600m biome.
   const cfg=course();
   for(let wx=Math.floor((world-200)/cfg.period)*cfg.period;wx<world+W;wx+=cfg.period){
+   // Make every lethal feature obvious: marked gap edges and high-contrast obstacles.
+   const gapLeft=wx+cfg.gapStart,gapRight=gapLeft+cfg.gapWidth;
+   [gapLeft,gapRight].forEach((edge,i)=>{
+    const x=edge-world-W*.22,y=terrain(edge);
+    if(x>-35&&x<W+35){
+     ctx.strokeStyle="#7f1d1d";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x,y-3);ctx.lineTo(x,y-54);ctx.stroke();
+     ctx.fillStyle="#ef4444";ctx.beginPath();ctx.moveTo(x,y-54);ctx.lineTo(x+(i?25:-25),y-46);ctx.lineTo(x,y-37);ctx.closePath();ctx.fill();
+     ctx.fillStyle="#fff";ctx.font="900 13px system-ui";ctx.textAlign="center";ctx.fillText("GAP",x+(i?20:-20),y-64);
+    }
+   });
    const ob1=obstacleAt(wx+cfg.obstacleA),ob2=obstacleAt(wx+cfg.obstacleB);
-   [ob1,ob2].forEach(o=>{if(!o)return;const x=o.x-world-W*.22,y=terrain(o.x);if(o.type==="cone"){ctx.fillStyle=theme.accent;ctx.beginPath();ctx.moveTo(x,y-34);ctx.lineTo(x-17,y);ctx.lineTo(x+17,y);ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x-10,y-12,20,5)}else{ctx.fillStyle="#9a6238";ctx.fillRect(x-19,y-32,38,32);ctx.strokeStyle="#e4bd8b";ctx.lineWidth=4;ctx.strokeRect(x-19,y-32,38,32);ctx.beginPath();ctx.moveTo(x-17,y-28);ctx.lineTo(x+17,y-4);ctx.stroke()}})
+   [ob1,ob2].forEach(o=>{if(!o)return;const x=o.x-world-W*.22,y=terrain(o.x);
+    ctx.save();ctx.shadowColor="#ffea00";ctx.shadowBlur=15;
+    if(o.type==="cone"){ctx.fillStyle=theme.accent;ctx.beginPath();ctx.moveTo(x,y-34);ctx.lineTo(x-17,y);ctx.lineTo(x+17,y);ctx.closePath();ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#fff";ctx.fillRect(x-10,y-12,20,5)}
+    else{ctx.fillStyle="#9a6238";ctx.fillRect(x-19,y-32,38,32);ctx.strokeStyle="#fff1a8";ctx.lineWidth=4;ctx.strokeRect(x-19,y-32,38,32);ctx.beginPath();ctx.moveTo(x-17,y-28);ctx.lineTo(x+17,y-4);ctx.stroke()}
+    ctx.restore();
+   });
   }
   ctx.fillStyle="#ffffffdd";ctx.font="900 18px system-ui";ctx.textAlign="right";ctx.fillText(theme.name+" • MAP "+(course().level+1),W-22,35);
   // Rider and bicycle
@@ -1783,8 +1798,9 @@ function initSadTires(){
     if(Math.cos(landedAngle)<-0.15)startCrash("landing");
    }}
    const riderX=world+W*.22+90,ob=obstacleAt(riderX);
-   const overGap=gapAt(riderX+8);
-   // Only collide when the rider actually overlaps the obstacle, not when merely approaching it.
+   // Check the visible bicycle wheel positions against the actual drawn gap.
+   const overGap=gapAt(riderX-29)||gapAt(riderX)||gapAt(riderX+35);
+   // Hills are scenery only. A wipeout can only come from a clearly drawn obstacle or gap.
    if(!crashed&&ob&&airY<30&&Math.abs(ob.x-riderX)<34)startCrash("obstacle");
    if(!crashed&&overGap&&airY<12)startCrash("gap");
    const d=Math.floor(world/10);if(distanceEl)distanceEl.textContent=d+" m";
